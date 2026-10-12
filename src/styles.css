@@ -1,0 +1,41 @@
+*{box-sizing:border-box}html,body{margin:0;background:#0b1f2a;color:#e8f1f5;font:17px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+button,input,select{font:inherit}a{color:#7dd3fc}
+.app{max-width:640px;margin:0 auto;min-height:100vh;padding-bottom:84px}
+.top{position:sticky;top:0;z-index:500;display:flex;gap:6px;padding:10px;padding-top:max(10px,env(safe-area-inset-top));background:#0b1f2aee;backdrop-filter:blur(6px)}
+.place{flex:1;text-align:left;background:#143140;color:#fff;border:0;border-radius:14px;padding:12px;font-size:18px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.place small{color:#7dd3fc;font-weight:400;margin-left:4px}
+.icon{min-width:48px;min-height:48px;background:#143140;color:#fff;border:0;border-radius:14px;font-size:22px}
+main{padding:0 10px}
+.card{background:#12303e;border-radius:18px;padding:16px;margin:10px 0}
+.card h2{margin:0 0 6px;font-size:20px}.card h3{font-size:17px;margin:8px 0}
+.hero{display:flex;gap:14px;align-items:center}
+.score{display:flex;flex-direction:column;align-items:center;justify-content:center;width:88px;height:88px;border:6px solid;border-radius:50%;flex:none}
+.score b{font-size:30px;line-height:1}.score span{font-size:14px}
+.reasons{margin:0;padding:0;list-style:none;font-size:15px}.reasons li{margin:3px 0}
+.now{display:flex;gap:12px;align-items:center}.bigico{font-size:52px}.xl{font-size:40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:10px}
+.stat{background:#0e2632;border-radius:12px;padding:10px;display:flex;flex-direction:column}.stat b{font-size:22px}.stat small{color:#9fb7c2}
+.muted{color:#9fb7c2}.small{font-size:14px}.center{text-align:center}
+.period{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;margin:6px 0;border-radius:12px;background:#0e2632}
+.period.major{background:#14532d}.period.minor{background:#1e3a5f}.period span{color:#cfe3ea;font-size:14px;text-align:right}
+.hours{display:flex;overflow-x:auto;gap:6px;padding-bottom:6px}
+.hr{flex:none;width:62px;background:#0e2632;border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:15px}
+.hr.bad{background:#5b1d1d}.hr small{font-size:12px;color:#9fb7c2}.wind i{display:inline-block;font-style:normal;margin-right:2px}
+.banner{background:#1e3a5f;padding:12px 14px;border-radius:12px;margin:10px;font-size:15px}.banner.warn{background:#713f12}.banner.danger{background:#7f1d1d;font-weight:600}
+main .banner{margin:10px 0}
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:#081820;border-top:1px solid #1d3b49;padding-bottom:env(safe-area-inset-bottom)}
+.tabs button{flex:1;background:none;border:0;color:#9fb7c2;padding:8px 2px;font-size:12px;display:flex;flex-direction:column;align-items:center;min-height:62px}
+.tabs button span{font-size:24px}.tabs button.on{color:#fff;background:#12303e}
+.sheet{position:fixed;inset:0;z-index:1000;background:#000a;display:flex;align-items:flex-end;justify-content:center}
+.sheet-in{background:#0b1f2a;width:100%;max-width:640px;max-height:90vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between}.grow{flex:1}
+.big,.link-btn{display:block;width:100%;text-align:center;background:#0284c7;color:#fff;border:0;border-radius:14px;padding:15px;font-size:18px;font-weight:600;margin:8px 0;text-decoration:none}
+.link-btn.alt{background:#155e75}
+.btn{background:#0284c7;color:#fff;border:0;border-radius:10px;padding:10px 14px;margin-top:6px}
+.item{display:block;width:100%;text-align:left;background:#12303e;color:#fff;border:0;border-radius:12px;padding:14px;margin:6px 0}
+input,select{width:100%;padding:12px;border-radius:12px;border:1px solid #2a4f60;background:#0e2632;color:#fff;margin-top:4px}
+form.row input{flex:1;margin:0}form.row .btn{margin:0;padding:12px 16px}
+label{display:block;margin:10px 0}label.check{display:flex;gap:10px;align-items:center}label.check input{width:24px;height:24px;margin:0}
+.map{height:62vh;border-radius:18px;margin-top:10px;z-index:1}
+.link{display:inline-block;margin-top:8px}.day{cursor:pointer}
+.leaflet-popup-content{font-size:14px}

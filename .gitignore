@@ -1,0 +1,8 @@
+node_modules
+dist
+dist-pages
+*.tgz
+shot-*.png
+*.log
+logs
+PUBLIC_URL.txt
