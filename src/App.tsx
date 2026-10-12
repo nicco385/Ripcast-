@@ -45,7 +45,7 @@ export default function App() {
 
   return (
     <div className="app">
-      {cover && <Cover f={data} onStart={() => setCover(false)} />}
+      {cover && <Cover f={data} onStart={(t) => { if (t) setTab(t); setCover(false); }} />}
       <header className="top">
         <button className="place" onClick={() => setPicker(true)} aria-label={`📍 ${place.name} change`}>
           📍 <span>{place.name}</span> <small>change</small>
@@ -122,27 +122,33 @@ const ICONS: Record<string, string> = {
 };
 const Ico = ({ n }: { n: string }) => <svg className="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={ICONS[n]} /></svg>;
 
-const Hook = ({ size = 72 }: { size?: number }) => <svg className="hook" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-  <path fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" d="M18 4v15.5a6.2 6.2 0 1 1-7-5.6" />
-  <path fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" d="M9.2 16.4l3.4-2.8" /></svg>;
 
-function Cover({ f, onStart }: { f: Forecast | null; onStart: () => void }) {
+
+const FEATS: [Tab, string, string][] = [["where", "Locations", "📍"], ["week", "Best times", "🗓️"], ["today", "Weather", "⛅"], ["rules", "Species", "🐟"], ["where", "Tackle & rigs", "🎣"], ["rules", "Tips & rules", "📖"]];
+const SPECIES_STRIP = ["Snapper", "Squid", "Whiting", "Garfish", "Flathead", "Mulloway", "Bream", "Estuary Perch"];
+const LeapFish = () => <svg className="leap" viewBox="0 0 120 80" aria-hidden="true"><path d="M8 62 C30 20 70 6 100 18 L116 6 L110 26 L118 42 L98 32 C78 52 46 60 8 62Z" fill="#fff"/><path d="M40 40 C56 28 76 22 92 24" stroke="#0b2a55" strokeWidth="3" fill="none"/><circle cx="92" cy="22" r="0" /><circle cx="26" cy="52" r="3.4" fill="#0b2a55"/><path d="M4 70 q20 -6 40 0 t40 0" stroke="#7cc4ff" strokeWidth="3" fill="none" strokeLinecap="round"/></svg>;
+
+function Cover({ f, onStart }: { f: Forecast | null; onStart: (t?: Tab) => void }) {
   const [out, setOut] = useState(false);
-  const go = () => { if (out) return; setOut(true); setTimeout(onStart, 380); };
+  const go = (t?: Tab) => { if (out) return; setOut(true); setTimeout(() => onStart(t), 380); };
   const sc = f ? scoreDay(f, 0) : null;
   const call = !sc ? null : sc.score >= 60 ? "Go" : sc.score >= 45 ? "Maybe" : "Wait";
-  return <div className={`cover ${out ? "out" : ""}`} onClick={go}>
+  const base = import.meta.env.BASE_URL;
+  return <div className={`cover ${out ? "out" : ""}`} onClick={() => go()} style={{ backgroundImage: `linear-gradient(180deg,#071631cc 0,#07163100 30vw,#07163100 140vw,#071631 180vw),url(${base}cover-hero.webp)` }}>
     <div className="cover-in">
-      <div className="cover-mark"><Hook size={64} /></div>
-      <h1 className="wordmark">{APP_NAME}</h1>
-      <p className="eyebrow">Land-based fishing · Victoria</p>
-      <p className="tag">{TAGLINE}. Pick a fish and a shore — wind, tide and how you get there decide the rest.</p>
+      <div className="brand"><h1 className="wordmark">{APP_NAME}</h1><LeapFish /></div>
+      <p className="sub">Land-Based Fishing</p>
+      <p className="tagline">{TAGLINE}</p>
+      <p className="script">Better decisions.<br />More bites.<br />Get out there.</p>
+      <div className="spacer" />
       {sc && <div className="call">
-        <div className="call-top"><div><p className="eyebrow">Today's land-based call</p><p className={`call-word c-${call}`}>{call}</p></div><ScoreBadge {...sc} size={84} /></div>
-        <p className="call-sub">{f!.place.name} · {sc.reasons[0]}</p>
-      </div>}
+        <div><p className="eyebrow">Today's call · {f!.place.name}</p><p className={`call-word c-${call}`}>{call}</p><p className="call-sub">{sc.reasons[0]}</p></div>
+        <ScoreBadge {...sc} size={80} /></div>}
       <button className="start" onClick={(e) => { e.stopPropagation(); go(); }}>Start fishing <span aria-hidden="true">→</span></button>
-      <small className="skip">Tap anywhere to continue</small>
+      <div className="feats">{FEATS.map(([t, l, i]) => <button key={l} onClick={(e) => { e.stopPropagation(); go(t); }}><span aria-hidden="true">{i}</span>{l}</button>)}</div>
+      <p className="eyebrow center">Your Victorian land-based fishing assistant</p>
+      <div className="strip">{SPECIES_STRIP.map((n, i) => <div key={n} className="sp"><i style={{ backgroundImage: `url(${base}species.webp)`, backgroundPosition: `${(i / 7) * 100}% 0` }} /><small>{n}</small></div>)}</div>
+      <p className="places">Port Phillip Bay | Yarra | Maribyrnong | Geelong</p>
     </div>
   </div>;
 }
