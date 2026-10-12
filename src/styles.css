@@ -47,3 +47,64 @@ label{display:block;margin:10px 0}label.check{display:flex;gap:10px;align-items:
 .bite{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:10px 0;border-bottom:1px solid #1d3b49}.bite small{grid-column:1/3;color:#9fb7c2}.bite.off{opacity:.55}
 .foot{margin:16px 0 4px}.foot a{color:#9fb7c2}
 .tabs button{font-size:11px}
+
+/* ===== Ocean redesign ===== */
+:root{--navy:#06182b;--deep:#0a2540;--card:#0f2f4a;--card2:#0b2238;--teal:#14b8a6;--aqua:#5eead4;--sun:#ff8a3d;--coral:#ff6b5b;--txt:#eaf6fb;--mut:#9ec3d3}
+html,body{background:radial-gradient(1200px 600px at 50% -200px,#0e4a6b 0%,var(--navy) 60%) fixed,var(--navy);color:var(--txt)}
+a{color:var(--aqua)}
+.top{background:linear-gradient(180deg,#06182bf2,#06182bcc);border-bottom:1px solid #ffffff10}
+.place,.icon{background:linear-gradient(180deg,#14406188,#0f2f4a);box-shadow:0 2px 10px #0006,inset 0 1px 0 #ffffff14;transition:transform .15s}
+.place:active,.icon:active,.big:active,.btn:active,.start:active{transform:scale(.96)}
+.place small{color:var(--sun)}
+.card{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid #ffffff12;border-radius:22px;box-shadow:0 10px 28px #0007,inset 0 1px 0 #ffffff10;padding:18px}
+.card h2{font-size:21px;letter-spacing:.2px}
+.hero{background:linear-gradient(135deg,#0e5a73,#0b2a47 70%);border-color:#5eead433}
+.stat{background:#ffffff0a;border:1px solid #ffffff10;border-radius:16px;padding:12px}.stat b{display:flex;align-items:center;gap:4px}.stat small{color:var(--mut)}
+.muted{color:var(--mut)}
+.score{position:relative;display:grid;place-items:center;border:0;flex:none}
+.score svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:#ffffff1a;stroke-width:9}.ring{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1.2s ease;animation:ring 1.4s ease}
+@keyframes ring{from{stroke-dashoffset:264}}
+.score b{font-size:32px;line-height:1;position:relative;margin-top:6px}.score span{font-size:13px;position:relative;margin-top:-14px;color:var(--txt)}
+.score{grid-template-rows:1fr 1fr}.score b{align-self:end}.score span{align-self:start;margin-top:2px}
+.reasons li{padding-left:2px}
+.period{background:#ffffff0a;border-radius:14px}.period.major{background:linear-gradient(90deg,#0f766e,#115e59)}.period.minor{background:linear-gradient(90deg,#1e3a8a99,#1e3a5f)}
+.hr{background:#ffffff0a;border:1px solid #ffffff10;border-radius:16px}.hr.bad{background:#7f1d1d99}
+.arrow{color:var(--aqua);transition:transform .4s;flex:none;vertical-align:middle}
+.banner{border-radius:14px}.banner.danger{background:linear-gradient(90deg,#991b1b,#7f1d1d)}
+.big,.link-btn,.btn{background:linear-gradient(135deg,var(--sun),var(--coral));box-shadow:0 6px 16px #ff6b5b44;transition:transform .15s}
+.link-btn.alt,.btn.alt{background:linear-gradient(135deg,#0e7490,#155e75);box-shadow:0 4px 12px #0005}
+.item{background:#ffffff0c;border:1px solid #ffffff10}
+.seg button{background:#ffffff08;border-color:#ffffff18;color:var(--txt);transition:background .2s}.seg button.on{background:linear-gradient(135deg,var(--teal),#0e7490);border-color:transparent}
+.badge{box-shadow:0 2px 8px #0005}.b-Good{background:#16a34a}.b-OK{background:#d97706}.b-Poor{background:#dc2626}
+.wcard{border-left:6px solid #16a34a}.wcard.w-OK{border-left-color:#d97706}.wcard.w-Poor{border-left-color:#dc2626}
+.wtag{white-space:nowrap}
+.bite{border-color:#ffffff14}
+.sheet-in{background:var(--deep)}
+.tabs{background:#06182bf0;backdrop-filter:blur(10px);border-top:1px solid #ffffff14;box-shadow:0 -6px 20px #0007}
+.tabs button{font-size:12px;color:var(--mut);gap:3px;transition:color .2s;position:relative;min-height:64px;background:none}
+.tabs button.on{color:var(--sun);background:none}.tabs button.on::before{content:"";position:absolute;top:0;left:25%;right:25%;height:3px;border-radius:0 0 4px 4px;background:var(--sun)}
+.nav-ico{width:26px;height:26px;transition:transform .2s}.tabs button.on .nav-ico{transform:translateY(-2px) scale(1.1)}
+.fade{animation:fade .35s ease}@keyframes fade{from{opacity:0;transform:translateY(8px)}}
+
+/* Cover */
+.cover{position:fixed;inset:0;z-index:5000;overflow:hidden;cursor:pointer;background:linear-gradient(180deg,#ff9a3c 0%,#ff6b5b 22%,#7c3a8a 40%,#0e4a6b 58%,#06182b 100%);display:flex;align-items:center;justify-content:center;animation:cin .6s ease;transition:opacity .45s,transform .45s}
+.cover.out{opacity:0;transform:scale(1.06)}
+@keyframes cin{from{opacity:0}}
+.sun{position:absolute;left:50%;top:30%;width:220px;height:220px;margin-left:-110px;border-radius:50%;background:radial-gradient(circle,#ffe29a,#ffb35c 60%,#ff8a3d00 72%);animation:rise 1.6s ease-out}
+@keyframes rise{from{transform:translateY(120px);opacity:.3}}
+.waves{position:absolute;left:0;bottom:0;width:200%;height:58%}
+.waves path{animation:drift 9s linear infinite}.w1{fill:#0e7490cc}.w2{fill:#0b4f6ce6;animation-duration:6s!important}.w3{fill:#06182b;animation-duration:4s!important}
+@keyframes drift{to{transform:translateX(-720px)}}
+.cover-in{position:relative;text-align:center;padding:24px;display:flex;flex-direction:column;align-items:center;gap:10px;animation:up .9s .15s ease both}
+@keyframes up{from{opacity:0;transform:translateY(30px)}}
+.cover-logo{width:84px;height:84px;border-radius:22px;box-shadow:0 10px 30px #0008;border:2px solid #ffffff55}
+.cover h1{margin:0;font-size:clamp(52px,16vw,84px);line-height:1;font-weight:900;letter-spacing:-1px;color:#fff;text-shadow:0 4px 24px #0009}
+.tag{margin:0;font-size:22px;font-weight:600;color:#fff;text-shadow:0 2px 10px #0008}
+.cover-score{display:flex;align-items:center;gap:14px;margin-top:14px;background:#06182b99;backdrop-filter:blur(8px);padding:12px 20px 12px 12px;border-radius:24px;border:1px solid #ffffff22;text-align:left}
+.cover-score b{display:block;font-size:18px}.cover-score small{color:var(--mut)}
+.cover-score .score b{display:block;font-size:38px}
+.start{margin-top:18px;border:0;border-radius:999px;padding:20px 44px;font-size:24px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--sun),var(--coral));box-shadow:0 10px 30px #ff6b5b88;animation:pulse 2s 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 10px 44px #ffb35ccc;transform:scale(1.04)}}
+.skip{color:#ffffffaa;margin-top:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

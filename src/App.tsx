@@ -8,6 +8,7 @@ import {
   type Forecast, type Place, getForecast, searchPlaces, compass, kmh, hhmm, dayName, weatherText,
   moonInfo, solunar, tidesFrom, scoreDay, safety, localNowKey,
 } from "./lib";
+import { APP_NAME, TAGLINE } from "./config";
 import { LAND, BITING, getSpotWeather, rankSpot, km, type Rank } from "./where";
 
 const DEFAULT: Place = { name: "Williamstown, VIC", lat: -37.8635, lon: 144.9056 };
@@ -25,6 +26,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [picker, setPicker] = useState(false);
   const [focus, setFocus] = useState<string | null>(null);
+  const [cover, setCover] = useState(true);
 
   const refresh = useCallback(async (p: Place) => {
     setLoading(true); setErr("");
@@ -43,6 +45,7 @@ export default function App() {
 
   return (
     <div className="app">
+      {cover && <Cover f={data} onStart={() => setCover(false)} />}
       <header className="top">
         <button className="place" onClick={() => setPicker(true)} aria-label="Change location">
           📍 <span>{place.name}</span> <small>change</small>
@@ -52,7 +55,7 @@ export default function App() {
       </header>
       {err && <div className="banner warn">{err}</div>}
       {picker && <Picker favs={favs} onClose={() => setPicker(false)} onPick={(p) => { setPlace(p); setPicker(false); }} onRemoveFav={(p) => setFavs(favs.filter((f) => f.name !== p.name))} />}
-      <main>
+      <main key={tab} className="fade">
         {!shown && !err && <div className="card center">Loading live conditions…</div>}
         {shown && tab === "today" && <Today f={shown} stale={shown.place.name !== place.name} />}
         {shown && tab === "week" && <Week f={shown} />}
@@ -63,8 +66,8 @@ export default function App() {
         <p className="muted small center foot">Weather & marine data: <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo.com</a> (CC BY 4.0) · Map © OpenStreetMap</p>
       </main>
       <nav className="tabs">
-        {([["today", "🎣", "Today"], ["where", "📍", "Where to fish"], ["week", "📅", "7 days"], ["map", "🗺️", "Map"], ["log", "📒", "My catches"], ["rules", "📏", "Rules"]] as const).map(([k, i, l]) => (
-          <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}><span>{i}</span>{l}</button>
+        {([["today", "Today"], ["where", "Where"], ["week", "7 days"], ["map", "Map"], ["log", "Catches"], ["rules", "Rules"]] as const).map(([k, l]) => (
+          <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}><Ico n={k} />{l}</button>
         ))}
       </nav>
     </div>
@@ -100,9 +103,45 @@ function Picker({ favs, onPick, onClose, onRemoveFav }: { favs: Place[]; onPick:
   );
 }
 
-function ScoreBadge({ score, label }: { score: number; label: string }) {
-  const c = score >= 75 ? "#22c55e" : score >= 60 ? "#84cc16" : score >= 45 ? "#f59e0b" : "#ef4444";
-  return <div className="score" style={{ borderColor: c }}><b style={{ color: c }}>{score}</b><span>{label}</span></div>;
+const scoreCol = (n: number) => n >= 75 ? "#22c55e" : n >= 60 ? "#a3e635" : n >= 45 ? "#fbbf24" : "#f87171";
+function ScoreBadge({ score, label, size = 96 }: { score: number; label: string; size?: number }) {
+  const c = scoreCol(score); const R = 42, L = 2 * Math.PI * R;
+  return <div className="score" style={{ width: size, height: size }}>
+    <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r={R} className="ring-bg" />
+      <circle cx="50" cy="50" r={R} className="ring" stroke={c} strokeDasharray={L} strokeDashoffset={L * (1 - score / 100)} /></svg>
+    <b style={{ color: c }}>{score}</b><span>{label}</span></div>;
+}
+const Arrow = ({ deg, size = 18 }: { deg: number; size?: number }) => <svg className="arrow" width={size} height={size} viewBox="0 0 24 24" style={{ transform: `rotate(${deg + 180}deg)` }}><path d="M12 2 L19 20 L12 16 L5 20Z" fill="currentColor" /></svg>;
+const ICONS: Record<string, string> = {
+  today: "M12 2v3M4.2 6.2l2.1 2.1M2 14h3M19 14h3M17.7 8.3l2.1-2.1M7 18a5 5 0 0 1 10 0M2 21h20",
+  where: "M12 22s7-7.2 7-13a7 7 0 0 0-14 0c0 5.8 7 13 7 13zM12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
+  week: "M4 5h16v16H4zM4 10h16M9 3v4M15 3v4",
+  map: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14",
+  log: "M3 12c3-5 9-6 13-3l5-3v12l-5-3c-4 3-10 2-13-3zM8 11.5h.01",
+  rules: "M3 17 17 3l4 4L7 21zM7 13l2 2M10 10l2 2M13 7l2 2",
+};
+const Ico = ({ n }: { n: string }) => <svg className="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={ICONS[n]} /></svg>;
+
+function Cover({ f, onStart }: { f: Forecast | null; onStart: () => void }) {
+  const [out, setOut] = useState(false);
+  const go = () => { setOut(true); setTimeout(onStart, 450); };
+  const sc = f ? scoreDay(f, 0) : null;
+  return <div className={`cover ${out ? "out" : ""}`} onClick={go} role="button" aria-label="Start">
+    <div className="sun" />
+    <svg className="waves" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path className="w1" d="M0 160 Q180 110 360 160 T720 160 T1080 160 T1440 160 T1800 160 T2160 160 T2880 160 V320 H0Z" />
+      <path className="w2" d="M0 200 Q180 150 360 200 T720 200 T1080 200 T1440 200 T1800 200 T2160 200 T2880 200 V320 H0Z" />
+      <path className="w3" d="M0 240 Q180 200 360 240 T720 240 T1080 240 T1440 240 T1800 240 T2160 240 T2880 240 V320 H0Z" />
+    </svg>
+    <div className="cover-in">
+      <img src={import.meta.env.BASE_URL + "icon-192.png"} alt="" className="cover-logo" />
+      <h1>{APP_NAME}</h1>
+      <p className="tag">{TAGLINE}</p>
+      {sc && <div className="cover-score"><ScoreBadge {...sc} size={120} /><div><b>Today's fishing</b><small>{f!.place.name}</small></div></div>}
+      <button className="start" onClick={(e) => { e.stopPropagation(); go(); }}>🎣 Start fishing</button>
+      <small className="skip">Tap anywhere to skip</small>
+    </div>
+  </div>;
 }
 
 function Today({ f, stale }: { f: Forecast; stale: boolean }) {
@@ -132,7 +171,7 @@ function Today({ f, stale }: { f: Forecast; stale: boolean }) {
       <section className="card">
         <div className="now"><span className="bigico">{ico}</span><div><b className="xl">{Math.round(n.temp)}°</b> <span className="muted">feels {Math.round(n.feels)}°</span><div>{txt}</div></div></div>
         <div className="grid">
-          <Stat k="Wind" v={`${Math.round(n.wind)} kn`} s={`${kmh(n.wind)} km/h from ${compass(n.dir)}`} />
+          <Stat k="Wind" v={<><Arrow deg={n.dir} size={22} /> {Math.round(n.wind)} kn</>} s={`${kmh(n.wind)} km/h from ${compass(n.dir)}`} />
           <Stat k="Gusts" v={`${Math.round(n.gust)} kn`} s={`${kmh(n.gust)} km/h`} />
           <Stat k="Pressure" v={`${Math.round(n.pressure)} hPa`} s={trend} />
           <Stat k="Rain chance" v={`${cur?.rainChance ?? 0}%`} s={`${today.rainSum.toFixed(1)} mm today`} />
@@ -168,7 +207,7 @@ function Today({ f, stale }: { f: Forecast; stale: boolean }) {
           {next.map((h) => { const [i] = weatherText(h.code); return (
             <div key={h.time} className={`hr ${h.gust >= 28 ? "bad" : ""}`}>
               <small>{hhmm(h.time).replace(":00", "")}</small><span>{i}</span><b>{Math.round(h.temp)}°</b>
-              <span className="wind"><i style={{ transform: `rotate(${h.dir + 180}deg)` }}>↑</i>{Math.round(h.wind)}</span>
+              <span className="wind"><Arrow deg={h.dir} size={16} />{Math.round(h.wind)}</span>
               <small>g{Math.round(h.gust)}</small><small>💧{h.rainChance}%</small>
               {h.wave != null && <small>🌊{h.wave.toFixed(1)}</small>}
             </div>); })}
@@ -179,7 +218,7 @@ function Today({ f, stale }: { f: Forecast; stale: boolean }) {
   );
 }
 
-const Stat = ({ k, v, s }: { k: string; v: string; s?: string }) => <div className="stat"><small>{k}</small><b>{v}</b>{s && <small>{s}</small>}</div>;
+const Stat = ({ k, v, s }: { k: string; v: React.ReactNode; s?: string }) => <div className="stat"><small>{k}</small><b>{v}</b>{s && <small>{s}</small>}</div>;
 
 function Week({ f }: { f: Forecast }) {
   const [open, setOpen] = useState(0);
@@ -275,7 +314,6 @@ function Where({ place, onMap }: { place: Place; onMap: (id: string) => void }) 
   const ranked: (Rank & { dist: number })[] = useMemo(() => !raw ? [] : LAND.filter((s) => raw.data[s.id]).map((s) => ({ ...rankSpot(s, raw.data[s.id], mode), dist: km(origin, s) }))
     .filter((r) => !maxKm || r.dist <= maxKm).sort((a, b) => b.score - a.score), [raw, mode, origin, maxKm]);
   const m = new Date().getMonth() + 1;
-  const col = { Good: "#22c55e", OK: "#f59e0b", Poor: "#ef4444" };
   return <>
     <section className="card">
       <h2>📍 Where to fish</h2>
@@ -287,9 +325,9 @@ function Where({ place, onMap }: { place: Place; onMap: (id: string) => void }) 
     {err && <div className="banner warn">{err}</div>}
     {!raw && !err && <div className="card center">Checking wind at every spot…</div>}
     {raw && !ranked.length && <div className="card center">No spots that close. Try a bigger distance.</div>}
-    {ranked.slice(0, 5).map((r, i) => <section key={r.spot.id} className="card wcard">
-      <div className="row"><h3>{i + 1}. {r.spot.name}</h3><span className="badge" style={{ background: col[r.badge] }}>{r.badge}</span></div>
-      <p className="muted small">{r.spot.type} · {Math.round(r.dist)} km away · wind {Math.round(r.wind)} kn {r.dirTxt}{r.wave != null ? ` · waves ${r.wave.toFixed(1)} m` : ""}</p>
+    {ranked.slice(0, 5).map((r, i) => <section key={r.spot.id} className={`card wcard w-${r.badge}`}>
+      <div className="row"><h3>{i + 1}. {r.spot.name}</h3><span className={`badge b-${r.badge}`}>{r.badge === "Good" ? "👍 " : r.badge === "OK" ? "👌 " : "👎 "}{r.badge}</span></div>
+      <p className="muted small">{r.spot.type} · {Math.round(r.dist)} km away · <span className="wtag">wind {Math.round(r.wind)} kn {r.dirTxt}</span>{r.wave != null ? ` · waves ${r.wave.toFixed(1)} m` : ""}</p>
       <p className="big-txt">{r.avoid ? "⚠️ " : ""}{r.reason}</p>
       <p>⏰ <b>Best time:</b> {r.best}</p>
       {r.target.length > 0 && <p>🎯 <b>Target:</b> {r.target.join(", ")}</p>}

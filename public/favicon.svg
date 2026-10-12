@@ -1,7 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Ripcast">
-  <rect width="32" height="32" rx="8" fill="#0c1114"/>
-  <path fill="none" stroke="#b9c9c4" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"
-    d="M18 7v12.5a6.2 6.2 0 1 1-7-5.6"/>
-  <path fill="none" stroke="#b9c9c4" stroke-width="3.5" stroke-linecap="round"
-    d="M9.2 16.4l3.4-2.8"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a3c"/><stop offset=".38" stop-color="#ff6b5b"/><stop offset=".39" stop-color="#0e7490"/><stop offset="1" stop-color="#06182b"/></linearGradient>
+<linearGradient id="f" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#e0f2fe"/></linearGradient></defs>
+<rect width="512" height="512" fill="url(#bg)"/>
+<circle cx="256" cy="196" r="70" fill="#ffd27a" opacity=".9"/>
+<path d="M0 200 Q64 176 128 200 T256 200 T384 200 T512 200 V512 H0Z" fill="#0e7490"/>
+<path d="M0 236 Q64 212 128 236 T256 236 T384 236 T512 236 V512 H0Z" fill="#0b4f6c"/>
+<path d="M0 280 Q64 258 128 280 T256 280 T384 280 T512 280 V512 H0Z" fill="#06182b" opacity=".7"/>
+<line x1="352" y1="96" x2="352" y2="300" stroke="#e0f2fe" stroke-width="6" opacity=".8"/>
+<path d="M352 300 v40 a28 28 0 1 1 -56 0" fill="none" stroke="#e0f2fe" stroke-width="12" stroke-linecap="round"/>
+<g transform="translate(150 360) rotate(-12)">
+<path d="M-90 0 C-50 -50 50 -50 80 0 C50 50 -50 50 -90 0Z" fill="url(#f)"/>
+<path d="M70 0 L130 -42 L118 0 L130 42Z" fill="#5eead4"/>
+<circle cx="-52" cy="-8" r="9" fill="#06182b"/>
+</g></svg>
