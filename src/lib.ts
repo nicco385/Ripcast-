@@ -87,7 +87,7 @@ export function localNowKey(tz: string) {
   const g = (t: string) => p.find((x) => x.type === t)!.value;
   return `${g("year")}-${g("month")}-${g("day")}T${g("hour").replace("24", "00")}:00`;
 }
-const fmtLocal = (d: Date, tz: string) => {
+export const fmtLocal = (d: Date, tz: string) => {
   const p = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(d);
   const g = (t: string) => p.find((x) => x.type === t)!.value;
   return `${g("year")}-${g("month")}-${g("day")}T${g("hour").replace("24", "00")}:${g("minute")}`;

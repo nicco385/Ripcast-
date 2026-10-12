@@ -8,12 +8,13 @@ import {
   type Forecast, type Place, getForecast, searchPlaces, compass, kmh, hhmm, dayName, weatherText,
   moonInfo, solunar, tidesFrom, scoreDay, safety, localNowKey,
 } from "./lib";
+import { LAND, BITING, getSpotWeather, rankSpot, km, type Rank } from "./where";
 
 const DEFAULT: Place = { name: "Williamstown, VIC", lat: -37.8635, lon: 144.9056 };
 const load = <T,>(k: string, d: T): T => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
 const save = (k: string, v: unknown) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage full/blocked */ } };
 
-type Tab = "today" | "week" | "map" | "log" | "rules";
+type Tab = "where" | "today" | "week" | "map" | "log" | "rules";
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("today");
@@ -23,6 +24,7 @@ export default function App() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [picker, setPicker] = useState(false);
+  const [focus, setFocus] = useState<string | null>(null);
 
   const refresh = useCallback(async (p: Place) => {
     setLoading(true); setErr("");
@@ -54,12 +56,14 @@ export default function App() {
         {!shown && !err && <div className="card center">Loading live conditions…</div>}
         {shown && tab === "today" && <Today f={shown} stale={shown.place.name !== place.name} />}
         {shown && tab === "week" && <Week f={shown} />}
-        {tab === "map" && <MapTab place={place} onPick={(p) => { setPlace(p); setTab("today"); }} />}
+        {tab === "where" && <Where place={place} onMap={(id) => { setFocus(id); setTab("map"); }} />}
+        {tab === "map" && <MapTab place={place} focus={focus} onPick={(p) => { setPlace(p); setTab("today"); }} />}
         {tab === "log" && <Log place={place} />}
         {tab === "rules" && <Rules />}
+        <p className="muted small center foot">Weather & marine data: <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo.com</a> (CC BY 4.0) · Map © OpenStreetMap</p>
       </main>
       <nav className="tabs">
-        {([["today", "🎣", "Today"], ["week", "📅", "7 days"], ["map", "🗺️", "Map"], ["log", "📒", "My catches"], ["rules", "📏", "Rules"]] as const).map(([k, i, l]) => (
+        {([["today", "🎣", "Today"], ["where", "📍", "Where to fish"], ["week", "📅", "7 days"], ["map", "🗺️", "Map"], ["log", "📒", "My catches"], ["rules", "📏", "Rules"]] as const).map(([k, i, l]) => (
           <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}><span>{i}</span>{l}</button>
         ))}
       </nav>
@@ -193,7 +197,7 @@ function Week({ f }: { f: Forecast }) {
     <p className="muted small center">The fishing score is a simple guide combining wind, pressure, moon, feeding times, rain and swell. It's not a guarantee!</p></>;
 }
 
-function MapTab({ place, onPick }: { place: Place; onPick: (p: Place) => void }) {
+function MapTab({ place, focus, onPick }: { place: Place; focus: string | null; onPick: (p: Place) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!ref.current) return;
@@ -204,7 +208,8 @@ function MapTab({ place, onPick }: { place: Place; onPick: (p: Place) => void })
       const div = document.createElement("div");
       div.innerHTML = `<b>${s.name}</b><br/>${s.noTake ? "⛔ No fishing – marine park/sanctuary" : `${s.kind}${s.depth ? " · " + s.depth : ""}<br/><small>${s.tips}</small><br/>`}`;
       if (!s.noTake) { const b = document.createElement("button"); b.className = "btn"; b.textContent = "Show conditions here"; b.onclick = () => onPick({ name: s.name, lat: s.lat, lon: s.lon }); div.appendChild(b); }
-      L.circleMarker([s.lat, s.lon], { radius: 7, color: s.noTake ? "#ef4444" : "#22c55e", fillOpacity: 0.7 }).addTo(map).bindPopup(div);
+      const mk = L.circleMarker([s.lat, s.lon], { radius: 7, color: s.noTake ? "#ef4444" : "#22c55e", fillOpacity: 0.7 }).addTo(map).bindPopup(div);
+      if (s.id === focus) { map.setView([s.lat, s.lon], 14); mk.openPopup(); }
     });
     map.on("click", (e: L.LeafletMouseEvent) => {
       const div = document.createElement("div"); const b = document.createElement("button"); b.className = "btn"; b.textContent = "Check conditions here";
@@ -212,7 +217,7 @@ function MapTab({ place, onPick }: { place: Place; onPick: (p: Place) => void })
       div.appendChild(b); L.popup().setLatLng(e.latlng).setContent(div).openOn(map);
     });
     return () => { map.remove(); };
-  }, [place, onPick]);
+  }, [place, focus, onPick]);
   return <><div ref={ref} className="map" /><p className="muted small">🟢 fishing spot · 🔴 no-fishing sanctuary · Tap anywhere on the map to check conditions there.</p></>;
 }
 
@@ -253,6 +258,57 @@ function Rules() {
     </section>
     <section className="card"><h3>Quick reference (from the {REGS.source} – may be out of date)</h3>
       {sorted.map((s) => <div key={s.slug} className="period"><b>{s.name}</b><span>{s.minCm ? `min ${s.minCm} cm` : "no min"} · bag {s.bag}</span></div>)}
+    </section>
+  </>;
+}
+
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function Where({ place, onMap }: { place: Place; onMap: (id: string) => void }) {
+  const [raw, setRaw] = useState<Awaited<ReturnType<typeof getSpotWeather>> | null>(null);
+  const [err, setErr] = useState(""); const [mode, setMode] = useState<"now" | "today">("now");
+  const [maxKm, setMaxKm] = useState<number>(() => load("rc-where-km", 0));
+  const [origin, setOrigin] = useState<Place>(place); const [gpsMsg, setGpsMsg] = useState("");
+  useEffect(() => setOrigin(place), [place]);
+  useEffect(() => save("rc-where-km", maxKm), [maxKm]);
+  useEffect(() => { getSpotWeather().then(setRaw).catch((e) => setErr(`Couldn't load live wind for the spots (${(e as Error).message}). Try again soon.`)); }, []);
+  const gps = () => { setGpsMsg("Finding you…"); navigator.geolocation?.getCurrentPosition((p) => { setOrigin({ name: "My location", lat: p.coords.latitude, lon: p.coords.longitude }); setGpsMsg(""); }, () => setGpsMsg("Location blocked – using your chosen place instead."), { timeout: 15000, maximumAge: 300000 }); };
+  const ranked: (Rank & { dist: number })[] = useMemo(() => !raw ? [] : LAND.filter((s) => raw.data[s.id]).map((s) => ({ ...rankSpot(s, raw.data[s.id], mode), dist: km(origin, s) }))
+    .filter((r) => !maxKm || r.dist <= maxKm).sort((a, b) => b.score - a.score), [raw, mode, origin, maxKm]);
+  const m = new Date().getMonth() + 1;
+  const col = { Good: "#22c55e", OK: "#f59e0b", Poor: "#ef4444" };
+  return <>
+    <section className="card">
+      <h2>📍 Where to fish</h2>
+      <p className="muted small">Best land-based spots (piers, beaches, rocks, rivers) for the wind and waves {mode === "now" ? "right now" : "today"}.</p>
+      <div className="seg">{(["now", "today"] as const).map((k) => <button key={k} className={mode === k ? "on" : ""} onClick={() => setMode(k)}>{k === "now" ? "Right now" : "Today"}</button>)}</div>
+      <div className="seg">{[0, 30, 60, 100].map((k) => <button key={k} className={maxKm === k ? "on" : ""} onClick={() => setMaxKm(k)}>{k ? `${k} km` : "Any"}</button>)}</div>
+      <p className="muted small">Distance from: <b>{origin.name}</b> · <button className="linkish" onClick={gps}>use my location</button> {gpsMsg}</p>
+    </section>
+    {err && <div className="banner warn">{err}</div>}
+    {!raw && !err && <div className="card center">Checking wind at every spot…</div>}
+    {raw && !ranked.length && <div className="card center">No spots that close. Try a bigger distance.</div>}
+    {ranked.slice(0, 5).map((r, i) => <section key={r.spot.id} className="card wcard">
+      <div className="row"><h3>{i + 1}. {r.spot.name}</h3><span className="badge" style={{ background: col[r.badge] }}>{r.badge}</span></div>
+      <p className="muted small">{r.spot.type} · {Math.round(r.dist)} km away · wind {Math.round(r.wind)} kn {r.dirTxt}{r.wave != null ? ` · waves ${r.wave.toFixed(1)} m` : ""}</p>
+      <p className="big-txt">{r.avoid ? "⚠️ " : ""}{r.reason}</p>
+      <p>⏰ <b>Best time:</b> {r.best}</p>
+      {r.target.length > 0 && <p>🎯 <b>Target:</b> {r.target.join(", ")}</p>}
+      <div className="row btns">
+        <a className="btn" href={`https://www.google.com/maps/dir/?api=1&destination=${r.spot.lat},${r.spot.lon}`} target="_blank" rel="noreferrer">🚗 Directions</a>
+        <button className="btn alt" onClick={() => onMap(r.spot.id)}>🗺️ View on map</button>
+      </div>
+    </section>)}
+    <p className="muted small center">The ranking is a guide only, from live wind and wave forecasts. Tide times are approximate. Always check conditions when you arrive and stay safe on rocks.</p>
+    <section className="card">
+      <h2>🐟 What's biting in {MONTHS[m - 1]}</h2>
+      <p className="muted small">General guide for Port Phillip, Western Port and the Surf Coast from land.</p>
+      {BITING.map((b) => { const on = b.months.includes(m), pk = b.peak?.includes(m), closed = b.fish === "Murray cod" && m >= 9 && m <= 11;
+        return <div key={b.fish} className={`bite ${on && !closed ? "" : "off"}`}><b>{closed ? "⛔" : pk ? "🔥" : on ? "✅" : "➖"} {b.fish}</b><span>{closed ? "Closed season" : pk ? "Best time now" : on ? "In season" : "Quiet now"}</span><small>{b.note}</small></div>; })}
+    </section>
+    <section className="card">
+      <h2>📰 Latest reports</h2>
+      {([["FishingMad – what's biting", "https://fishingmad.com.au/whats-biting-reports/"], ["Trelly's Victorian fishing report", "https://www.trellys.com.au/blogs/fishing-report-victoria"], ["Vic/Tas Fishing Monthly", "https://fishingmonthly.com.au/category/articles/locations/victoria/"], ["Fishing Victoria Forum", "https://www.fishing-victoria.com/"], ["BOM tide tables", "http://www.bom.gov.au/australia/tides/#!/vic"], ["VFA size & bag limits", "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons"]] as const).map(([t, u]) =>
+        <a key={u} className="big link-btn alt" href={u} target="_blank" rel="noreferrer">{t} ↗</a>)}
     </section>
   </>;
 }
