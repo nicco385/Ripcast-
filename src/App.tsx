@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+const MapTab = lazy(() => import("./MapTab"));
 import { SPOTS } from "./data/spots";
 import { SPECIES } from "./data/species";
 import { REGS } from "./data/regs";
@@ -56,11 +55,11 @@ export default function App() {
       {err && <div className="banner warn">{err}</div>}
       {picker && <Picker favs={favs} onClose={() => setPicker(false)} onPick={(p) => { setPlace(p); setPicker(false); }} onRemoveFav={(p) => setFavs(favs.filter((f) => f.name !== p.name))} />}
       <main key={tab} className="fade">
-        {!shown && !err && <div className="card center">Loading live conditions…</div>}
+        {!shown && !err && <><div className="skel card-h" /><div className="skel card-h tall" /><div className="skel card-h" /></>}
         {shown && tab === "today" && <Today f={shown} stale={shown.place.name !== place.name} />}
         {shown && tab === "week" && <Week f={shown} />}
         {tab === "where" && <Where place={place} onMap={(id) => { setFocus(id); setTab("map"); }} />}
-        {tab === "map" && <MapTab place={place} focus={focus} onPick={(p) => { setPlace(p); setTab("today"); }} />}
+        {tab === "map" && <Suspense fallback={<div className="skel map" />}><MapTab place={place} focus={focus} onPick={(p) => { setPlace(p); setTab("today"); }} /></Suspense>}
         {tab === "log" && <Log place={place} />}
         {tab === "rules" && <Rules />}
         <p className="muted small center foot">Weather & marine data: <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo.com</a> (CC BY 4.0) · Map © OpenStreetMap</p>
@@ -103,7 +102,7 @@ function Picker({ favs, onPick, onClose, onRemoveFav }: { favs: Place[]; onPick:
   );
 }
 
-const scoreCol = (n: number) => n >= 75 ? "#8fd1a4" : n >= 60 ? "#b9d6a0" : n >= 45 ? "#e2c48e" : "#e5a097";
+const scoreCol = (n: number) => n >= 75 ? "#5ee08c" : n >= 60 ? "#9be27a" : n >= 45 ? "#f5b83d" : "#ff8a7a";
 function ScoreBadge({ score, label, size = 96 }: { score: number; label: string; size?: number }) {
   const c = scoreCol(score); const R = 42, L = 2 * Math.PI * R;
   return <div className="score" style={{ width: size, height: size }}>
@@ -124,31 +123,48 @@ const Ico = ({ n }: { n: string }) => <svg className="nav-ico" viewBox="0 0 24 2
 
 
 
-const FEATS: [Tab, string, string][] = [["where", "Locations", "📍"], ["week", "Best times", "🗓️"], ["today", "Weather", "⛅"], ["rules", "Species", "🐟"], ["where", "Tackle & rigs", "🎣"], ["rules", "Tips & rules", "📖"]];
+const BASE = import.meta.env.BASE_URL;
+const SP_FILES: [RegExp, string][] = [[/snapper/i, "snapper"], [/squid|calamari/i, "squid"], [/whiting/i, "whiting"], [/garfish/i, "garfish"], [/flathead/i, "flathead"], [/mulloway/i, "mulloway"], [/bream/i, "bream"], [/perch/i, "estuary-perch"]];
+export const spImg = (name: string) => { const m = SP_FILES.find(([r]) => r.test(name)); return m ? `${BASE}sp/${m[1]}.webp` : null; };
+const SpThumb = ({ name, size = 56 }: { name: string; size?: number }) => { const u = spImg(name);
+  return <span className="thumb" style={{ width: size, height: size * 0.75 }}>{u ? <img src={u} alt="" loading="lazy" decoding="async" width={size} height={Math.round(size * 0.75)} /> : <svg viewBox="0 0 24 24" width={size * 0.45} height={size * 0.45} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12c3-5 9-6 13-3l5-3v12l-5-3c-4 3-10 2-13-3zM7.5 11h.01" /></svg>}</span>; };
+
+const FI: Record<string, string> = {
+  loc: "M12 21s-6.5-6.2-6.5-11.5a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
+  time: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2",
+  wx: "M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 11 3.5 3.5 0 0 0 7 18zM16 3v1M20.5 5.5l-.7.7M22 10h-1",
+  sp: "M2 12c3-5 9-6 13-3l5-3v12l-5-3c-4 3-10 2-13-3zM7.5 11h.01",
+  rig: "M3 21L17 5M17 5c2 3 3 6 3 9M20 14v1M18.5 16.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0M7 17l2 2",
+  tips: "M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5",
+};
+const FEATS: [Tab, string, string][] = [["where", "Locations", "loc"], ["week", "Best times", "time"], ["today", "Weather", "wx"], ["rules", "Species", "sp"], ["where", "Tackle & rigs", "rig"], ["rules", "Tips & rules", "tips"]];
 const SPECIES_STRIP = ["Snapper", "Squid", "Whiting", "Garfish", "Flathead", "Mulloway", "Bream", "Estuary Perch"];
-const LeapFish = () => <svg className="leap" viewBox="0 0 120 80" aria-hidden="true"><path d="M8 62 C30 20 70 6 100 18 L116 6 L110 26 L118 42 L98 32 C78 52 46 60 8 62Z" fill="#fff"/><path d="M40 40 C56 28 76 22 92 24" stroke="#0b2a55" strokeWidth="3" fill="none"/><circle cx="92" cy="22" r="0" /><circle cx="26" cy="52" r="3.4" fill="#0b2a55"/><path d="M4 70 q20 -6 40 0 t40 0" stroke="#7cc4ff" strokeWidth="3" fill="none" strokeLinecap="round"/></svg>;
+const LeapFish = () => <svg className="leap" viewBox="0 0 64 40" aria-hidden="true"><path d="M4 31C14 12 34 4 50 9l9-6-3 10 5 8-11-4C40 26 22 31 4 31z" fill="#fff" /><circle cx="14" cy="25" r="1.8" fill="#0b2a55" /><path d="M24 20c8-6 16-8 24-7" stroke="#0b2a55" strokeWidth="1.6" fill="none" /><path d="M2 36q8-3 16 0t16 0" stroke="#f5b83d" strokeWidth="2" fill="none" strokeLinecap="round" /></svg>;
 
 function Cover({ f, onStart }: { f: Forecast | null; onStart: (t?: Tab) => void }) {
   const [out, setOut] = useState(false);
   const go = (t?: Tab) => { if (out) return; setOut(true); setTimeout(() => onStart(t), 380); };
   const sc = f ? scoreDay(f, 0) : null;
   const call = !sc ? null : sc.score >= 60 ? "Go" : sc.score >= 45 ? "Maybe" : "Wait";
-  const base = import.meta.env.BASE_URL;
-  return <div className={`cover ${out ? "out" : ""}`} onClick={() => go()} style={{ backgroundImage: `linear-gradient(180deg,#071631cc 0,#07163100 30vw,#07163100 140vw,#071631 180vw),url(${base}cover-hero.webp)` }}>
+  return <div className={`cover ${out ? "out" : ""}`} onClick={() => go()}>
+    <div className="cover-hero" aria-hidden="true"><img src={`${BASE}cover-hero.webp`} alt="" width="1280" height="720" fetchPriority="high" decoding="async" /></div>
     <div className="cover-in">
-      <div className="brand"><h1 className="wordmark">{APP_NAME}</h1><LeapFish /></div>
-      <p className="sub">Land-Based Fishing</p>
-      <p className="tagline">{TAGLINE}</p>
+      <header className="brand-wrap">
+        <div className="brand"><h1 className="wordmark">{APP_NAME}</h1><LeapFish /></div>
+        <p className="sub">Land-Based Fishing</p>
+        <p className="tagline">{TAGLINE}</p>
+      </header>
       <p className="script">Better decisions.<br />More bites.<br />Get out there.</p>
       <div className="spacer" />
-      {sc && <div className="call">
-        <div><p className="eyebrow">Today's call · {f!.place.name}</p><p className={`call-word c-${call}`}>{call}</p><p className="call-sub">{sc.reasons[0]}</p></div>
-        <ScoreBadge {...sc} size={80} /></div>}
-      <button className="start" onClick={(e) => { e.stopPropagation(); go(); }}>Start fishing <span aria-hidden="true">→</span></button>
-      <div className="feats">{FEATS.map(([t, l, i]) => <button key={l} onClick={(e) => { e.stopPropagation(); go(t); }}><span aria-hidden="true">{i}</span>{l}</button>)}</div>
-      <p className="eyebrow center">Your Victorian land-based fishing assistant</p>
-      <div className="strip">{SPECIES_STRIP.map((n, i) => <div key={n} className="sp"><i style={{ backgroundImage: `url(${base}species.webp)`, backgroundPosition: `${(i / 7) * 100}% 0` }} /><small>{n}</small></div>)}</div>
-      <p className="places">Port Phillip Bay | Yarra | Maribyrnong | Geelong</p>
+      <div className="call" aria-live="polite">
+        {sc ? <><div className="call-txt"><p className="eyebrow">Today's call · {f!.place.name}</p><p className={`call-word c-${call}`}>{call}</p><p className="call-sub">{sc.reasons[0]}</p></div>
+          <ScoreBadge {...sc} size={78} /></> : <div className="call-txt"><p className="eyebrow">Today's call</p><div className="skel line" /><div className="skel line short" /></div>}
+      </div>
+      <button className="start" onClick={(e) => { e.stopPropagation(); go(); }}>Start fishing<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>
+      <nav className="feats" aria-label="Shortcuts">{FEATS.map(([t, l, i]) => <button key={l} onClick={(e) => { e.stopPropagation(); go(t); }}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={FI[i]} /></svg>{l}</button>)}</nav>
+      <p className="kicker">Your Victorian land-based fishing assistant</p>
+      <div className="strip">{SPECIES_STRIP.map((n) => <figure key={n} className="sp"><img src={spImg(n)!} alt="" loading="lazy" decoding="async" width="308" height="231" /><figcaption>{n}</figcaption></figure>)}</div>
+      <p className="places">Port Phillip Bay <i>|</i> Yarra <i>|</i> Maribyrnong <i>|</i> Geelong</p>
     </div>
   </div>;
 }
@@ -245,29 +261,6 @@ function Week({ f }: { f: Forecast }) {
     <p className="muted small center">The fishing score is a simple guide combining wind, pressure, moon, feeding times, rain and swell. It's not a guarantee!</p></>;
 }
 
-function MapTab({ place, focus, onPick }: { place: Place; focus: string | null; onPick: (p: Place) => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!ref.current) return;
-    const map = L.map(ref.current).setView([place.lat, place.lon], 10);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
-    L.circleMarker([place.lat, place.lon], { radius: 9, color: "#38bdf8", fillOpacity: 0.8 }).addTo(map).bindPopup(`You: ${place.name}`);
-    SPOTS.forEach((s) => {
-      const div = document.createElement("div");
-      div.innerHTML = `<b>${s.name}</b><br/>${s.noTake ? "⛔ No fishing – marine park/sanctuary" : `${s.kind}${s.depth ? " · " + s.depth : ""}<br/><small>${s.tips}</small><br/>`}`;
-      if (!s.noTake) { const b = document.createElement("button"); b.className = "btn"; b.textContent = "Show conditions here"; b.onclick = () => onPick({ name: s.name, lat: s.lat, lon: s.lon }); div.appendChild(b); }
-      const mk = L.circleMarker([s.lat, s.lon], { radius: 7, color: s.noTake ? "#ef4444" : "#22c55e", fillOpacity: 0.7 }).addTo(map).bindPopup(div);
-      if (s.id === focus) { map.setView([s.lat, s.lon], 14); mk.openPopup(); }
-    });
-    map.on("click", (e: L.LeafletMouseEvent) => {
-      const div = document.createElement("div"); const b = document.createElement("button"); b.className = "btn"; b.textContent = "Check conditions here";
-      b.onclick = () => onPick({ name: `Map spot ${e.latlng.lat.toFixed(3)}, ${e.latlng.lng.toFixed(3)}`, lat: +e.latlng.lat.toFixed(4), lon: +e.latlng.lng.toFixed(4) });
-      div.appendChild(b); L.popup().setLatLng(e.latlng).setContent(div).openOn(map);
-    });
-    return () => { map.remove(); };
-  }, [place, focus, onPick]);
-  return <><div ref={ref} className="map" /><p className="muted small">🟢 fishing spot · 🔴 no-fishing sanctuary · Tap anywhere on the map to check conditions there.</p></>;
-}
 
 type Catch = { id: string; species: string; cm?: number; kept: boolean; notes: string; at: string; where: string };
 function Log({ place }: { place: Place }) {
@@ -281,7 +274,7 @@ function Log({ place }: { place: Place }) {
     <form className="card" onSubmit={add}>
       <h2>Add a catch</h2>
       <label>Fish<select value={sp} onChange={(e) => setSp(e.target.value)}>{SPECIES.map((s) => <option key={s.slug}>{s.name}</option>)}<option>Other</option></select></label>
-      {info && <p className="muted small">Min size: {info.minCm ? `${info.minCm} cm` : "none"} · Bag limit: {info.bag}{info.bagNote ? ` (${info.bagNote})` : ""}</p>}
+      {<div className="row" style={{ justifyContent: "flex-start", gap: 12 }}><SpThumb name={sp} size={84} /><p className="muted small" style={{ margin: 0 }}>{info ? <>Min size: {info.minCm ? `${info.minCm} cm` : "none"} · Bag limit: {info.bag}{info.bagNote ? ` (${info.bagNote})` : ""}</> : "Pick a fish to see its legal size."}</p></div>}
       <label>Length (cm)<input inputMode="decimal" value={cm} onChange={(e) => setCm(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="optional" /></label>
       {tooSmall && <div className="banner danger">Under the {info!.minCm} cm legal size – please release it.</div>}
       <label className="check"><input type="checkbox" checked={kept} onChange={(e) => setKept(e.target.checked)} /> I kept it</label>
@@ -289,8 +282,8 @@ function Log({ place }: { place: Place }) {
       <p className="muted small">Spot: {place.name}</p>
       <button className="big">Save catch</button>
     </form>
-    {list.length === 0 && <p className="muted center">No catches yet. They're saved on this phone only.</p>}
-    {list.map((c) => <div key={c.id} className="card row"><div><b>{c.species}{c.cm ? ` · ${c.cm} cm` : ""}</b> {c.kept ? "🧺 kept" : "↩ released"}<div className="muted small">{new Date(c.at).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })} · {c.where}</div>{c.notes && <div className="small">{c.notes}</div>}</div>
+    {list.length === 0 && <div className="card empty"><SpThumb name="Snapper" size={120} /><h3>No catches yet</h3><p className="muted small">Your first fish will show up here. Catches are saved on this phone only.</p></div>}
+    {list.map((c) => <div key={c.id} className="card row catch"><SpThumb name={c.species} size={64} /><div className="grow"><b>{c.species}{c.cm ? ` · ${c.cm} cm` : ""}</b> {c.kept ? "🧺 kept" : "↩ released"}<div className="muted small">{new Date(c.at).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })} · {c.where}</div>{c.notes && <div className="small">{c.notes}</div>}</div>
       <button className="icon" aria-label="Delete" onClick={() => confirm("Delete this catch?") && setList(list.filter((x) => x.id !== c.id))}>🗑</button></div>)}
   </>;
 }
@@ -306,7 +299,7 @@ function Rules() {
     </section>
     <About />
     <section className="card"><h3>Quick reference (from the {REGS.source} – may be out of date)</h3>
-      {sorted.map((s) => <div key={s.slug} className="period"><b>{s.name}</b><span>{s.minCm ? `min ${s.minCm} cm` : "no min"} · bag {s.bag}</span></div>)}
+      {sorted.map((s) => <div key={s.slug} className="sprow"><SpThumb name={s.name} /><b>{s.name}</b><span>{s.minCm ? `min ${s.minCm} cm` : "no min"} · bag {s.bag}</span></div>)}
     </section>
   </>;
 }
@@ -333,7 +326,7 @@ function Where({ place, onMap }: { place: Place; onMap: (id: string) => void }) 
       <p className="muted small">Distance from: <b>{origin.name}</b> · <button className="linkish" onClick={gps}>use my location</button> {gpsMsg}</p>
     </section>
     {err && <div className="banner warn">{err}</div>}
-    {!raw && !err && <div className="card center">Checking wind at every spot…</div>}
+    {!raw && !err && <><p className="muted small center">Checking wind at every spot…</p><div className="skel card-h tall" /><div className="skel card-h tall" /></>}
     {raw && !ranked.length && <div className="card center">No spots that close. Try a bigger distance.</div>}
     {ranked.slice(0, 5).map((r, i) => <section key={r.spot.id} className={`card wcard w-${r.badge}`}>
       <div className="row"><h3>{i + 1}. {r.spot.name}</h3><span className={`badge b-${r.badge}`}>{r.badge === "Good" ? "👍 " : r.badge === "OK" ? "👌 " : "👎 "}{r.badge}</span></div>
@@ -351,7 +344,7 @@ function Where({ place, onMap }: { place: Place; onMap: (id: string) => void }) 
       <h2>🐟 What's biting in {MONTHS[m - 1]}</h2>
       <p className="muted small">General guide for Port Phillip, Western Port and the Surf Coast from land.</p>
       {BITING.map((b) => { const on = b.months.includes(m), pk = b.peak?.includes(m), closed = b.fish === "Murray cod" && m >= 9 && m <= 11;
-        return <div key={b.fish} className={`bite ${on && !closed ? "" : "off"}`}><b>{closed ? "⛔" : pk ? "🔥" : on ? "✅" : "➖"} {b.fish}</b><span>{closed ? "Closed season" : pk ? "Best time now" : on ? "In season" : "Quiet now"}</span><small>{b.note}</small></div>; })}
+        return <div key={b.fish} className={`bite ${on && !closed ? "" : "off"}`}><SpThumb name={b.fish} size={52} /><b>{closed ? "⛔" : pk ? "🔥" : on ? "✅" : "➖"} {b.fish}</b><span>{closed ? "Closed season" : pk ? "Best time now" : on ? "In season" : "Quiet now"}</span><small>{b.note}</small></div>; })}
     </section>
     <section className="card">
       <h2>📰 Latest reports</h2>
@@ -363,7 +356,7 @@ function Where({ place, onMap }: { place: Place; onMap: (id: string) => void }) 
 
 function About() {
   return <section className="card" id="about"><h2>ℹ️ About {APP_NAME}</h2>
-    <p className="small"><b>Privacy:</b> your location is only used on this phone to find nearby spots and is never sent to us. Your catch log and saved spots are stored only on this device. There are no accounts, ads or trackers. Weather requests go to Open-Meteo with the spot's coordinates.</p>
+    <p className="small"><b>Privacy:</b> your location is only used on this phone to find nearby spots and is never sent to us. Your catch log and saved spots are stored only on this device. There are no accounts, ads or trackers. Weather requests go to Open-Meteo with the spot's coordinates. Full policy: <a href={BASE + "privacy.html"} target="_blank" rel="noreferrer">privacy page</a>.</p>
     <p className="small"><b>Disclaimer:</b> scores, tides and spot picks are a guide only, not a guarantee. Always check the <a href="http://www.bom.gov.au/vic/" target="_blank" rel="noreferrer">Bureau of Meteorology</a> forecasts and warnings and the <a href="https://vfa.vic.gov.au/" target="_blank" rel="noreferrer">VFA</a> rules before you go. Fish safely — wear a life jacket on rocks, never fish alone in big swell, and watch the tide.</p>
     <p className="small"><b>Credits:</b> weather & marine data by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo.com</a> (CC BY 4.0). Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors.</p>
   </section>;

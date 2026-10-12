@@ -34,7 +34,7 @@ Weather data from Open-Meteo.com (CC BY 4.0). Map © OpenStreetMap contributors.
 ## Privacy (Data safety / App Privacy labels)
 - Data collected: **None**. Location is used on the device only, and coordinates are sent to Open-Meteo to fetch the weather. It is not linked to the user and not stored by us.
 - Catch log: stored locally on the device only. No account. No tracking.
-- Privacy policy URL: required. Host a page (for example https://nicco385.github.io/Ripcast-/privacy.html) using the About/Privacy text in the app.
+- Privacy policy URL: https://nicco385.github.io/Ripcast-/privacy.html
 
 ## Screenshots needed
 - Play: 2 to 8 phone screenshots (1080×1920 or similar), a 512×512 icon (public/icon-512.png) and a 1024×500 feature graphic.
