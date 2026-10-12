@@ -47,7 +47,7 @@ export default function App() {
     <div className="app">
       {cover && <Cover f={data} onStart={() => setCover(false)} />}
       <header className="top">
-        <button className="place" onClick={() => setPicker(true)} aria-label="Change location">
+        <button className="place" onClick={() => setPicker(true)} aria-label={`📍 ${place.name} change`}>
           📍 <span>{place.name}</span> <small>change</small>
         </button>
         <button className="icon" onClick={toggleFav} aria-label={isFav ? "Remove from favourites" : "Save as favourite"}>{isFav ? "★" : "☆"}</button>
@@ -66,7 +66,7 @@ export default function App() {
         <p className="muted small center foot">Weather & marine data: <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo.com</a> (CC BY 4.0) · Map © OpenStreetMap</p>
       </main>
       <nav className="tabs">
-        {([["today", "Today"], ["where", "Where"], ["week", "7 days"], ["map", "Map"], ["log", "Catches"], ["rules", "Rules"]] as const).map(([k, l]) => (
+        {([["today", "Today"], ["where", "Where"], ["week", "7 days"], ["map", "Map"], ["log", "Catches"], ["rules", "Info"]] as const).map(([k, l]) => (
           <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}><Ico n={k} />{l}</button>
         ))}
       </nav>
@@ -103,7 +103,7 @@ function Picker({ favs, onPick, onClose, onRemoveFav }: { favs: Place[]; onPick:
   );
 }
 
-const scoreCol = (n: number) => n >= 75 ? "#22c55e" : n >= 60 ? "#a3e635" : n >= 45 ? "#fbbf24" : "#f87171";
+const scoreCol = (n: number) => n >= 75 ? "#8fd1a4" : n >= 60 ? "#b9d6a0" : n >= 45 ? "#e2c48e" : "#e5a097";
 function ScoreBadge({ score, label, size = 96 }: { score: number; label: string; size?: number }) {
   const c = scoreCol(score); const R = 42, L = 2 * Math.PI * R;
   return <div className="score" style={{ width: size, height: size }}>
@@ -122,24 +122,27 @@ const ICONS: Record<string, string> = {
 };
 const Ico = ({ n }: { n: string }) => <svg className="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={ICONS[n]} /></svg>;
 
+const Hook = ({ size = 72 }: { size?: number }) => <svg className="hook" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+  <path fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" d="M18 4v15.5a6.2 6.2 0 1 1-7-5.6" />
+  <path fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" d="M9.2 16.4l3.4-2.8" /></svg>;
+
 function Cover({ f, onStart }: { f: Forecast | null; onStart: () => void }) {
   const [out, setOut] = useState(false);
-  const go = () => { setOut(true); setTimeout(onStart, 450); };
+  const go = () => { if (out) return; setOut(true); setTimeout(onStart, 380); };
   const sc = f ? scoreDay(f, 0) : null;
-  return <div className={`cover ${out ? "out" : ""}`} onClick={go} role="button" aria-label="Start">
-    <div className="sun" />
-    <svg className="waves" viewBox="0 0 1440 320" preserveAspectRatio="none">
-      <path className="w1" d="M0 160 Q180 110 360 160 T720 160 T1080 160 T1440 160 T1800 160 T2160 160 T2880 160 V320 H0Z" />
-      <path className="w2" d="M0 200 Q180 150 360 200 T720 200 T1080 200 T1440 200 T1800 200 T2160 200 T2880 200 V320 H0Z" />
-      <path className="w3" d="M0 240 Q180 200 360 240 T720 240 T1080 240 T1440 240 T1800 240 T2160 240 T2880 240 V320 H0Z" />
-    </svg>
+  const call = !sc ? null : sc.score >= 60 ? "Go" : sc.score >= 45 ? "Maybe" : "Wait";
+  return <div className={`cover ${out ? "out" : ""}`} onClick={go}>
     <div className="cover-in">
-      <img src={import.meta.env.BASE_URL + "icon-192.png"} alt="" className="cover-logo" />
-      <h1>{APP_NAME}</h1>
-      <p className="tag">{TAGLINE}</p>
-      {sc && <div className="cover-score"><ScoreBadge {...sc} size={120} /><div><b>Today's fishing</b><small>{f!.place.name}</small></div></div>}
-      <button className="start" onClick={(e) => { e.stopPropagation(); go(); }}>🎣 Start fishing</button>
-      <small className="skip">Tap anywhere to skip</small>
+      <div className="cover-mark"><Hook size={64} /></div>
+      <h1 className="wordmark">{APP_NAME}</h1>
+      <p className="eyebrow">Land-based fishing · Victoria</p>
+      <p className="tag">{TAGLINE}. Pick a fish and a shore — wind, tide and how you get there decide the rest.</p>
+      {sc && <div className="call">
+        <div className="call-top"><div><p className="eyebrow">Today's land-based call</p><p className={`call-word c-${call}`}>{call}</p></div><ScoreBadge {...sc} size={84} /></div>
+        <p className="call-sub">{f!.place.name} · {sc.reasons[0]}</p>
+      </div>}
+      <button className="start" onClick={(e) => { e.stopPropagation(); go(); }}>Start fishing <span aria-hidden="true">→</span></button>
+      <small className="skip">Tap anywhere to continue</small>
     </div>
   </div>;
 }
@@ -295,6 +298,7 @@ function Rules() {
       <a className="big link-btn alt" href="https://vfa.vic.gov.au/recreational-fishing/fishing-licence" target="_blank" rel="noreferrer">Buy a fishing licence ↗</a>
       <p className="small">{REGS.licence}</p><p className="small">{REGS.parks}</p><p className="small">{REGS.report}</p>
     </section>
+    <About />
     <section className="card"><h3>Quick reference (from the {REGS.source} – may be out of date)</h3>
       {sorted.map((s) => <div key={s.slug} className="period"><b>{s.name}</b><span>{s.minCm ? `min ${s.minCm} cm` : "no min"} · bag {s.bag}</span></div>)}
     </section>
@@ -349,4 +353,12 @@ function Where({ place, onMap }: { place: Place; onMap: (id: string) => void }) 
         <a key={u} className="big link-btn alt" href={u} target="_blank" rel="noreferrer">{t} ↗</a>)}
     </section>
   </>;
+}
+
+function About() {
+  return <section className="card" id="about"><h2>ℹ️ About {APP_NAME}</h2>
+    <p className="small"><b>Privacy:</b> your location is only used on this phone to find nearby spots and is never sent to us. Your catch log and saved spots are stored only on this device. There are no accounts, ads or trackers. Weather requests go to Open-Meteo with the spot's coordinates.</p>
+    <p className="small"><b>Disclaimer:</b> scores, tides and spot picks are a guide only, not a guarantee. Always check the <a href="http://www.bom.gov.au/vic/" target="_blank" rel="noreferrer">Bureau of Meteorology</a> forecasts and warnings and the <a href="https://vfa.vic.gov.au/" target="_blank" rel="noreferrer">VFA</a> rules before you go. Fish safely — wear a life jacket on rocks, never fish alone in big swell, and watch the tide.</p>
+    <p className="small"><b>Credits:</b> weather & marine data by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo.com</a> (CC BY 4.0). Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors.</p>
+  </section>;
 }
