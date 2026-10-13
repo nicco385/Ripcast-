@@ -175,3 +175,8 @@ button{-webkit-tap-highlight-color:transparent}
 input,select{background:#0a1d3d;border-color:#ffffff26;color:#fff;min-height:52px}input::placeholder{color:#8ea3c4}
 input:focus,select:focus{outline:2px solid var(--gold);border-color:transparent}
 label.check input{accent-color:var(--gold)}
+/* species tiles: 16:9, whole fish visible */
+.sp img{aspect-ratio:16/9;object-fit:contain;background:#081a36}
+.thumb img{object-fit:contain;background:#081a36}
+.strip{grid-template-columns:repeat(2,1fr);gap:10px}.sp figcaption{font-size:12px}
+@media (min-width:420px){.strip{grid-template-columns:repeat(4,1fr)}.sp figcaption{font-size:10.5px}}
