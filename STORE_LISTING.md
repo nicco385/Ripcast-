@@ -53,6 +53,8 @@ Weather data from Open-Meteo.com (CC BY 4.0). Map and marine park outlines © Op
 5. Set Data safety to match the Privacy section above (no data collected / shared by us). Link the privacy policy: https://nicco385.github.io/Ripcast-/privacy.html
 6. Add a support email (or support URL) - Anthony still needs to choose this.
 7. For a web app like this, the usual path is a **Trusted Web Activity (TWA)** wrapper that opens the live site. That needs a small Android package signed and uploaded as an AAB. Say when you want that built and we will do it together.
-8. Complete content rating (Everyone), target Australia, then submit for review.
+8. Complete content rating (Everyone) and target Australia.
+9. **Testing rule for new personal accounts (checked 14 Oct 2026):** Google makes new personal developer accounts run a closed test first. At least 12 testers (people with Android phones and a Google account, for example fishing mates and family) must join the test and stay joined for 14 days in a row before you can apply to go public. Anyone who leaves and rejoins restarts their 14 days. Source: [Google Play testing requirements](https://support.google.com/googleplay/android-developer/answer/14151465).
+10. After the 14 days, apply for production access in Play Console (it asks a few questions about the test), then Google reviews the app.
 
 You can keep using the phone home-screen link meanwhile; Play is optional and does not change the live site.
