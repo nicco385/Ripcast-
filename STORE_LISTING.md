@@ -44,3 +44,15 @@ Weather data from Open-Meteo.com (CC BY 4.0). Map and marine park outlines © Op
 
 ## Support
 - Support URL / contact email: needed from Anthony (for example the GitHub repo or a dedicated email).
+
+## Getting onto Google Play (simple checklist)
+1. Create a Google account (or use yours), then join the [Google Play Console](https://play.google.com/console/) (one-off developer fee, paid to Google).
+2. Create a new app named **Choc's Spot**, free, category Sports.
+3. Paste the short description and full description from this file.
+4. Upload the icon, feature graphic, and phone screenshots from the `store/` folder.
+5. Set Data safety to match the Privacy section above (no data collected / shared by us). Link the privacy policy: https://nicco385.github.io/Ripcast-/privacy.html
+6. Add a support email (or support URL) - Anthony still needs to choose this.
+7. For a web app like this, the usual path is a **Trusted Web Activity (TWA)** wrapper that opens the live site. That needs a small Android package signed and uploaded as an AAB. Say when you want that built and we will do it together.
+8. Complete content rating (Everyone), target Australia, then submit for review.
+
+You can keep using the phone home-screen link meanwhile; Play is optional and does not change the live site.
