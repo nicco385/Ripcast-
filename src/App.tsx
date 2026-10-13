@@ -124,7 +124,7 @@ const Ico = ({ n }: { n: string }) => <svg className="nav-ico" viewBox="0 0 24 2
 
 
 const BASE = import.meta.env.BASE_URL;
-const SP_FILES: [RegExp, string][] = [[/snapper/i, "snapper"], [/squid|calamari/i, "squid"], [/whiting/i, "whiting"], [/garfish/i, "garfish"], [/flathead/i, "flathead"], [/mulloway/i, "mulloway"], [/bream/i, "bream"], [/perch/i, "estuary-perch"]];
+const SP_FILES: [RegExp, string][] = [[/snapper/i, "snapper"], [/squid|calamari/i, "squid"], [/whiting/i, "whiting"], [/garfish/i, "garfish"], [/flathead/i, "flathead"], [/mulloway/i, "mulloway"], [/bream/i, "bream"], [/perch/i, "estuary-perch"], [/salmon/i, "salmon"], [/trevally/i, "trevally"], [/kingfish/i, "kingfish"], [/gummy/i, "gummy-shark"], [/elephant/i, "elephant-fish"], [/snook|pike/i, "snook"], [/leatherjacket/i, "leatherjacket"], [/murray cod/i, "murray-cod"]];
 export const spImg = (name: string) => { const m = SP_FILES.find(([r]) => r.test(name)); return m ? `${BASE}sp/${m[1]}.webp` : null; };
 const SpThumb = ({ name, size = 56 }: { name: string; size?: number }) => { const u = spImg(name);
   return <span className="thumb" style={{ width: size, height: Math.round(size * 0.5625) }}>{u ? <img src={u} alt="" loading="lazy" decoding="async" width={size} height={Math.round(size * 0.5625)} /> : <svg viewBox="0 0 24 24" width={size * 0.45} height={size * 0.45} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12c3-5 9-6 13-3l5-3v12l-5-3c-4 3-10 2-13-3zM7.5 11h.01" /></svg>}</span>; };
