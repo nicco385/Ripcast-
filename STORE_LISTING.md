@@ -1,8 +1,8 @@
-# Choc's Spot – store listing draft
+# Choc's Spot – store listing (v1.0.0)
 
 **App name:** Choc's Spot
 **Short description (Google Play, max 80 chars):**
-Best land-based fishing spots in Victoria for today's wind, tide & waves.
+Best land-based fishing spots in Victoria for today's wind, tide & weather.
 
 **Subtitle (App Store, max 30 chars):** Know where they're biting
 
@@ -15,19 +15,19 @@ What you get:
 • A fishing score out of 100 for today and the next 6 days, with the reasons behind it
 • Where to fish: the top piers, beaches and rocks for the current wind and waves, with the best time to go and what to target
 • Live weather, wind and gusts in knots, rain and air pressure
-• Waves, swell and sea temperature
+• Ocean waves, swell and sea temperature (inside Port Phillip Bay, where the wave model isn't reliable, it tells you to go by the wind instead)
 • Sunrise, sunset, moon phase and the best feeding times (solunar)
-• Approximate tides, with links to the official BOM tide tables
+• Approximate tides where the model is reliable, with links to the official BOM tide tables
 • Safety warnings for strong wind, storms and big swell
 • What's biting this month, and links to the latest local fishing reports
-• A map of 49 spots, with marine sanctuaries marked
+• A map of 43 land-based spots and boat marks, with every marine park and sanctuary around Port Phillip, Western Port and the nearby coast outlined in red (no fishing). The app never suggests a spot inside one.
 • A catch log that warns you when a fish is under the legal size
-• Size and bag limits for 17 species, with links to the VFA rules and fishing licences
+• Size and bag limits for 15 species, checked against the VFA on 13 October 2026, with links to the official rules and fishing licences
 
 Private by design: there are no accounts, ads or tracking. Your location and your catch log stay on your phone.
 
 The scores are a guide only. Always check BOM warnings and VFA rules, and fish safely.
-Weather data from Open-Meteo.com (CC BY 4.0). Map © OpenStreetMap contributors.
+Weather data from Open-Meteo.com (CC BY 4.0). Map and marine park outlines © OpenStreetMap contributors (ODbL).
 
 **Keywords (App Store, 100 chars):** fishing,tides,wind,Melbourne,Victoria,Port Phillip,pier,snapper,squid,whiting,salmon,forecast
 
@@ -36,10 +36,11 @@ Weather data from Open-Meteo.com (CC BY 4.0). Map © OpenStreetMap contributors.
 - Catch log: stored locally on the device only. No account. No tracking.
 - Privacy policy URL: https://nicco385.github.io/Ripcast-/privacy.html
 
-## Screenshots needed
-- Play: 2 to 8 phone screenshots (1080×1920 or similar), a 512×512 icon (public/icon-512.png) and a 1024×500 feature graphic.
-- App Store: 6.7"/6.9" iPhone screenshots (1290×2796), plus 6.5" if required; 1024×1024 icon with no transparency.
-- Suggested set: Cover, Today, Where to fish, 7 days, Map, Catch log, Rules/Info. The drafts in /workspace/ripcast/shot-*.png are 780×1688 and need re-capturing at store sizes.
+## Store assets (ready, in /workspace/ripcast/store/)
+- `icon-512.png` – 512×512 Play icon
+- `feature-graphic-1024x500.png` – Play feature graphic
+- `screen-1-cover.png` … `screen-7-info.png` – 1080×1920 phone screenshots: Cover, Today, Where to fish, 7 days, Map, Catches, Info
+- Still needed for the App Store only: 1290×2796 iPhone screenshots and a 1024×1024 icon with no transparency (can be made from the same pages if an iOS build goes ahead).
 
 ## Support
 - Support URL / contact email: needed from Anthony (for example the GitHub repo or a dedicated email).

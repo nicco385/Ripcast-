@@ -33,7 +33,8 @@ To rename the app, edit `APP_NAME` in `src/config.ts`. The cover, title and mani
 
 ## Credits
 - Weather & marine data: [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0)
-- Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, via Leaflet
-- Rules summary: Victorian Fisheries Authority. Always check the official guide.
+- Map data and marine park / sanctuary outlines © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL), via Leaflet
+- Fonts: Barlow Condensed and Outfit (SIL Open Font License), bundled with the app
+- Rules summary: Victorian Fisheries Authority, checked 13 October 2026. Always check the official guide.
 
 *Scores and tides are a guide only. Check BOM warnings and VFA rules, and fish safely.*

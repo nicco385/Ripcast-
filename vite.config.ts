@@ -1,9 +1,9 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
-import { APP_NAME } from "./src/config";
+import { APP_NAME, APP_VERSION } from "./src/config";
 
 const manifest = () => JSON.stringify({
-  name: `${APP_NAME} – fishing conditions`, short_name: APP_NAME, description: "Best land-based fishing spots for today's conditions in Victoria.", categories: ["sports", "weather"], lang: "en-AU", id: "./", start_url: "./", scope: "./", display: "standalone",
+  name: `${APP_NAME} – fishing conditions`, short_name: APP_NAME, version: APP_VERSION, description: "Best land-based fishing spots for today's conditions in Victoria.", categories: ["sports", "weather"], lang: "en-AU", id: "./", start_url: "./", scope: "./", display: "standalone",
   background_color: "#071631", theme_color: "#071631",
   icons: [
     { src: "icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },

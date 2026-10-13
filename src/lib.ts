@@ -15,8 +15,30 @@ export type Day = {
 export type Forecast = {
   place: Place; fetchedAt: number; tz: string;
   now: { temp: number; feels: number; code: number; wind: number; gust: number; dir: number; pressure: number; rain: number; cloud: number; time: string };
-  hours: Hour[]; days: Day[]; hasMarine: boolean;
+  hours: Hour[]; days: Day[]; hasMarine: boolean; inBay?: boolean;
 };
+
+
+// Port Phillip Bay (incl. Corio Bay) outline, rough. Open-Meteo's wave model does not resolve waves inside the bay,
+// and for many bay points it snaps to an ocean grid cell outside the Heads, so bay waves and those tides are not trustworthy.
+const PPB: [number, number][] = [[-37.84,144.90],[-37.835,144.97],[-37.87,144.99],[-37.95,145.02],[-38.00,145.08],[-38.08,145.135],[-38.15,145.135],[-38.22,145.05],[-38.30,145.00],[-38.33,144.975],[-38.36,144.90],[-38.37,144.78],[-38.335,144.73],[-38.30,144.66],[-38.27,144.665],[-38.22,144.665],[-38.15,144.675],[-38.11,144.62],[-38.10,144.52],[-38.14,144.43],[-38.165,144.355],[-38.10,144.34],[-38.03,144.42],[-37.98,144.55],[-37.95,144.66],[-37.90,144.78],[-37.86,144.84]];
+export function inBay(lat: number, lon: number, pad = 0) {
+  let c = false;
+  for (let i = 0, k = PPB.length - 1; i < PPB.length; k = i++) {
+    const [yi, xi] = PPB[i], [yk, xk] = PPB[k];
+    if ((yi > lat) !== (yk > lat) && lon < ((xk - xi) * (lat - yi)) / (yk - yi) + xi) c = !c;
+  }
+  if (c || !pad) return c;
+  // also count points within ~pad km of the outline (rivers, piers on the shore)
+  return PPB.some(([y, x]) => Math.hypot((y - lat) * 111, (x - lon) * 88) < pad);
+}
+/** Which marine fields can be trusted for a point, given the grid cell the marine API actually used. */
+export function marineTrust(lat: number, lon: number, cellLat?: number, cellLon?: number) {
+  if (cellLat == null || cellLon == null) return { waves: false, tide: false, temp: false };
+  const snapKm = Math.hypot((cellLat - lat) * 111, (cellLon - lon) * 88);
+  const bayPoint = inBay(lat, lon, 4), bayCell = inBay(cellLat, cellLon);
+  return { waves: !bayPoint && snapKm < 12, tide: bayPoint ? bayCell : snapKm < 12, temp: snapKm < 25 && bayPoint === bayCell };
+}
 
 const j = async (u: string) => {
   const r = await fetch(u);
@@ -35,6 +57,7 @@ export async function getForecast(place: Place): Promise<Forecast> {
     `&hourly=wave_height,swell_wave_height,swell_wave_period,swell_wave_direction,sea_level_height_msl,sea_surface_temperature&timezone=auto&forecast_days=7&past_days=1`;
   const [wd, md] = await Promise.all([j(w), j(m).catch(() => null)]);
   const H = wd.hourly, mh = md?.hourly;
+  const tr = marineTrust(lat, lon, md?.latitude, md?.longitude);
   const midx = new Map<string, number>((mh?.time ?? []).map((t: string, i: number) => [t, i]));
   const hours: Hour[] = H.time.map((t: string, i: number) => {
     const k = midx.get(t);
@@ -42,8 +65,8 @@ export async function getForecast(place: Place): Promise<Forecast> {
     return {
       time: t, temp: H.temperature_2m[i], code: H.weather_code[i], wind: H.wind_speed_10m[i], gust: H.wind_gusts_10m[i],
       dir: H.wind_direction_10m[i], rainChance: H.precipitation_probability[i] ?? 0, rain: H.precipitation[i] ?? 0, pressure: H.pressure_msl[i],
-      wave: g(mh?.wave_height), swell: g(mh?.swell_wave_height), swellPeriod: g(mh?.swell_wave_period), swellDir: g(mh?.swell_wave_direction),
-      sea: g(mh?.sea_level_height_msl), seaTemp: g(mh?.sea_surface_temperature),
+      wave: tr.waves ? g(mh?.wave_height) : null, swell: tr.waves ? g(mh?.swell_wave_height) : null, swellPeriod: tr.waves ? g(mh?.swell_wave_period) : null, swellDir: tr.waves ? g(mh?.swell_wave_direction) : null,
+      sea: tr.tide ? g(mh?.sea_level_height_msl) : null, seaTemp: tr.temp ? g(mh?.sea_surface_temperature) : null,
     };
   });
   const D = wd.daily;
@@ -56,7 +79,7 @@ export async function getForecast(place: Place): Promise<Forecast> {
   return {
     place, fetchedAt: Date.now(), tz: wd.timezone,
     now: { temp: c.temperature_2m, feels: c.apparent_temperature, code: c.weather_code, wind: c.wind_speed_10m, gust: c.wind_gusts_10m, dir: c.wind_direction_10m, pressure: c.pressure_msl, rain: c.precipitation, cloud: c.cloud_cover, time: c.time },
-    hours, days, hasMarine: hours.some((h) => h.wave != null || h.sea != null),
+    hours, days, hasMarine: hours.some((h) => h.wave != null || h.sea != null || h.seaTemp != null), inBay: inBay(lat, lon, 4),
   };
 }
 
@@ -189,7 +212,7 @@ export function safety(f: Forecast): string[] {
   const out: string[] = [];
   const n = f.now;
   if (n.gust >= 34) out.push(`Gale-force gusts right now (${Math.round(n.gust)} kn / ${kmh(n.gust)} km/h). Don't go out in a boat.`);
-  else if (n.wind >= 20 || n.gust >= 28) out.push(`Strong wind now (${Math.round(n.wind)} kn, gusts ${Math.round(n.gust)} kn). Small boats and kayaks should stay in.`);
+  else if (n.wind >= 20 || n.gust >= 28) out.push(`Fresh to strong wind now (${Math.round(n.wind)} kn, gusts ${Math.round(n.gust)} kn). Small boats and kayaks should stay in.`);
   const next = f.hours.filter((h) => h.time >= localNowKey(f.tz)).slice(0, 12);
   const big = next.find((h) => h.gust >= 30);
   if (big && !out.length) out.push(`Gusts up to ${Math.round(big.gust)} kn expected around ${hhmm(big.time)}. Plan to be back before then.`);

@@ -7,7 +7,7 @@ import {
   type Forecast, type Place, getForecast, searchPlaces, compass, kmh, hhmm, dayName, weatherText,
   moonInfo, solunar, tidesFrom, scoreDay, safety, localNowKey,
 } from "./lib";
-import { APP_NAME, TAGLINE } from "./config";
+import { APP_NAME, APP_VERSION, TAGLINE } from "./config";
 import { LAND, BITING, getSpotWeather, rankSpot, km, type Rank } from "./where";
 
 const DEFAULT: Place = { name: "Williamstown, VIC", lat: -37.8635, lon: 144.9056 };
@@ -201,6 +201,7 @@ function Today({ f, stale }: { f: Forecast; stale: boolean }) {
           <Stat k="Pressure" v={`${Math.round(n.pressure)} hPa`} s={trend} />
           <Stat k="Rain chance" v={`${cur?.rainChance ?? 0}%`} s={`${today.rainSum.toFixed(1)} mm today`} />
           {f.hasMarine && cur?.seaTemp != null && <Stat k="Water temp" v={`${cur.seaTemp.toFixed(1)}°`} s="sea surface" />}
+          {f.inBay && <Stat k="Waves" v="Wind chop" s="no swell model inside the bay – go by the wind" />}
           {f.hasMarine && cur?.wave != null && <Stat k="Waves" v={`${cur.wave.toFixed(1)} m`} s={cur.swell != null ? `swell ${cur.swell.toFixed(1)} m${cur.swellPeriod ? `, ${Math.round(cur.swellPeriod)}s` : ""}${cur.swellDir != null ? ` ${compass(cur.swellDir)}` : ""}` : ""} />}
         </div>
         <p className="muted small">Updated {age < 1 ? "just now" : `${age} min ago`} · Open-Meteo</p>
@@ -222,7 +223,7 @@ function Today({ f, stale }: { f: Forecast; stale: boolean }) {
         {tides.length ? <>
           {tides.map((t) => <div key={t.time} className="period"><b>{t.type === "High" ? "⬆ High" : "⬇ Low"} {hhmm(t.time)}</b><span>{dayName(t.time.slice(0, 10), t.time.slice(0, 10) === today.date ? 0 : 1)} · {t.m.toFixed(2)} m</span></div>)}
           <p className="muted small">Approximate – from a computer model of sea level (to the nearest hour), not an official tide table. Check BOM tide tables before boating or crossing bars.</p>
-        </> : <p className="muted">No sea data for this location (it may be inland). Pick a beach, pier or boat ramp to see tides, waves and water temperature.</p>}
+        </> : <p className="muted">{f.inBay ? "The free tide model isn't reliable for this part of the bay, so no estimate is shown. Use the official BOM tide table for the nearest port." : "No sea data for this location (it may be inland). Pick a beach, pier or boat ramp to see tides and water temperature."}</p>}
         <a className="link" href="http://www.bom.gov.au/australia/tides/#!/vic" target="_blank" rel="noreferrer">Official BOM tide tables ↗</a>
       </section>
 
@@ -295,10 +296,10 @@ function Rules() {
       <p>Rules change – always check the official guide before you keep fish.</p>
       <a className="big link-btn" href="https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons" target="_blank" rel="noreferrer">Official size & bag limits (VFA) ↗</a>
       <a className="big link-btn alt" href="https://vfa.vic.gov.au/recreational-fishing/fishing-licence" target="_blank" rel="noreferrer">Buy a fishing licence ↗</a>
-      <p className="small">{REGS.licence}</p><p className="small">{REGS.parks}</p><p className="small">{REGS.report}</p>
+      <p className="small">{REGS.licence}</p><p className="small">{REGS.parks}</p><p className="small">{REGS.fillet}</p><p className="small">{REGS.report}</p>
     </section>
     <About />
-    <section className="card"><h3>Quick reference (from the {REGS.source} – may be out of date)</h3>
+    <section className="card"><h3>Size & bag limits</h3><p className="muted small">Checked against the <a href={REGS.sourceUrl} target="_blank" rel="noreferrer">{REGS.source}</a> on {REGS.checked}. Rules can change – the VFA is the final word.</p>
       {sorted.map((s) => <div key={s.slug} className="sprow"><SpThumb name={s.name} /><b>{s.name}</b><span>{s.minCm ? `min ${s.minCm} cm` : "no min"} · bag {s.bag}</span></div>)}
     </section>
   </>;
@@ -356,8 +357,9 @@ function Where({ place, onMap }: { place: Place; onMap: (id: string) => void }) 
 
 function About() {
   return <section className="card" id="about"><h2>ℹ️ About {APP_NAME}</h2>
-    <p className="small"><b>Privacy:</b> your location is only used on this phone to find nearby spots and is never sent to us. Your catch log and saved spots are stored only on this device. There are no accounts, ads or trackers. Weather requests go to Open-Meteo with the spot's coordinates. Full policy: <a href={BASE + "privacy.html"} target="_blank" rel="noreferrer">privacy page</a>.</p>
-    <p className="small"><b>Disclaimer:</b> scores, tides and spot picks are a guide only, not a guarantee. Always check the <a href="http://www.bom.gov.au/vic/" target="_blank" rel="noreferrer">Bureau of Meteorology</a> forecasts and warnings and the <a href="https://vfa.vic.gov.au/" target="_blank" rel="noreferrer">VFA</a> rules before you go. Fish safely — wear a life jacket on rocks, never fish alone in big swell, and watch the tide.</p>
-    <p className="small"><b>Credits:</b> weather & marine data by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo.com</a> (CC BY 4.0). Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors.</p>
+    <p className="small"><b>Privacy:</b> no accounts, ads or trackers. Your catch log and saved spots are stored only on this phone. If you allow location, it's used on the phone to sort spots by distance. To get the forecast, the spot's coordinates are sent to Open-Meteo; we never receive them. <a href={`${BASE}privacy.html`}>Full privacy policy</a></p>
+    <p className="small"><b>Disclaimer:</b> scores, tides and spot picks are a guide only, not a guarantee. Tide times are estimated from a sea-level model, not official tables. Always check the <a href="http://www.bom.gov.au/vic/" target="_blank" rel="noreferrer">Bureau of Meteorology</a> forecasts and warnings and the <a href="https://vfa.vic.gov.au/" target="_blank" rel="noreferrer">VFA</a> rules before you go. Fish safely: keep off rock ledges in big swell, wear a life jacket on rocks, and never fish alone in rough conditions.</p>
+    <p className="small"><b>Credits:</b> weather & marine data by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo.com</a> (CC BY 4.0). Map data and marine park outlines © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors (ODbL). Rules: Victorian Fisheries Authority. Fonts: Barlow Condensed and Outfit (SIL Open Font License).</p>
+    <p className="muted small">Version {APP_VERSION} · rules checked {REGS.checked}</p>
   </section>;
 }

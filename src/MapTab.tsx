@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { SPOTS } from "./data/spots";
+import { MPAS } from "./data/mpa";
 import type { Place } from "./lib";
 
 export default function MapTab({ place, focus, onPick }: { place: Place; focus: string | null; onPick: (p: Place) => void }) {
@@ -11,6 +12,7 @@ export default function MapTab({ place, focus, onPick }: { place: Place; focus: 
     if (!ref.current) return;
     const map = L.map(ref.current).setView([place.lat, place.lon], 10);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+    MPAS.forEach((m) => m.rings.forEach((r) => L.polygon(r, { color: "#ef4444", weight: 1.5, fillColor: "#ef4444", fillOpacity: 0.22 }).addTo(map).bindPopup(`<b>${m.name}</b><br/>⛔ No fishing or collecting. Boundary is approximate – follow Parks Victoria signs.`)));
     L.circleMarker([place.lat, place.lon], { radius: 9, color: "#38bdf8", fillOpacity: 0.8 }).addTo(map).bindPopup(`You: ${place.name}`);
     SPOTS.forEach((s) => {
       const div = document.createElement("div");
@@ -26,5 +28,5 @@ export default function MapTab({ place, focus, onPick }: { place: Place; focus: 
     });
     return () => { map.remove(); };
   }, [place.lat, place.lon, place.name, focus]);
-  return <><div ref={ref} className="map" /><p className="muted small">🟢 fishing spot · 🔴 no-fishing sanctuary · Tap anywhere on the map to check conditions there.</p></>;
+  return <><div ref={ref} className="map" /><p className="muted small">🟢 fishing spot · 🔴 marine park or sanctuary – no fishing · Tap anywhere on the map to check conditions there.</p></>;
 }

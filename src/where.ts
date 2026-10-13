@@ -1,6 +1,6 @@
 import * as SunCalc from "suncalc";
 import { SPOTS, type Spot } from "./data/spots";
-import { compass, fmtLocal, hhmm, solunar } from "./lib";
+import { compass, fmtLocal, hhmm, marineTrust, solunar } from "./lib";
 
 export type SpotType = "pier" | "beach" | "rocks" | "estuary";
 const TZ = "Australia/Melbourne";
@@ -16,12 +16,12 @@ const DEG: Record<string, number> = { N: 0, NE: 45, E: 90, SE: 135, S: 180, SW: 
 export const LAND = SPOTS.filter((s) => !s.noTake && s.kind !== "mark" && s.kind !== "sanctuary").map((s) => ({
   ...s, type: (TYPE[s.id] ?? (s.kind === "pier" ? "pier" : "beach")) as SpotType,
   // direction the shore looks out to (the water side) = middle of its exposed directions
-  facing: s.exposedTo.length ? DEG[s.exposedTo[0]] : null as number | null,
+  facing: s.exposedTo.length ? (Math.atan2(s.exposedTo.reduce((a, d) => a + Math.sin(DEG[d] * Math.PI / 180), 0), s.exposedTo.reduce((a, d) => a + Math.cos(DEG[d] * Math.PI / 180), 0)) * 180 / Math.PI + 360) % 360 : null as number | null,
 }));
 export type LandSpot = (typeof LAND)[number];
 
 type Raw = { t: string[]; wind: number[]; gust: number[]; dir: number[]; wave: (number | null)[]; sea: (number | null)[] };
-const CK = "rc-where-v1";
+const CK = "rc-where-v2";
 export async function getSpotWeather(): Promise<{ at: number; data: Record<string, Raw> }> {
   try { const c = JSON.parse(localStorage.getItem(CK) || "null"); if (c && Date.now() - c.at < 30 * 60000) return c; } catch { /* ignore */ }
   const data: Record<string, Raw> = {};
@@ -33,8 +33,8 @@ export async function getSpotWeather(): Promise<{ at: number; data: Record<strin
     const [wd, md] = await Promise.all([w, m]);
     const W = Array.isArray(wd) ? wd : [wd]; const M = md ? (Array.isArray(md) ? md : [md]) : [];
     b.forEach((s, k) => {
-      const h = W[k].hourly, mh = M[k]?.hourly;
-      data[s.id] = { t: h.time, wind: h.wind_speed_10m, gust: h.wind_gusts_10m, dir: h.wind_direction_10m, wave: mh?.wave_height ?? [], sea: mh?.sea_level_height_msl ?? [] };
+      const h = W[k].hourly, mh = M[k]?.hourly; const tr = marineTrust(s.lat, s.lon, M[k]?.latitude, M[k]?.longitude);
+      data[s.id] = { t: h.time, wind: h.wind_speed_10m, gust: h.wind_gusts_10m, dir: h.wind_direction_10m, wave: tr.waves ? mh?.wave_height ?? [] : [], sea: tr.tide ? mh?.sea_level_height_msl ?? [] : [] };
     });
   }
   const out = { at: Date.now(), data };
@@ -52,15 +52,15 @@ export const short = (s: string) => SHORT[s] ?? s.replace(/-/g, " ");
 export const BITING: { fish: string; months: number[]; peak?: number[]; note: string; slug?: string }[] = [
   { fish: "Snapper", slug: "snapper", months: [9, 10, 11, 12, 1, 2, 3], peak: [10, 11, 12], note: "Spring run Oct–Dec. Piers and beaches on dusk/night, best in rough weather." },
   { fish: "King George whiting", slug: "king-george-whiting", months: [11, 12, 1, 2, 3, 4, 5], peak: [12, 1, 2, 3, 4], note: "Summer–autumn over sand and weed. Calm, clear water." },
-  { fish: "Squid (calamari)", slug: "calamari", months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], peak: [9, 10, 11], note: "All year, best in spring. Piers over weed, clear water, dawn and dusk." },
-  { fish: "Garfish", slug: "garfish", months: [7, 8, 9, 10, 11, 12, 1, 2, 3], peak: [8, 9, 10], note: "Late winter–spring around piers. Float and small bait, burley helps." },
-  { fish: "Australian salmon", slug: "australian-salmon", months: [5, 6, 7, 8, 9, 10, 11], peak: [7, 8, 9, 10], note: "Late winter–spring on surf beaches and piers. Likes a bit of wave." },
-  { fish: "Flathead", slug: "sand-flathead", months: [9, 10, 11, 12, 1, 2, 3, 4], peak: [11, 12, 1, 2, 3], note: "Spring–autumn on sandy bottom. Easy fish for beginners." },
+  { fish: "Squid (calamari)", slug: "calamari", months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], peak: [3, 4, 5, 9, 10, 11], note: "All year. Spring brings big spawning squid; autumn gives clear water. Weed beds, high tide, dawn, dusk and pier lights." },
+  { fish: "Garfish", slug: "garfish", months: [8, 9, 10, 11, 12, 1, 2, 3, 4, 5], peak: [9, 10, 11, 12, 1, 2], note: "Spring–summer around piers on calm days. Float, tiny hooks and a steady bread berley." },
+  { fish: "Australian salmon", slug: "australian-salmon", months: [3, 4, 5, 6, 7, 8, 9, 10, 11], peak: [5, 6, 7, 8, 9], note: "Cooler months on surf beaches and piers – winter is often best. Likes a bit of wave." },
+  { fish: "Flathead", slug: "sand-flathead", months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], peak: [11, 12, 1, 2, 3], note: "All year on sandy bottom, best in the warmer months. Easy fish for beginners." },
   { fish: "Black bream", slug: "black-bream", months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], note: "All year in rivers and estuaries. Run-out tide and low light." },
   { fish: "Mulloway", slug: "mulloway", months: [11, 12, 1, 2, 3, 4], peak: [12, 1, 2, 3], note: "Summer–autumn in western estuaries (Werribee, Barwon). Night, tide changes." },
   { fish: "Silver trevally", slug: "silver-trevally", months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], note: "All year around pier pylons and rock walls." },
   { fish: "Gummy shark", slug: "gummy-shark", months: [10, 11, 12, 1, 2, 3, 4], note: "Warmer months at night, deeper piers and surf beaches." },
-  { fish: "Murray cod", months: [12, 1, 2, 3, 4, 5, 6, 7, 8], note: "Freshwater only. CLOSED SEASON 1 Sep – 30 Nov – no fishing for cod." },
+  { fish: "Murray cod", months: [12, 1, 2, 3, 4, 5, 6, 7, 8], note: "Freshwater (Murray–Darling rivers and the Yarra). CLOSED 1 Sep – 30 Nov. Min 55 cm, max 75 cm, bag 1 in rivers." },
 ];
 export const inSeason = (m: number) => BITING.filter((b) => b.months.includes(m));
 const seasonVal = (slug: string, m: number) => { const b = BITING.find((x) => x.slug === slug); return !b ? 1 : b.peak?.includes(m) ? 3 : b.months.includes(m) ? 2 : 0; };
