@@ -40,11 +40,22 @@ export function marineTrust(lat: number, lon: number, cellLat?: number, cellLon?
   return { waves: !bayPoint && snapKm < 12, tide: bayPoint ? bayCell : snapKm < 12, temp: snapKm < 25 && bayPoint === bayCell };
 }
 
-const j = async (u: string) => {
-  const r = await fetch(u);
-  if (!r.ok) throw new Error(`Data service error (${r.status})`);
-  return r.json();
+/** fetch JSON with a timeout and one retry after a short pause (flaky mobile data). */
+export const j = async (u: string, tries = 2, timeoutMs = 15000): Promise<any> => {
+  let last: unknown;
+  for (let i = 0; i < tries; i++) {
+    const ac = new AbortController(); const t = setTimeout(() => ac.abort(), timeoutMs);
+    try {
+      const r = await fetch(u, { signal: ac.signal });
+      if (r.ok) return await r.json();
+      last = new Error(`Data service error (${r.status})`);
+      if (r.status < 500 && r.status !== 429) break;
+    } catch (e) { last = e; } finally { clearTimeout(t); }
+    if (i < tries - 1) await new Promise((res) => setTimeout(res, 1500));
+  }
+  throw last instanceof Error ? last : new Error("Network error");
 };
+
 
 export async function getForecast(place: Place): Promise<Forecast> {
   const { lat, lon } = place;
@@ -55,7 +66,7 @@ export async function getForecast(place: Place): Promise<Forecast> {
     `&wind_speed_unit=kn&timezone=auto&forecast_days=7&past_days=1`;
   const m = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}` +
     `&hourly=wave_height,swell_wave_height,swell_wave_period,swell_wave_direction,sea_level_height_msl,sea_surface_temperature&timezone=auto&forecast_days=7&past_days=1`;
-  const [wd, md] = await Promise.all([j(w), j(m).catch(() => null)]);
+  const [wd, md] = await Promise.all([j(w), j(m, 2, 12000).catch(() => null)]);
   const H = wd.hourly, mh = md?.hourly;
   const tr = marineTrust(lat, lon, md?.latitude, md?.longitude);
   const midx = new Map<string, number>((mh?.time ?? []).map((t: string, i: number) => [t, i]));

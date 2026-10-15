@@ -30,17 +30,25 @@ export default function App() {
   const refresh = useCallback(async (p: Place) => {
     setLoading(true); setErr("");
     try { const f = await getForecast(p); setData(f); save("rc-cache", f); }
-    catch (e) { setErr(navigator.onLine ? `Couldn't load live data: ${(e as Error).message}. Tap Refresh to try again.` : "You're offline. Showing the last saved data."); }
+    catch {
+      // never show another place's cached weather as if it were this place
+      const cached = load<Forecast | null>("rc-cache", null);
+      const same = !!cached && cached.place.name === p.name;
+      if (!same) setData(null);
+      const when = same && cached ? ` Showing the last saved data from ${new Date(cached.fetchedAt).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })}.` : "";
+      setErr(!navigator.onLine ? `You're offline.${when || " Connect to the internet to see conditions."}` : `Can't reach the weather service right now (mobile signal or network).${when || ""} Tap ⟳ to try again.`);
+    }
     finally { setLoading(false); }
   }, []);
 
   useEffect(() => { save("rc-place", place); refresh(place); }, [place, refresh]);
   useEffect(() => { save("rc-favs", favs); }, [favs]);
+  useEffect(() => { const on = () => refresh(place); window.addEventListener("online", on); return () => window.removeEventListener("online", on); }, [place, refresh]);
   useEffect(() => { const t = setInterval(() => refresh(place), 15 * 60000); return () => clearInterval(t); }, [place, refresh]);
 
   const isFav = favs.some((f) => f.name === place.name);
   const toggleFav = () => setFavs(isFav ? favs.filter((f) => f.name !== place.name) : [...favs, place]);
-  const shown = data && data.place.name === place.name ? data : data; // show cached while loading
+  const shown = data && data.place.name === place.name ? data : null;
 
   return (
     <div className="app">
@@ -313,7 +321,7 @@ function Where({ place, onMap }: { place: Place; onMap: (id: string) => void }) 
   const [origin, setOrigin] = useState<Place>(place); const [gpsMsg, setGpsMsg] = useState("");
   useEffect(() => setOrigin(place), [place]);
   useEffect(() => save("rc-where-km", maxKm), [maxKm]);
-  useEffect(() => { getSpotWeather().then(setRaw).catch((e) => setErr(`Couldn't load live wind for the spots (${(e as Error).message}). Try again soon.`)); }, []);
+  useEffect(() => { getSpotWeather().then(setRaw).catch(() => setErr(navigator.onLine ? "Can't reach the weather service right now, so spots can't be ranked. Try again in a minute." : "You're offline. Connect to the internet to rank spots.")); }, []);
   const gps = () => { setGpsMsg("Finding you…"); navigator.geolocation?.getCurrentPosition((p) => { setOrigin({ name: "My location", lat: p.coords.latitude, lon: p.coords.longitude }); setGpsMsg(""); }, () => setGpsMsg("Location blocked – using your chosen place instead."), { timeout: 15000, maximumAge: 300000 }); };
   const ranked: (Rank & { dist: number })[] = useMemo(() => !raw ? [] : LAND.filter((s) => raw.data[s.id]).map((s) => ({ ...rankSpot(s, raw.data[s.id], mode), dist: km(origin, s) }))
     .filter((r) => !maxKm || r.dist <= maxKm).sort((a, b) => b.score - a.score), [raw, mode, origin, maxKm]);

@@ -1,6 +1,6 @@
 import * as SunCalc from "suncalc";
 import { SPOTS, type Spot } from "./data/spots";
-import { compass, fmtLocal, hhmm, marineTrust, solunar } from "./lib";
+import { j, compass, fmtLocal, hhmm, marineTrust, solunar } from "./lib";
 
 export type SpotType = "pier" | "beach" | "rocks" | "estuary";
 const TZ = "Australia/Melbourne";
@@ -22,14 +22,20 @@ export type LandSpot = (typeof LAND)[number];
 
 type Raw = { t: string[]; wind: number[]; gust: number[]; dir: number[]; wave: (number | null)[]; sea: (number | null)[] };
 const CK = "rc-where-v2";
-export async function getSpotWeather(): Promise<{ at: number; data: Record<string, Raw> }> {
-  try { const c = JSON.parse(localStorage.getItem(CK) || "null"); if (c && Date.now() - c.at < 30 * 60000) return c; } catch { /* ignore */ }
+export async function getSpotWeather(): Promise<{ at: number; data: Record<string, Raw>; stale?: boolean }> {
+  let c: { at: number; data: Record<string, Raw> } | null = null;
+  try { c = JSON.parse(localStorage.getItem(CK) || "null"); } catch { /* ignore */ }
+  if (c && Date.now() - c.at < 30 * 60000) return c;
+  try { return await fetchSpots(); }
+  catch (e) { if (c && Date.now() - c.at < 6 * 3600000) return { ...c, stale: true }; throw e; }
+}
+async function fetchSpots(): Promise<{ at: number; data: Record<string, Raw> }> {
   const data: Record<string, Raw> = {};
   for (let i = 0; i < LAND.length; i += 25) {
     const b = LAND.slice(i, i + 25);
     const la = b.map((s) => s.lat).join(","), lo = b.map((s) => s.lon).join(",");
-    const w = fetch(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&timezone=${TZ}&forecast_days=2`).then((r) => { if (!r.ok) throw new Error(`Weather ${r.status}`); return r.json(); });
-    const m = fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${la}&longitude=${lo}&hourly=wave_height,sea_level_height_msl&timezone=${TZ}&forecast_days=2`).then((r) => r.ok ? r.json() : null).catch(() => null);
+    const w = j(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&timezone=${TZ}&forecast_days=2`);
+    const m = j(`https://marine-api.open-meteo.com/v1/marine?latitude=${la}&longitude=${lo}&hourly=wave_height,sea_level_height_msl&timezone=${TZ}&forecast_days=2`, 2, 12000).catch(() => null);
     const [wd, md] = await Promise.all([w, m]);
     const W = Array.isArray(wd) ? wd : [wd]; const M = md ? (Array.isArray(md) ? md : [md]) : [];
     b.forEach((s, k) => {
