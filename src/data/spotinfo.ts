@@ -124,4 +124,14 @@ export const EXTRA: [Spot, Info][] = [
     access: "Yarra Bend Park, Fairfield – car parks and walking tracks along the river. Fishing is not allowed in the grey-headed flying-fox colony area (FishingMad).",
     tips: "This stretch is above Dights Falls, so it is freshwater with no tide. FishingMad reports redfin, carp, eels and estuary perch. Small plastics, blades and spinners for redfin; surface lures at dusk for perch; worms or corn for carp. Do not leave line in the trees – flying-foxes get caught. Murray cod: the closed season (1 Sep–30 Nov) applies in the Yarra River. Fish from the river have health advice." },
     { area: "freshwater", src: "local", fresh: true, noWind: true, eat: true, other: ["European carp", "eels"] }],
+  [{ id: "st-helens", name: "St Helens boat ramp & rock walls (Geelong)", kind: "shore", lat: -38.12, lon: 144.3595, shore: "west", species: ["snapper", "sand-flathead", "king-george-whiting", "calamari"],
+    tideNote: "", windNote: "", exposedTo: [], shelteredFrom: [], tideLagHours: 0, depth: "Not verified",
+    access: "Swinburne Street, North Geelong, on Corio Bay. Car park beside the three-lane boat ramp, with toilets, a fish-cleaning table, picnic facilities and a free boat ramp run with the Coast Guard. The City of Greater Geelong lists the St Helens Harbour rock walls with pole holders and solar lighting, and a St Helens jetty (Bay or Swinburne Street). Coordinates are approximate (from a map listing).",
+    tips: "Local reviews say you can fish from the shore beside the ramp and breakwater, and name snapper (including pinkies), squid, flathead and whiting. We found no VFA listing for this spot, so treat the fish list as local knowledge. Keep clear of boats and the ramp lanes, and take line and hooks home. Check the Reports tab for recent Geelong catches." },
+    { area: "bellarine", src: "local", noWind: true,
+    report: { items: [
+      { t: "Report 1 – Choc caught a snapper over 40 cm (his estimate) at St Helens on a small blade lure. Date not given. The length is his estimate, not measured or verified here.", photo: { src: "spots/sthelens-lure.webp", cap: "Choc's snapper from St Helens, with the small blade lure it took (his estimate: over 40 cm). The photo has a graphic effect added." } },
+      { t: "Report 1 (continued) – the same fish, held beside the water at the St Helens rock wall.", photo: { src: "spots/sthelens-choc.webp", cap: "Choc with his St Helens snapper (his estimate: over 40 cm)." } },
+      { t: "Report 2 – a different, separate catch: a rock flathead (Choc's ID) at St Helens. Length, bait and date not given." } ],
+      note: "Both reports are one angler's personal accounts, not VFA or official reports." } }],
 ];

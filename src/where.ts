@@ -12,7 +12,7 @@ const TYPE: Record<string, SpotType> = {
   "warmies-wall": "rocks", "newport-warmies": "rocks", "schnapper-point": "rocks",
   "patterson-shore": "estuary", "patterson-river": "estuary", "yarra-docklands": "estuary", "yarra-southbank": "estuary",
   "yarra-herring": "estuary", "maribyrnong-footscray": "estuary", "maribyrnong-anglers": "estuary", "maribyrnong-ramp": "estuary",
-  "martha-cove": "estuary", "albert-park-lake": "lake", "yarra-bend": "river",
+  "martha-cove": "estuary", "albert-park-lake": "lake", "yarra-bend": "river", "st-helens": "rocks",
 };
 const DEG: Record<string, number> = { N: 0, NE: 45, E: 90, SE: 135, S: 180, SW: 225, W: 270, NW: 315 };
 const isLand = (s: Spot) => !s.noTake && (s.kind === "pier" || s.kind === "shore");
