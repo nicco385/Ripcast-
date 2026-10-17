@@ -935,7 +935,7 @@ export type FullSpot = Spot & { info?: Info };
 export const SPOTS: FullSpot[] = [
   ...RAW.map((s): FullSpot => {
     const i = INFO[s.id]; if (!i) return s;
-    const { area: _a, src: _s, hot: _h, other: _o, status: _st, eat: _e, noWind: _n, fresh: _f, ...rest } = i; void [_a, _s, _h, _o, _st, _e, _n, _f];
+    const { area: _a, src: _s, hot: _h, other: _o, status: _st, eat: _e, noWind: _n, fresh: _f, photo: _p, rules: _r, report: _rp, ...rest } = i; void [_a, _s, _h, _o, _st, _e, _n, _f, _p, _r, _rp];
     return { ...s, ...rest, tideNote: "", info: i };
   }),
   ...EXTRA.map(([s, i]): FullSpot => ({ ...s, info: i })),

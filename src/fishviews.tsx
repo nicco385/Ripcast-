@@ -7,7 +7,7 @@ import { AREAS } from "./data/spotinfo";
 import { ALL_LAND, seasonVal, short, km, type LandSpot } from "./where";
 import { eventsBetween, nearestStation, clock, dayKey } from "./tides";
 import { type Place } from "./lib";
-import { Ext, SpThumb } from "./ui";
+import { Ext, SpThumb, BASE } from "./ui";
 
 const TZ = "Australia/Melbourne";
 const curMonth = () => new Date().getMonth() + 1;
@@ -59,6 +59,7 @@ export function SpeciesView({ slug, onSpot }: { slug: string; onSpot: (id: strin
   return <>
     <section className="card spec-hero">
       <SpThumb name={sp.name} size={300} />
+      {slug === "estuary-perch" && <p className="muted small" style={{ marginTop: 0 }}>Choc's 41 cm estuary perch, caught on a lure at Southbank.</p>}
       <h2>{sp.name}</h2>{sp.aka && <p className="muted small">Also called: {sp.aka}</p>}
       <p>{g.intro}</p>
       <div className="grid">
@@ -110,6 +111,7 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
   return <>
     <section className="card">
       <h2>{spot.name}</h2>
+      {i?.photo && <figure className="spotphoto"><img src={BASE + i.photo.src} alt={i.photo.cap} width={280} height={350} loading="lazy" /><figcaption>{i.photo.cap}</figcaption></figure>}
       <p className="muted small">{i ? AREAS[i.area].name : ""} · {spot.type} · {Math.round(km(place, spot))} km from {place.name}</p>
       {i?.status?.closed && <div className="banner danger">⛔ Closed. {i.status.note}<br /><Ext href={i.status.url}>Official update ↗</Ext> <small>(as of {i.status.asOf})</small></div>}
       {i?.fresh ? <p className="small">Fish list from VFA stocking records, Parks Victoria and FishingMad. A freshwater spot – <b>no tides here</b>.</p> : i?.src === "vfa" ? <p className="small">✅ Fish list and tips from the Victorian Fisheries Authority.</p> : <p className="muted small">General local knowledge – not an official VFA list.</p>}
@@ -130,6 +132,9 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
       {spot.windNote && <p><b>Wind:</b> {spot.windNote}</p>}
       {i?.noWind && <p className="muted small">We have not mapped which winds this spot is sheltered from – check the wind direction when you arrive.</p>}
     </section>
+    {i?.report && <section className="card"><h2>🎣 Angler report</h2><p className="small">{i.report.text}</p><p className="small"><b>Snapper rules (VFA):</b> minimum 28 cm, bag 10, and no more than 3 may be 40 cm or longer. Keep whole until you are away from the water.</p></section>}
+    {i?.rules && !i.fresh && <section className="card"><h2>📏 Rules here</h2>{i.rules.map((r) => <p key={r} className="small">{r}</p>)}<p className="small"><Ext href="https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons">VFA size and bag limits ↗</Ext></p></section>}
+    {i?.eat && !i.fresh && <section className="card"><h2>🌙 Safety by the water</h2><p className="small">Fish with a friend if you can and tell someone where you are. Keep back from the edge – there is often no rail, the water is deep and cold, and the wall can be slippery. Wear a life jacket on rocks or if you are not a strong swimmer. Keep your gear out of the walkway and take all line and hooks home.</p></section>}
     {i?.fresh && <section className="card"><h2>📏 Rules for the perch here</h2>
       <p className="small"><b>Estuary perch:</b> min 27 cm, bag 5 (with Australian bass; no more than 2 bass).</p>
       {!i.eat && <p className="small"><b>Golden perch (yellowbelly):</b> min 30 cm, bag 5.</p>}

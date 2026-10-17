@@ -222,3 +222,4 @@ label.check input{accent-color:var(--gold)}
 .btn.wide{margin-top:10px}
 .sheet{display:none}
 .wcard .cardbtn h3{margin:0}
+.spotphoto{margin:0 0 12px;text-align:center}.spotphoto img{width:100%;max-width:300px;height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:16px}.spotphoto figcaption{font-size:.85rem;opacity:.75;margin-top:6px}

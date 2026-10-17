@@ -25,6 +25,12 @@ export type Info = Partial<Omit<Spot, "id">> & {
   noWind?: boolean;
   /** Freshwater, not tidal: no tide times or sea waves. */
   fresh?: boolean;
+  /** A photo shown on the spot guide, with an honest caption. */
+  photo?: { src: string; cap: string };
+  /** Spot-specific rules, shown in their own card. */
+  rules?: string[];
+  /** A personal angler report, clearly labelled as anecdotal. */
+  report?: { text: string };
 };
 
 const PV = "https://www.parks.vic.gov.au/";
@@ -60,10 +66,16 @@ export const INFO: Record<string, Info> = {
     access: "Werribee South foreshore, with parking, toilets and a boat ramp.", tips: "VFA: jetties are good for bream; the beach gives good flathead in warmer months and large mullet in winter. Watch for boats. Point Cooke Marine Sanctuary is about 10 km north-east – no fishing inside." },
   "warmies-wall": { area: "rivers", src: "local", eat: true, access: "Newport. Parking is tight. Walk the channel – the boat ramp is for boats.", tips: "FishingMad: when the power-station pumps run, the warm outflow draws salmon (winter) and snapper (pinkies Jan–Mar) – look for steam as a guide. Never touch a blue-ringed octopus (venomous) – FishingMad has caught them here. Lower Yarra fish: see food-safety advice." },
   "yarra-docklands": { area: "rivers", src: "local", eat: true, tips: "Pinkies were reported here in autumn and winter (FishingMad). Lower Yarra fish: see food-safety advice." },
-  "yarra-southbank": { area: "rivers", src: "local", eat: true, tips: "City promenade – keep the footprint small. Lower Yarra fish: see food-safety advice." },
+  "yarra-southbank": { area: "rivers", src: "local", eat: true, name: "Yarra – Southbank / Crown", lat: -37.8224, lon: 144.9585,
+    species: ["estuary-perch", "black-bream", "silver-trevally", "mulloway", "snapper"],
+    depth: "Not verified – a tidal river with deep water close to the wall",
+    access: "The Southbank promenade along the Yarra in front of Crown, between Queensbridge Square and the Webb Bridge end. Trams and a short walk from Flinders Street and Southern Cross stations. The pin is approximate – the promenade is long and busy; walk it and find a gap.",
+    tips: "Choc caught a 41 cm estuary perch here on a lure (see photo). Small lures and plastics along the wall and around any structure (the usual way to fish perch – see the estuary perch guide). Keep the footprint small: this is a busy promenade, not a pier – watch for walkers, cyclists and ferries, and keep your line out of the way. Check the Reports tab for recent catches.",
+    photo: { src: "spots/yarra-southbank.webp", cap: "Southbank promenade at night, with Choc's estuary perch on the measuring mat." },
+    rules: ["Estuary perch: min 27 cm, bag 5 (with Australian bass; no more than 2 bass). Keep whole until you are away from the water.", "Murray cod: only 55–75 cm, bag 1 in rivers. Closed season 1 Sep–30 Nov applies in the Yarra River.", "Redfin: no size or bag limit. Carp must not be put back.", "Always check the VFA's current rules before you keep a fish."] },
   "yarra-herring": { area: "rivers", src: "local", eat: true, tips: "Quieter bank fishing. Estuary perch are reported in the lower Yarra (FishingMad) – we found no VFA stocking record for the Yarra, so we can't say how many are wild or stocked. Murray cod: the closed season (1 Sep–30 Nov) applies in the Yarra River. Lower Yarra fish: see food-safety advice." },
-  "maribyrnong-footscray": { area: "rivers", src: "local", eat: true, tips: "FishingMad reports bream after light rain, and estuary perch around the timber and jetties (the VFA stocked the river in 2018, 2019 and 2021). Try small surface lures on warm, calm evenings. Fish upstream of Solomons Ford (Avondale Heights) must not be eaten (PFAS)." },
-  "maribyrnong-anglers": { area: "rivers", src: "local", eat: true, tips: "FishingMad reports bream and estuary perch (the VFA stocked the river in 2018, 2019 and 2021) – the jetties opposite the Anglers Tavern and Canning Reserve are named spots. Light lures along the timber. Fish upstream of Solomons Ford (Avondale Heights) must not be eaten (PFAS)." },
+  "maribyrnong-footscray": { area: "rivers", src: "local", eat: true, report: { text: "Choc caught a snapper in the lower Maribyrnong in late October on garden worms. One angler's account – no size or exact spot given, and not a VFA or official report. Snapper do turn up in the lower river in spring, but treat it as a one-off." }, tips: "FishingMad reports bream after light rain, and estuary perch around the timber and jetties (the VFA stocked the river in 2018, 2019 and 2021). Try small surface lures on warm, calm evenings. Fish upstream of Solomons Ford (Avondale Heights) must not be eaten (PFAS)." },
+  "maribyrnong-anglers": { area: "rivers", src: "local", eat: true, report: { text: "Choc caught a snapper in the lower Maribyrnong in late October on garden worms. One angler's account – no size or exact spot given, and not a VFA or official report. Snapper do turn up in the lower river in spring, but treat it as a one-off." }, tips: "FishingMad reports bream and estuary perch (the VFA stocked the river in 2018, 2019 and 2021) – the jetties opposite the Anglers Tavern and Canning Reserve are named spots. Light lures along the timber. Fish upstream of Solomons Ford (Avondale Heights) must not be eaten (PFAS)." },
 };
 
 const WP: Omit<Info, "area" | "src">[] = [];
