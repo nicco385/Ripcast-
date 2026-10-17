@@ -17,17 +17,19 @@ What you get:
 • Live weather, wind and gusts in knots, rain and air pressure
 • Ocean waves, swell and sea temperature (inside Port Phillip Bay, where the wave model isn't reliable, it tells you to go by the wind instead)
 • Sunrise, sunset, moon phase and the best feeding times (solunar)
-• Approximate tides where the model is reliable, with links to the official BOM tide tables
+• Official tide times from the Bureau of Meteorology for 20 Victorian stations, working offline, with a tide chart and 7-day view
 • Safety warnings for strong wind, storms and big swell
-• What's biting this month, and links to the latest local fishing reports
-• A map of 43 land-based spots and boat marks, with every marine park and sanctuary around Port Phillip, Western Port and the nearby coast outlined in red (no fishing). The app never suggests a spot inside one.
+• Fish guides for 15 species: where to fish from the shore, rigs, hooks, baits, lures, tips and the legal size
+• A month-by-month calendar of what's biting and where the fish move
+• Links to current local fishing reports for each area
+• A map of land-based spots, with every marine park and sanctuary around Port Phillip, Western Port and the nearby coast outlined in red (no fishing). The app never suggests a spot inside one.
 • A catch log that warns you when a fish is under the legal size
 • Size and bag limits for 15 species, checked against the VFA on 13 October 2026, with links to the official rules and fishing licences
 
 Private by design: there are no accounts, ads or tracking. Your location and your catch log stay on your phone.
 
 The scores are a guide only. Always check BOM warnings and VFA rules, and fish safely.
-Weather data from Open-Meteo.com (CC BY 4.0). Map and marine park outlines © OpenStreetMap contributors (ODbL).
+Tide predictions: Bureau of Meteorology, © Commonwealth of Australia, based on Bureau of Meteorology information that has subsequently been modified. Weather data from Open-Meteo.com (CC BY 4.0). Map and marine park outlines © OpenStreetMap contributors (ODbL).
 
 **Keywords (App Store, 100 chars):** fishing,tides,wind,Melbourne,Victoria,Port Phillip,pier,snapper,squid,whiting,salmon,forecast
 

@@ -162,19 +162,6 @@ export function solunar(date: string, tz: string, lat: number, lon: number): Per
   return out.sort((a, b) => a.mid.localeCompare(b.mid));
 }
 
-// --- tides from modelled sea level (Open-Meteo Marine) ---
-export type Tide = { time: string; type: "High" | "Low"; m: number };
-export function tidesFrom(hours: Hour[]): Tide[] {
-  const s = hours.filter((h) => h.sea != null) as (Hour & { sea: number })[];
-  const out: Tide[] = [];
-  for (let i = 1; i < s.length - 1; i++) {
-    const a = s[i - 1].sea, b = s[i].sea, c = s[i + 1].sea;
-    if (b > a && b >= c) out.push({ time: s[i].time, type: "High", m: b });
-    if (b < a && b <= c) out.push({ time: s[i].time, type: "Low", m: b });
-  }
-  return out;
-}
-
 // --- fishing score ---
 export type Score = { score: number; label: string; reasons: string[] };
 export function scoreDay(f: Forecast, dayIdx: number): Score {
@@ -193,7 +180,7 @@ export function scoreDay(f: Forecast, dayIdx: number): Score {
   const p0 = hrs[6]?.pressure, p1 = hrs[18]?.pressure;
   if (p0 && p1) {
     const dp = p1 - p0;
-    if (dp > 1.5) { s += 8; reasons.push("👍 Pressure rising – fish often feed well"); }
+    if (dp > 1.5) { s += 8; reasons.push("👍 Pressure rising – anglers often rate this a good sign"); }
     else if (dp < -3) { s -= 5; reasons.push("👎 Pressure dropping fast (weather change coming)"); }
     else if (dp < -1) { s += 5; reasons.push("👍 Pressure easing slightly – often a good bite before a change"); }
     else { s += 3; reasons.push("👌 Steady pressure"); }
@@ -201,7 +188,7 @@ export function scoreDay(f: Forecast, dayIdx: number): Score {
   // moon
   const mi = moonInfo(new Date(d.date + "T12:00:00"));
   const nearNF = Math.min(mi.phase, 1 - mi.phase, Math.abs(mi.phase - 0.5));
-  if (nearNF < 0.07) { s += 10; reasons.push(`👍 ${mi.name} – bigger tides and stronger feeding times`); }
+  if (nearNF < 0.07) { s += 10; reasons.push(`👍 ${mi.name} – bigger tides (often a stronger bite)`); }
   else if (nearNF > 0.18) { s -= 3; reasons.push(`${mi.name} – smaller tides`); }
   // solunar overlapping dawn/dusk
   const per = solunar(d.date, f.tz, f.place.lat, f.place.lon);

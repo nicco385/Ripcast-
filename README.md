@@ -4,21 +4,20 @@
 
 Choc's Spot shows land-based anglers around Port Phillip Bay and Victoria where to fish today and when. It ranks piers, beaches and rocks using live wind, waves, tide and season data.
 
-| Cover | Today | Where to fish | 7 days |
+| Today & tides | Where to fish | Fish guide | Reports |
 |---|---|---|---|
-| ![](shot-cover5.png) | ![](shot-final-today.png) | ![](shot-final-where.png) | ![](shot-final-week.png) |
-| **Map** | **Catches** | **Info** | **Cover (bottom)** |
-| ![](shot-final-map.png) | ![](shot-final-log.png) | ![](shot-final-rules.png) | ![](shot-cover5-bottom.png) |
+| ![](screenshots-v11/01-today.png) | ![](screenshots-v11/04-where.png) | ![](screenshots-v11/07-species.png) | ![](screenshots-v11/10-reports.png) |
 
 ## Features
-- **Cover screen:** today's live call (Go, Maybe or Wait), the score, shortcuts and target species
-- **Today:** fishing score out of 100 with reasons, live weather, wind and gusts in knots, pressure trend, waves, swell, sea temperature, solunar feeding times, sunrise and sunset, moon, approximate tides and a 24-hour strip
-- **Where to fish:** the top 5 land-based spots for the wind and waves right now or later today, with the best time, target species, directions and a distance filter
-- **What's biting this month,** shown with species photos, plus links to the latest local fishing reports
-- **7 days:** daily scores and feeding windows
-- **Map:** 49 spots plus marine sanctuaries (no-fishing zones); tap anywhere to check conditions there
-- **Catches:** a catch log that warns when a fish is under the legal size, with photos (stored on the device only)
-- **Info:** Victorian size and bag limits, licence links, privacy, disclaimer and credits
+- **Today:** fishing score out of 100 with reasons, live weather, wind and gusts in knots, pressure trend, waves, swell, sea temperature, the fish in season now, solunar feeding times, sunrise and sunset, a 24-hour strip, and **official tide times** with a tide chart
+- **Tides:** the Bureau of Meteorology's own predictions for 20 Victorian stations (Williamstown, St Kilda, Geelong, Queenscliff, Mornington, Flinders, Stony Point, Tooradin, Cowes, San Remo and more), stored in the app so they work offline. 7-day view for any station. Times match the BOM tables exactly. Tables run from Oct 2026 to 31 Dec 2027.
+- **Where to fish:** the best land-based spots for the wind, waves, fish in season and tide, by area and distance. Each spot has a guide (fish, access, tips, tides, closures)
+- **Fish guides:** 15 species with where to fish from the shore, season, best time and tide, rig, tackle, hooks, baits, lures, tips, handling and the VFA size and bag limit
+- **What's biting:** a month-by-month calendar of fish movements for Port Phillip and Western Port
+- **Reports:** curated, working links to current local reports, by area
+- **Map:** the land-based spots plus marine sanctuaries (no-fishing zones); tap anywhere to check conditions there
+- **Catches:** a catch log that warns when a fish is under the legal size (stored on the device only)
+- **Back button works:** the Android back gesture and browser Back step through tabs, guides, the map and the spot picker
 - Installable PWA that works offline with the last saved data, and safety warnings for wind, storms and swell
 
 ## Tech
@@ -32,9 +31,11 @@ GH_PAGES=1 npx vite build --outDir dist-pages  # Pages build
 To rename the app, edit `APP_NAME` in `src/config.ts`. The cover, title and manifest all update.
 
 ## Credits
+- Tide times and heights: Bureau of Meteorology tide predictions, © Commonwealth of Australia. Based on Bureau of Meteorology information that has subsequently been modified (reformatted into this app). Predictions are a guide only.
 - Weather & marine data: [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0)
 - Map data and marine park / sanctuary outlines © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL), via Leaflet
 - Fonts: Barlow Condensed and Outfit (SIL Open Font License), bundled with the app
 - Rules summary: Victorian Fisheries Authority, checked 13 October 2026. Always check the official guide.
+- Fish seasons, spot details and tips: VFA Go Fishing pages (Port Phillip Bay, Western Port) and The Pelican's Pick; fish movements from FishingMad weekly reports, Peninsula Insider and Compleat Angler Dandenong (see the in-app sources).
 
 *Scores and tides are a guide only. Check BOM warnings and VFA rules, and fish safely.*

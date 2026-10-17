@@ -1,6 +1,8 @@
 import * as SunCalc from "suncalc";
 import { SPOTS, type Spot } from "./data/spots";
-import { j, compass, fmtLocal, hhmm, marineTrust, solunar } from "./lib";
+import { GUIDES } from "./data/guides";
+import { j, compass, fmtLocal, marineTrust, solunar } from "./lib";
+import { nearestStation, eventsBetween, clock } from "./tides";
 
 export type SpotType = "pier" | "beach" | "rocks" | "estuary";
 const TZ = "Australia/Melbourne";
@@ -13,15 +15,19 @@ const TYPE: Record<string, SpotType> = {
   "martha-cove": "estuary",
 };
 const DEG: Record<string, number> = { N: 0, NE: 45, E: 90, SE: 135, S: 180, SW: 225, W: 270, NW: 315 };
-export const LAND = SPOTS.filter((s) => !s.noTake && s.kind !== "mark" && s.kind !== "sanctuary").map((s) => ({
+const isLand = (s: Spot) => !s.noTake && (s.kind === "pier" || s.kind === "shore");
+/** Every land-based place, including temporarily closed ones. */
+export const ALL_LAND = SPOTS.filter(isLand).map((s) => ({
   ...s, type: (TYPE[s.id] ?? (s.kind === "pier" ? "pier" : "beach")) as SpotType,
   // direction the shore looks out to (the water side) = middle of its exposed directions
   facing: s.exposedTo.length ? (Math.atan2(s.exposedTo.reduce((a, d) => a + Math.sin(DEG[d] * Math.PI / 180), 0), s.exposedTo.reduce((a, d) => a + Math.cos(DEG[d] * Math.PI / 180), 0)) * 180 / Math.PI + 360) % 360 : null as number | null,
 }));
-export type LandSpot = (typeof LAND)[number];
+export type LandSpot = (typeof ALL_LAND)[number];
+/** Places that can be ranked (not closed). */
+export const LAND = ALL_LAND.filter((s) => !s.info?.status?.closed);
 
-type Raw = { t: string[]; wind: number[]; gust: number[]; dir: number[]; wave: (number | null)[]; sea: (number | null)[] };
-const CK = "rc-where-v2";
+type Raw = { t: string[]; wind: number[]; gust: number[]; dir: number[]; wave: (number | null)[] };
+const CK = "rc-where-v3";
 export async function getSpotWeather(): Promise<{ at: number; data: Record<string, Raw>; stale?: boolean }> {
   let c: { at: number; data: Record<string, Raw> } | null = null;
   try { c = JSON.parse(localStorage.getItem(CK) || "null"); } catch { /* ignore */ }
@@ -35,12 +41,12 @@ async function fetchSpots(): Promise<{ at: number; data: Record<string, Raw> }> 
     const b = LAND.slice(i, i + 25);
     const la = b.map((s) => s.lat).join(","), lo = b.map((s) => s.lon).join(",");
     const w = j(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&timezone=${TZ}&forecast_days=2`);
-    const m = j(`https://marine-api.open-meteo.com/v1/marine?latitude=${la}&longitude=${lo}&hourly=wave_height,sea_level_height_msl&timezone=${TZ}&forecast_days=2`, 2, 12000).catch(() => null);
+    const m = j(`https://marine-api.open-meteo.com/v1/marine?latitude=${la}&longitude=${lo}&hourly=wave_height&timezone=${TZ}&forecast_days=2`, 2, 12000).catch(() => null);
     const [wd, md] = await Promise.all([w, m]);
     const W = Array.isArray(wd) ? wd : [wd]; const M = md ? (Array.isArray(md) ? md : [md]) : [];
     b.forEach((s, k) => {
       const h = W[k].hourly, mh = M[k]?.hourly; const tr = marineTrust(s.lat, s.lon, M[k]?.latitude, M[k]?.longitude);
-      data[s.id] = { t: h.time, wind: h.wind_speed_10m, gust: h.wind_gusts_10m, dir: h.wind_direction_10m, wave: tr.waves ? mh?.wave_height ?? [] : [], sea: tr.tide ? mh?.sea_level_height_msl ?? [] : [] };
+      data[s.id] = { t: h.time, wind: h.wind_speed_10m, gust: h.wind_gusts_10m, dir: h.wind_direction_10m, wave: tr.waves ? mh?.wave_height ?? [] : [] };
     });
   }
   const out = { at: Date.now(), data };
@@ -54,24 +60,16 @@ const c8 = (d: number) => ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.roun
 const SHORT: Record<string, string> = { "king-george-whiting": "whiting", calamari: "squid", "australian-salmon": "salmon", "sand-flathead": "flathead", "black-bream": "bream", "silver-trevally": "trevally", "yellowtail-kingfish": "kingfish", "gummy-shark": "gummy shark", "elephant-fish": "elephant fish", "estuary-perch": "estuary perch" };
 export const short = (s: string) => SHORT[s] ?? s.replace(/-/g, " ");
 
-// Simple month guide (Port Phillip, Western Port, Surf Coast – land-based). 1 = Jan.
-export const BITING: { fish: string; months: number[]; peak?: number[]; note: string; slug?: string }[] = [
-  { fish: "Snapper", slug: "snapper", months: [9, 10, 11, 12, 1, 2, 3], peak: [10, 11, 12], note: "Spring run Oct–Dec. Piers and beaches on dusk/night, best in rough weather." },
-  { fish: "King George whiting", slug: "king-george-whiting", months: [11, 12, 1, 2, 3, 4, 5], peak: [12, 1, 2, 3, 4], note: "Summer–autumn over sand and weed. Calm, clear water." },
-  { fish: "Squid (calamari)", slug: "calamari", months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], peak: [3, 4, 5, 9, 10, 11], note: "All year. Spring brings big spawning squid; autumn gives clear water. Weed beds, high tide, dawn, dusk and pier lights." },
-  { fish: "Garfish", slug: "garfish", months: [8, 9, 10, 11, 12, 1, 2, 3, 4, 5], peak: [9, 10, 11, 12, 1, 2], note: "Spring–summer around piers on calm days. Float, tiny hooks and a steady bread berley." },
-  { fish: "Australian salmon", slug: "australian-salmon", months: [3, 4, 5, 6, 7, 8, 9, 10, 11], peak: [5, 6, 7, 8, 9], note: "Cooler months on surf beaches and piers – winter is often best. Likes a bit of wave." },
-  { fish: "Flathead", slug: "sand-flathead", months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], peak: [11, 12, 1, 2, 3], note: "All year on sandy bottom, best in the warmer months. Easy fish for beginners." },
-  { fish: "Black bream", slug: "black-bream", months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], note: "All year in rivers and estuaries. Run-out tide and low light." },
-  { fish: "Mulloway", slug: "mulloway", months: [11, 12, 1, 2, 3, 4], peak: [12, 1, 2, 3], note: "Summer–autumn in western estuaries (Werribee, Barwon). Night, tide changes." },
-  { fish: "Silver trevally", slug: "silver-trevally", months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], note: "All year around pier pylons and rock walls." },
-  { fish: "Gummy shark", slug: "gummy-shark", months: [10, 11, 12, 1, 2, 3, 4], note: "Warmer months at night, deeper piers and surf beaches." },
-  { fish: "Murray cod", months: [12, 1, 2, 3, 4, 5, 6, 7, 8], note: "Freshwater (Murray–Darling rivers and the Yarra). CLOSED 1 Sep – 30 Nov. Min 55 cm, max 75 cm, bag 1 in rivers." },
-];
-export const inSeason = (m: number) => BITING.filter((b) => b.months.includes(m));
-const seasonVal = (slug: string, m: number) => { const b = BITING.find((x) => x.slug === slug); return !b ? 1 : b.peak?.includes(m) ? 3 : b.months.includes(m) ? 2 : 0; };
+/** 0 = out of season, 1 = year-round / quieter, 2 = in season, 3 = the main run. Source: VFA peak-season tables (see data/guides.ts). */
+export const seasonVal = (slug: string, m: number) => {
+  const g = GUIDES.find((x) => x.slug === slug); if (!g) return 0;
+  return g.run?.includes(m) ? 3 : g.best.includes(m) ? 2 : g.yearRound ? 1 : 0;
+};
 
-export type Rank = { spot: LandSpot; score: number; badge: "Good" | "OK" | "Poor"; reason: string; best: string; target: string[]; avoid: boolean; wind: number; gust: number; dirTxt: string; wave: number | null };
+export type Rank = {
+  spot: LandSpot; score: number; badge: "Good" | "OK" | "Poor"; reason: string; best: string; target: string[]; targetSlugs: string[];
+  avoid: boolean; wind: number; gust: number; dirTxt: string; wave: number | null; hot: string[]; stationName: string | null;
+};
 
 export function rankSpot(s: LandSpot, r: Raw, mode: "now" | "today"): Rank {
   const now = fmtLocal(new Date(), TZ).slice(0, 13) + ":00";
@@ -80,18 +78,18 @@ export function rankSpot(s: LandSpot, r: Raw, mode: "now" | "today"): Rank {
   const sr = fmtLocal(sun.sunrise!, TZ), ss = fmtLocal(sun.sunset!, TZ);
   let idx = r.t.map((t, i) => [t, i] as const).filter(([t]) => mode === "now" ? t === now : t.startsWith(today) && t >= sr.slice(0, 13) && t <= ss).map(([, i]) => i);
   if (!idx.length) idx = [Math.max(0, r.t.indexOf(now))];
-  const avg = (a: (number | null)[]) => { const v = idx.map((i) => a[i]).filter((x): x is number => x != null); return v.length ? v.reduce((p, c) => p + c, 0) / v.length : null; };
-  const wind = avg(r.wind) ?? 0, gust = Math.max(...idx.map((i) => r.gust[i] ?? 0));
-  // average wind direction (vector mean)
+  const wind = idx.reduce((a, i) => a + (r.wind[i] ?? 0), 0) / idx.length, gust = Math.max(...idx.map((i) => r.gust[i] ?? 0));
   const sx = idx.reduce((a, i) => a + Math.sin(r.dir[i] * Math.PI / 180), 0), cx = idx.reduce((a, i) => a + Math.cos(r.dir[i] * Math.PI / 180), 0);
   const dir = (Math.atan2(sx, cx) * 180 / Math.PI + 360) % 360;
   const wave = r.wave.length ? Math.max(...idx.map((i) => r.wave[i] ?? 0)) : null;
   const wn = WINDNAME[c8(dir)];
-  const sheltered = s.facing == null || s.shelteredFrom.includes(c8(dir) as never);
-  const rel = s.facing == null ? "sheltered" : diff(dir, s.facing) <= 50 ? "onshore" : diff(dir, s.facing) >= 125 ? "offshore" : "cross";
+  const unknown = !!s.info?.noWind;
+  const sheltered = !unknown && (s.facing == null || s.shelteredFrom.includes(c8(dir) as never));
+  const rel = unknown ? "cross" : s.facing == null ? "sheltered" : diff(dir, s.facing) <= 50 ? "onshore" : diff(dir, s.facing) >= 125 ? "offshore" : "cross";
   let sc = 55; const bits: string[] = [];
   const light = wind < 8;
   if (light) { sc += 12; bits.push("Light winds"); }
+  else if (unknown) { sc -= wind >= 20 ? 12 : 0; bits.push(`${wn[0].toUpperCase() + wn.slice(1)} ${Math.round(wind)} kn (check shelter on site)`); }
   else if (sheltered || rel === "offshore") { sc += wind < 18 ? 10 : 0; bits.push(`Sheltered from the ${wn}`); }
   else if (rel === "onshore") { sc -= wind >= 15 ? 22 : 6; bits.push(wind >= 15 ? `Blown straight in by the ${wn}` : `Light ${wn} blowing in`); }
   else { sc -= wind >= 15 ? 10 : 2; bits.push(`Cross-wind from the ${wn}`); }
@@ -99,33 +97,37 @@ export function rankSpot(s: LandSpot, r: Raw, mode: "now" | "today"): Rank {
   if (gust >= 30) { sc -= 12; bits.push(`gusts to ${Math.round(gust)} kn`); }
   const avoid = s.type === "rocks" && (wave ?? 0) >= 1.5 && !sheltered || (wave ?? 0) >= 2.5 && rel === "onshore" && s.type !== "estuary";
   if (avoid) { sc = Math.min(sc, 25); bits.push("big waves – stay off the rocks/edge"); }
-  else if (rel === "offshore" || light || sheltered) bits.push(s.type === "estuary" ? "calm water" : "clear water");
-  else if (rel === "onshore" && wind < 15) bits.push("a bit of stir – good for salmon & snapper");
   const m = Number(today.slice(5, 7));
-  const tgt = [...new Set(s.species)].map((x) => ({ x, v: seasonVal(x, m) })).filter((o) => o.v > 0).sort((a, b) => b.v - a.v).slice(0, 3);
-  sc += Math.min(18, tgt.reduce((a, o) => a + o.v * 2, 0));
-  if (rel === "onshore" && wind >= 8 && wind < 15 && tgt.some((o) => o.x === "snapper" || o.x === "australian-salmon")) sc += 5;
+  const hotSet = new Set(s.info?.hot ?? []);
+  const tgt = [...new Set(s.species)].map((x) => ({ x, v: seasonVal(x, m), hot: hotSet.has(x) })).filter((o) => o.v >= 2 || (o.v === 1 && o.hot))
+    .sort((a, b) => (b.v + (b.hot ? 1 : 0)) - (a.v + (a.hot ? 1 : 0))).slice(0, 3);
+  // fish season matters about as much as wind: in-season species and VFA hot spots lift a spot
+  sc += Math.min(20, tgt.reduce((a, o) => a + o.v * 2 + (o.hot ? 3 : 0), 0));
+  if (!tgt.length) sc -= 6;
+  if (rel === "onshore" && wind >= 8 && wind < 15 && tgt.some((o) => o.x === "snapper" || o.x === "australian-salmon")) sc += 4;
   sc = Math.max(0, Math.min(100, Math.round(sc)));
   const target = tgt.map((o) => short(o.x));
-  const reason = `${bits.join(", ")}${target.length ? `, good for ${target.slice(0, 2).join(" and ")}` : ""}`;
-  return { spot: s, score: sc, badge: avoid ? "Poor" : sc >= 70 ? "Good" : sc >= 50 ? "OK" : "Poor", reason, best: bestTime(s, r, today, sr, ss), target, avoid, wind, gust, dirTxt: compass(dir), wave };
+  const hot = tgt.filter((o) => o.hot).map((o) => short(o.x));
+  const run = tgt.filter((o) => seasonVal(o.x, m) === 3).map((o) => short(o.x));
+  const why = run.length ? `${run[0]} run season` : target.length ? `${target.slice(0, 2).join(" and ")} in season` : "quiet month for the usual fish";
+  const reason = `${bits.join(", ")} · ${why}`;
+  const st = nearestStation(s.lat, s.lon);
+  return { spot: s, score: sc, badge: avoid ? "Poor" : sc >= 70 ? "Good" : sc >= 50 ? "OK" : "Poor", reason, best: bestTime(s, st?.station, sun.sunrise!, sun.sunset!, today, ss), target, targetSlugs: tgt.map((o) => o.x), avoid, wind, gust, dirTxt: compass(dir), wave, hot, stationName: st ? st.station.name : null };
 }
 
-const mins = (t: string) => Number(t.slice(11, 13)) * 60 + Number(t.slice(14, 16));
-function bestTime(s: LandSpot, r: Raw, today: string, sr: string, ss: string) {
-  const ch: { t: string; type: string }[] = [];
-  for (let i = 1; i < r.sea.length - 1; i++) {
-    const a = r.sea[i - 1], b = r.sea[i], c = r.sea[i + 1];
-    if (a == null || b == null || c == null || !r.t[i].startsWith(today)) continue;
-    if (b > a && b >= c) ch.push({ t: r.t[i], type: "high" }); if (b < a && b <= c) ch.push({ t: r.t[i], type: "low" });
+function bestTime(s: LandSpot, st: ReturnType<typeof nearestStation> extends infer R ? (R extends { station: infer S } ? S : never) | undefined : never, sunrise: Date, sunset: Date, today: string, ssLocal: string) {
+  const lt = (d: Date) => clock(d.getTime(), TZ);
+  if (st) {
+    const hi = eventsBetween(st, sunrise.getTime() - 3 * 3600000, sunset.getTime() + 3 * 3600000).filter((e) => e.type === "High");
+    // VFA: a few hours either side of high tide, around dawn or dusk
+    let best: { k: string; at: Date; hi: { t: number } ; gap: number } | null = null;
+    for (const [k, at] of [["Dawn", sunrise], ["Dusk", sunset]] as const) for (const h of hi) { const g = Math.abs(h.t - at.getTime()); if (!best || g < best.gap) best = { k, at, hi: h, gap: g }; }
+    if (best && best.gap <= 3 * 3600000) return `${best.k} (${lt(best.at)}) – high tide ${clock(best.hi.t, TZ)} at ${st.name.replace(/ \(.*\)/, "")}`;
+    if (hi.length) return `Around high tide, ${clock(hi[0].t, TZ)} (${st.name.replace(/ \(.*\)/, "")}), or dusk (${lt(sunset)})`;
   }
-  const opts = [{ k: "dawn", t: sr }, { k: "dusk", t: ss }];
-  let best: { k: string; t: string; tide?: { t: string; type: string }; gap: number } | null = null;
-  for (const o of opts) for (const c of ch) { const g = Math.abs(mins(c.t) - mins(o.t)); if (!best || g < best.gap) best = { ...o, tide: c, gap: g }; }
-  if (best && best.gap <= 150) return `${best.k === "dawn" ? "Dawn" : "Dusk"} – ${best.k === "dawn" ? hhmm(sr) : hhmm(ss)}, with the ${best.tide!.type} tide change about ${hhmm(best.tide!.t).replace(":00", "")}`;
   const maj = solunar(today, TZ, s.lat, s.lon).find((p) => p.kind === "major" && p.mid.startsWith(today));
-  if (ch.length) return `Around the ${ch[0].type} tide change about ${hhmm(ch[0].t).replace(":00", "")}, or dusk (${hhmm(ss)})`;
-  return maj ? `Dusk (${hhmm(ss)}) or feeding time ${hhmm(maj.start)}–${hhmm(maj.end)}` : `Dawn (${hhmm(sr)}) or dusk (${hhmm(ss)})`;
+  void ssLocal;
+  return maj ? `Dusk (${lt(sunset)}) or the moon's feeding time` : `Dawn (${lt(sunrise)}) or dusk (${lt(sunset)})`;
 }
 
 export const km = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {

@@ -1,3 +1,4 @@
+import { INFO, EXTRA, type Info } from "./spotinfo";
 export type Cardinal8 = "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
 
 export type SpotKind = "pier" | "shore" | "ramp" | "mark" | "sanctuary";
@@ -21,7 +22,7 @@ export type Spot = {
   tideLagHours: number;
 };
 
-export const SPOTS: Spot[] = [
+const RAW: Spot[] = [
   {
     id: "st-kilda-pier",
     name: "St Kilda Pier",
@@ -928,3 +929,14 @@ export const KIND_LABEL: Record<SpotKind, string> = {
   mark: "Boat mark",
   sanctuary: "No-take",
 };
+
+export type FullSpot = Spot & { info?: Info };
+/** All places. Land-based spots carry curated info (area, source, hot-spot species, closures). */
+export const SPOTS: FullSpot[] = [
+  ...RAW.map((s): FullSpot => {
+    const i = INFO[s.id]; if (!i) return s;
+    const { area: _a, src: _s, hot: _h, other: _o, status: _st, eat: _e, noWind: _n, ...rest } = i; void [_a, _s, _h, _o, _st, _e, _n];
+    return { ...s, ...rest, tideNote: "", info: i };
+  }),
+  ...EXTRA.map(([s, i]): FullSpot => ({ ...s, info: i })),
+];

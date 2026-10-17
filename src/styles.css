@@ -180,3 +180,45 @@ label.check input{accent-color:var(--gold)}
 .thumb img{object-fit:contain;background:#081a36}
 .strip{grid-template-columns:repeat(2,1fr);gap:10px}.sp figcaption{font-size:12px}
 @media (min-width:420px){.strip{grid-template-columns:repeat(4,1fr)}.sp figcaption{font-size:10.5px}}
+
+/* ===== v1.1: navigation, guides, tides, reports ===== */
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-height:48px;padding:0 14px 0 8px;border:0;border-radius:14px;background:var(--card,#161e22);color:var(--txt);font-weight:700;font-size:17px;flex:none}
+.backbtn:active{transform:scale(.96)}
+.pagetitle{margin:14px 4px 0;font-size:26px}
+.wide{width:100%;display:block;text-align:center}.backbottom{margin:14px 0 4px;min-height:52px;font-size:17px}
+.block{display:block;margin-top:4px}
+.cardbtn{display:block;width:100%;text-align:left;background:none;border:0;padding:0;color:inherit}
+.cardbtn .more{display:block;margin-top:8px;color:var(--sun);font-weight:700}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;margin:4px -2px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;min-height:44px;padding:0 14px;border-radius:999px;border:1px solid #ffffff22;background:#ffffff0a;color:var(--txt);font-size:15px}
+.chips button.on{background:var(--sage);color:#0c1114;border-color:transparent;font-weight:700}
+.chips2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chips2 button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:14px;border:1px solid #ffffff14;background:#ffffff0a;color:var(--txt);font-size:14px}
+.chips2 button small{color:var(--mut);font-size:12px}
+.fishrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;color:inherit;padding:12px;margin:10px 0}
+.fishrow .fr-txt{flex:1;display:flex;flex-direction:column;gap:2px}.fishrow b{font-size:20px}.fishrow small{color:var(--mut);font-size:14px}
+.lowtrust{color:var(--sun)!important}
+.chev{font-size:30px;color:var(--mut);flex:none;padding:0 4px}
+.thumb{display:inline-flex;align-items:center;justify-content:center;flex:none;overflow:hidden;border-radius:10px;background:#081a36}
+.spec-hero{text-align:center}.spec-hero .thumb{width:100%!important;height:auto!important;aspect-ratio:16/9;max-width:420px;border-radius:16px;margin:0 auto 8px}.spec-hero .thumb img{width:100%;height:100%}
+.spec-hero .grid{text-align:left}
+.plain{margin:6px 0 10px;padding-left:20px}.plain li{margin:6px 0;line-height:1.4}
+.mstrip{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin:8px 0;flex:1}
+.mstrip div{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:6px;padding:2px 0}
+.mstrip i{display:block;width:100%;height:22px;border-radius:5px}.mstrip small{font-size:11px;color:var(--mut)}
+.mstrip div.now{outline:2px solid #fff;outline-offset:1px}
+.dot{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px}
+.calrow{display:block;width:100%;background:none;border:0;border-bottom:1px solid #ffffff14;color:inherit;text-align:left;padding:8px 0}.calrow .cn{font-weight:700}
+.hero2{background:linear-gradient(150deg,#2a3a31,#131b1f)}
+.item small.block{font-size:13px}
+.fish-chip{display:flex;align-items:center;gap:12px}.fish-chip>span:nth-child(2){flex:1}.fish-chip b{font-size:18px}
+.moreitem{display:flex;align-items:center;gap:12px;font-size:18px;min-height:64px}.moreitem b{flex:1}
+.sprow{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;border-bottom:1px solid #ffffff12;color:inherit;text-align:left;padding:8px 0;min-height:56px}.sprow span:last-child{margin-left:auto;color:var(--mut);font-size:14px;text-align:right}
+.rep{display:block;padding:14px;margin:8px 0;border-radius:14px;background:#ffffff0c;border:1px solid #ffffff14;color:var(--txt);text-decoration:none}
+.rep b{display:block;font-size:17px;color:var(--aqua)}.rep small{display:block;color:var(--mut);margin-top:3px;font-size:14px}
+.areahead{margin:14px 0 2px!important;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.curve{width:100%;height:auto;margin:6px 0 4px;background:#ffffff08;border-radius:14px}
+.tide-now{font-size:18px;margin:6px 0}
+.btn.wide{margin-top:10px}
+.sheet{display:none}
+.wcard .cardbtn h3{margin:0}
