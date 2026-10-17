@@ -130,8 +130,7 @@ export const EXTRA: [Spot, Info][] = [
     tips: "Local reviews say you can fish from the shore beside the ramp and breakwater, and name snapper (including pinkies), squid, flathead and whiting. We found no VFA listing for this spot, so treat the fish list as local knowledge. Keep clear of boats and the ramp lanes, and take line and hooks home. Check the Reports tab for recent Geelong catches." },
     { area: "bellarine", src: "local", noWind: true,
     report: { items: [
-      { t: "Report 1 – Choc caught a snapper over 40 cm (his estimate) at St Helens on a small blade lure. Date not given. The length is his estimate, not measured or verified here.", photo: { src: "spots/sthelens-lure.webp", cap: "Choc's snapper from St Helens, with the small blade lure it took (his estimate: over 40 cm). The photo has a graphic effect added." } },
-      { t: "Report 1 (continued) – the same fish, held beside the water at the St Helens rock wall.", photo: { src: "spots/sthelens-choc.webp", cap: "Choc with his St Helens snapper (his estimate: over 40 cm)." } },
-      { t: "Report 2 – a different, separate catch: a rock flathead (Choc's ID) at St Helens. Length, bait and date not given." } ],
-      note: "Both reports are one angler's personal accounts, not VFA or official reports." } }],
+      { t: "Choc caught a snapper over 40 cm (his estimate) at St Helens on a small blade lure. Date not given. The length is his estimate, not measured or verified here.", photo: { src: "spots/sthelens-lure.webp", cap: "Choc's snapper from St Helens, with the small blade lure it took (his estimate: over 40 cm). The photo has a graphic effect added." } },
+      { t: "The same fish, held beside the water at the St Helens rock wall.", photo: { src: "spots/sthelens-choc.webp", cap: "Choc with his St Helens snapper (his estimate: over 40 cm)." } } ],
+      note: "This is one angler's personal account, not a VFA or official report." } }],
 ];
