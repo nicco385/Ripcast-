@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { SPECIES } from "./data/species";
+import { SPECIES, bagText, sizeText } from "./data/species";
 import { REGS, MONTHS } from "./data/regs";
 import { AREAS, type Area } from "./data/spotinfo";
 import { REPORTS, NO_REPORTS, REPORT_CHECKED } from "./data/reports";
@@ -92,8 +92,9 @@ export function Log({ place }: { place: Place }) {
     <form className="card" onSubmit={add}>
       <h2>Add a catch</h2>
       <label>Fish<select value={sp} onChange={(e) => setSp(e.target.value)}>{SPECIES.map((s) => <option key={s.slug}>{s.name}</option>)}<option>Other</option></select></label>
-      <div className="row" style={{ justifyContent: "flex-start", gap: 12 }}><SpThumb name={sp} size={84} /><p className="muted small" style={{ margin: 0 }}>{info ? <>Min size: {info.minCm ? `${info.minCm} cm` : "none"} · Bag limit: {info.bag}{info.bagNote ? ` (${info.bagNote})` : ""}</> : "Pick a fish to see its legal size."}</p></div>
+      <div className="row" style={{ justifyContent: "flex-start", gap: 12 }}><SpThumb name={sp} size={84} /><p className="muted small" style={{ margin: 0 }}>{info ? <>Legal size: {sizeText(info).toLowerCase()} · Bag limit: {bagText(info).toLowerCase()}{info.bagNote ? ` (${info.bagNote})` : ""}</> : "Pick a fish to see its legal size."}</p></div>
       <label>Length (cm)<input inputMode="decimal" value={cm} onChange={(e) => setCm(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="optional" /></label>
+      {info?.maxCm && cm && +cm > info.maxCm && <div className="banner danger">Over the {info.maxCm} cm maximum – please release it.</div>}
       {tooSmall && <div className="banner danger">Under the {info!.minCm} cm legal size – please release it.</div>}
       <label className="check"><input type="checkbox" checked={kept} onChange={(e) => setKept(e.target.checked)} /> I kept it</label>
       <label>Notes<input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="bait, rig, tide…" /></label>
@@ -120,7 +121,7 @@ export function Rules({ onSpecies }: { onSpecies: (slug: string) => void }) {
       <p className="small"><Ext href="https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/food-safety">VFA – Eating your catch safely ↗</Ext><br /><Ext href="https://www.betterhealth.vic.gov.au/health/healthyliving/fishing-eat-your-catch-with-care">Better Health Channel – Yarra & Maribyrnong ↗</Ext></p></section>
     <section className="card"><h3>Stay safe</h3><ul className="plain small"><li>Wear a life jacket on rocks and breakwalls, and keep back from the edge in big seas.</li><li>Tell someone where you are going. Don't fish alone in rough weather.</li><li>Watch for blue-ringed octopus in rock pools and around pylons – never touch one.</li><li>Check for closures and marine park boundaries – no fishing inside marine sanctuaries.</li></ul></section>
     <section className="card"><h3>Size & bag limits</h3><p className="muted small">Checked against the <Ext href={REGS.sourceUrl}>{REGS.source}</Ext> on {REGS.checked}. Tap a fish for its guide.</p>
-      {sorted.map((s) => <button key={s.slug} className="sprow" onClick={() => onSpecies(s.slug)}><SpThumb name={s.name} /><b>{s.name}</b><span>{s.minCm ? `min ${s.minCm} cm` : "no min"} · bag {s.bag}</span></button>)}
+      {sorted.map((s) => <button key={s.slug} className="sprow" onClick={() => onSpecies(s.slug)}><SpThumb name={s.name} /><b>{s.name}</b><span>{s.minCm && s.maxCm ? `${s.minCm}–${s.maxCm} cm only` : s.minCm ? `min ${s.minCm} cm` : "no min"} · bag {bagText(s).toLowerCase()}</span></button>)}
       <p className="muted small">{REGS.defaultBag} Month names: {MONTHS.join(", ")}.</p>
     </section>
   </>;

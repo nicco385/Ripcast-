@@ -4,7 +4,7 @@ import { GUIDES } from "./data/guides";
 import { j, compass, fmtLocal, marineTrust, solunar } from "./lib";
 import { nearestStation, eventsBetween, clock } from "./tides";
 
-export type SpotType = "pier" | "beach" | "rocks" | "estuary";
+export type SpotType = "pier" | "beach" | "rocks" | "estuary" | "lake" | "river";
 const TZ = "Australia/Melbourne";
 // Land-based type for each spot (boat-only marks and sanctuaries are left out).
 const TYPE: Record<string, SpotType> = {
@@ -12,7 +12,7 @@ const TYPE: Record<string, SpotType> = {
   "warmies-wall": "rocks", "newport-warmies": "rocks", "schnapper-point": "rocks",
   "patterson-shore": "estuary", "patterson-river": "estuary", "yarra-docklands": "estuary", "yarra-southbank": "estuary",
   "yarra-herring": "estuary", "maribyrnong-footscray": "estuary", "maribyrnong-anglers": "estuary", "maribyrnong-ramp": "estuary",
-  "martha-cove": "estuary",
+  "martha-cove": "estuary", "albert-park-lake": "lake", "yarra-bend": "river",
 };
 const DEG: Record<string, number> = { N: 0, NE: 45, E: 90, SE: 135, S: 180, SW: 225, W: 270, NW: 315 };
 const isLand = (s: Spot) => !s.noTake && (s.kind === "pier" || s.kind === "shore");
@@ -46,7 +46,7 @@ async function fetchSpots(): Promise<{ at: number; data: Record<string, Raw> }> 
     const W = Array.isArray(wd) ? wd : [wd]; const M = md ? (Array.isArray(md) ? md : [md]) : [];
     b.forEach((s, k) => {
       const h = W[k].hourly, mh = M[k]?.hourly; const tr = marineTrust(s.lat, s.lon, M[k]?.latitude, M[k]?.longitude);
-      data[s.id] = { t: h.time, wind: h.wind_speed_10m, gust: h.wind_gusts_10m, dir: h.wind_direction_10m, wave: tr.waves ? mh?.wave_height ?? [] : [] };
+      data[s.id] = { t: h.time, wind: h.wind_speed_10m, gust: h.wind_gusts_10m, dir: h.wind_direction_10m, wave: tr.waves && !s.info?.fresh ? mh?.wave_height ?? [] : [] };
     });
   }
   const out = { at: Date.now(), data };
@@ -111,7 +111,7 @@ export function rankSpot(s: LandSpot, r: Raw, mode: "now" | "today"): Rank {
   const run = tgt.filter((o) => seasonVal(o.x, m) === 3).map((o) => short(o.x));
   const why = run.length ? `${run[0]} run season` : target.length ? `${target.slice(0, 2).join(" and ")} in season` : "quiet month for the usual fish";
   const reason = `${bits.join(", ")} · ${why}`;
-  const st = nearestStation(s.lat, s.lon);
+  const st = s.info?.fresh ? null : nearestStation(s.lat, s.lon);
   return { spot: s, score: sc, badge: avoid ? "Poor" : sc >= 70 ? "Good" : sc >= 50 ? "OK" : "Poor", reason, best: bestTime(s, st?.station, sun.sunrise!, sun.sunset!, today, ss), target, targetSlugs: tgt.map((o) => o.x), avoid, wind, gust, dirTxt: compass(dir), wave, hot, stationName: st ? st.station.name : null };
 }
 

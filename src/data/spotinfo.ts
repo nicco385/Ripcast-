@@ -1,9 +1,10 @@
 import type { Spot } from "./spots";
 
-export type Area = "northwest" | "rivers" | "east" | "peninsula" | "bellarine" | "westernport";
+export type Area = "northwest" | "rivers" | "freshwater" | "east" | "peninsula" | "bellarine" | "westernport";
 export const AREAS: Record<Area, { name: string; blurb: string }> = {
   northwest: { name: "Hobsons Bay & Werribee", blurb: "Williamstown, Altona and Werribee on the bay's north-west corner." },
   rivers: { name: "Yarra & Maribyrnong", blurb: "City rivers, including the Warmies at Newport." },
+  freshwater: { name: "Freshwater (Albert Park Lake & upper Yarra)", blurb: "No tides here. Perch, redfin and trout in the city's lake and the freshwater Yarra." },
   east: { name: "Bayside & Frankston", blurb: "St Kilda down to Seaford and Patterson River." },
   peninsula: { name: "Mornington Peninsula", blurb: "Mornington, Dromana, Rosebud, Rye, Sorrento and Portsea." },
   bellarine: { name: "Geelong & Bellarine", blurb: "Geelong, Portarlington, St Leonards and Queenscliff." },
@@ -22,6 +23,8 @@ export type Info = Partial<Omit<Spot, "id">> & {
   eat?: boolean;
   /** Wind shelter is not mapped for this spot. */
   noWind?: boolean;
+  /** Freshwater, not tidal: no tide times or sea waves. */
+  fresh?: boolean;
 };
 
 const PV = "https://www.parks.vic.gov.au/";
@@ -58,9 +61,9 @@ export const INFO: Record<string, Info> = {
   "warmies-wall": { area: "rivers", src: "local", eat: true, access: "Newport. Parking is tight. Walk the channel – the boat ramp is for boats.", tips: "FishingMad: when the power-station pumps run, the warm outflow draws salmon (winter) and snapper (pinkies Jan–Mar) – look for steam as a guide. Never touch a blue-ringed octopus (venomous) – FishingMad has caught them here. Lower Yarra fish: see food-safety advice." },
   "yarra-docklands": { area: "rivers", src: "local", eat: true, tips: "Pinkies were reported here in autumn and winter (FishingMad). Lower Yarra fish: see food-safety advice." },
   "yarra-southbank": { area: "rivers", src: "local", eat: true, tips: "City promenade – keep the footprint small. Lower Yarra fish: see food-safety advice." },
-  "yarra-herring": { area: "rivers", src: "local", eat: true, tips: "Quieter bank fishing. Lower Yarra fish: see food-safety advice." },
-  "maribyrnong-footscray": { area: "rivers", src: "local", eat: true, tips: "FishingMad reports bream after light rain. Fish upstream of Solomons Ford (Avondale Heights) must not be eaten (PFAS)." },
-  "maribyrnong-anglers": { area: "rivers", src: "local", eat: true, tips: "FishingMad reports bream and estuary perch. Fish upstream of Solomons Ford (Avondale Heights) must not be eaten (PFAS)." },
+  "yarra-herring": { area: "rivers", src: "local", eat: true, tips: "Quieter bank fishing. Estuary perch are reported in the lower Yarra (FishingMad) – we found no VFA stocking record for the Yarra, so we can't say how many are wild or stocked. Murray cod: the closed season (1 Sep–30 Nov) applies in the Yarra River. Lower Yarra fish: see food-safety advice." },
+  "maribyrnong-footscray": { area: "rivers", src: "local", eat: true, tips: "FishingMad reports bream after light rain, and estuary perch around the timber and jetties (the VFA stocked the river in 2018, 2019 and 2021). Try small surface lures on warm, calm evenings. Fish upstream of Solomons Ford (Avondale Heights) must not be eaten (PFAS)." },
+  "maribyrnong-anglers": { area: "rivers", src: "local", eat: true, tips: "FishingMad reports bream and estuary perch (the VFA stocked the river in 2018, 2019 and 2021) – the jetties opposite the Anglers Tavern and Canning Reserve are named spots. Light lures along the timber. Fish upstream of Solomons Ford (Avondale Heights) must not be eaten (PFAS)." },
 };
 
 const WP: Omit<Info, "area" | "src">[] = [];
@@ -89,4 +92,14 @@ export const EXTRA: [Spot, Info][] = [
     "Marine Parade, before the bridge to Phillip Island. Toilets, BBQs, shops and a tackle store.", "VFA: very strong tidal currents – use heavy sinkers except around slack water. Fish a few hours either side of high tide.", ["calamari", "king-george-whiting", "australian-salmon", "silver-trevally", "snapper", "leatherjacket"]),
   W("cowes-jetty", "Cowes Jetty (Phillip Island)", -38.4468, 145.2398, "south", { other: ["barracouta"] },
     "End of Bass Street, Cowes. Toilets nearby; very busy in holidays.", "VFA: exposed in strong northerlies; southerlies are more comfortable. A paternoster rig suits most fish; a few hours either side of high tide is best.", ["calamari", "king-george-whiting", "australian-salmon", "silver-trevally", "gummy-shark", "elephant-fish", "snapper", "sand-flathead", "garfish"]),
+  [{ id: "albert-park-lake", name: "Albert Park Lake", kind: "shore", lat: -37.8459, lon: 144.9695, shore: "mid", depth: "Shallow: about 1–2 m in most places, with some deeper holes (FishingMad)",
+    species: ["golden-perch", "estuary-perch", "silver-perch", "redfin", "murray-cod"], tideNote: "", windNote: "", exposedTo: [], shelteredFrom: [], tideLagHours: 0,
+    access: "Walk the lake's shore track (about 5 km round). Paid parking in several areas – watch the time limits. The pin is the middle of the lake. FishingMad names the carousel area and the yacht club pontoons (Aquatic Drive) as popular spots.",
+    tips: "Weedy and shallow, so use shallow lures and light gear. Surface lures on warm calm evenings for estuary perch; slow-rolled plastics for golden perch; scrub worms for silver perch. Redfin are listed by the VFA but rarely caught here (FishingMad). Trout are stocked in winter and school holidays. Carp must not be put back. Take line and hooks home – there are swans, and Parks Victoria asks you not to touch sick or dead birds (bird flu alert)." },
+    { area: "freshwater", src: "local", fresh: true, noWind: true, hot: [], other: ["rainbow trout", "European carp", "eels"] }],
+  [{ id: "yarra-bend", name: "Yarra Bend Park (Yarra River)", kind: "shore", lat: -37.7938, lon: 145.0107, shore: "mid", depth: "Shallow, sluggish river",
+    species: ["redfin", "estuary-perch"], tideNote: "", windNote: "", exposedTo: [], shelteredFrom: [], tideLagHours: 0,
+    access: "Yarra Bend Park, Fairfield – car parks and walking tracks along the river. Fishing is not allowed in the grey-headed flying-fox colony area (FishingMad).",
+    tips: "This stretch is above Dights Falls, so it is freshwater with no tide. FishingMad reports redfin, carp, eels and estuary perch. Small plastics, blades and spinners for redfin; surface lures at dusk for perch; worms or corn for carp. Do not leave line in the trees – flying-foxes get caught. Murray cod: the closed season (1 Sep–30 Nov) applies in the Yarra River. Fish from the river have health advice." },
+    { area: "freshwater", src: "local", fresh: true, noWind: true, eat: true, other: ["European carp", "eels"] }],
 ];

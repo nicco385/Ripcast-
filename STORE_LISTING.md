@@ -19,7 +19,7 @@ What you get:
 • Sunrise, sunset, moon phase and the best feeding times (solunar)
 • Official tide times from the Bureau of Meteorology for 20 Victorian stations, working offline, with a tide chart and 7-day view
 • Safety warnings for strong wind, storms and big swell
-• Fish guides for 15 species: where to fish from the shore, rigs, hooks, baits, lures, tips and the legal size
+• Fish guides for 20 species (including estuary, golden and silver perch and redfin for the Yarra, Maribyrnong and Albert Park Lake): where to fish from the shore, rigs, hooks, baits, lures, tips and the legal size
 • A month-by-month calendar of what's biting and where the fish move
 • Links to current local fishing reports for each area
 • A map of land-based spots, with every marine park and sanctuary around Port Phillip, Western Port and the nearby coast outlined in red (no fishing). The app never suggests a spot inside one.

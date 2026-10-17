@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { SPECIES, speciesBySlug } from "./data/species";
+import { SPECIES, speciesBySlug, bagText, sizeText } from "./data/species";
 import { GUIDES, guideBySlug } from "./data/guides";
 import { REGS, MONTHS } from "./data/regs";
 import { YEAR, CAL_SOURCES } from "./data/calendar";
@@ -42,7 +42,7 @@ export function FishTab({ onOpen, onCal }: { onOpen: (slug: string) => void; onC
     {list.map((s) => { const sl = seasonLabel(s.slug); const g = guideBySlug(s.slug);
       return <button key={s.slug} className="card fishrow" onClick={() => onOpen(s.slug)}>
         <SpThumb name={s.name} size={96} />
-        <span className="fr-txt"><b>{s.name}</b><small>{sl.t}</small><small>{s.minCm ? `Min ${s.minCm} cm` : "No min size"} · bag {s.bag}</small>{g?.trust === "low" && <small className="lowtrust">Limited information</small>}</span>
+        <span className="fr-txt"><b>{s.name}</b><small>{sl.t}</small><small>{s.minCm && s.maxCm ? `${s.minCm}–${s.maxCm} cm only` : s.minCm ? `Min ${s.minCm} cm` : "No min size"} · bag {bagText(s)}</small>{g?.trust === "low" && <small className="lowtrust">Limited information</small>}</span>
         <span className="chev" aria-hidden="true">›</span></button>; })}
     <p className="muted small center">Seasons come from the VFA's Go Fishing pages (Port Phillip Bay and Western Port). Guides are for fishing from the shore.</p>
   </>;
@@ -62,8 +62,8 @@ export function SpeciesView({ slug, onSpot }: { slug: string; onSpot: (id: strin
       <h2>{sp.name}</h2>{sp.aka && <p className="muted small">Also called: {sp.aka}</p>}
       <p>{g.intro}</p>
       <div className="grid">
-        <div className="stat"><small>Minimum size</small><b>{sp.minCm ? `${sp.minCm} cm` : "None"}</b></div>
-        <div className="stat"><small>Bag limit</small><b>{sp.bag}</b>{sp.bagNote && <small>{sp.bagNote}</small>}</div>
+        <div className="stat"><small>Minimum size</small><b>{sizeText(sp)}</b></div>
+        <div className="stat"><small>Bag limit</small><b>{bagText(sp)}</b>{sp.bagNote && <small>{sp.bagNote}</small>}</div>
       </div>
       {sp.measure && <p className="small">Measure: {sp.measure}.</p>}
       <p className="muted small">Size and bag limits checked against the VFA on {REGS.checked}. <Ext href={REGS.sourceUrl}>Check the latest ↗</Ext></p>
@@ -94,7 +94,7 @@ export function CalendarView({ onOpen }: { onOpen: (slug: string) => void }) {
     <section className="card hero2"><h2>📅 {MONTHS[m - 1]}: {cur.headline}</h2><ul className="plain">{cur.points.map((p) => <li key={p}>{p}</li>)}</ul></section>
     <section className="card"><h2>Season chart</h2><SeasonKey />
       {list.map((g) => { const sp = speciesBySlug(g.slug)!; return <button key={g.slug} className="calrow" onClick={() => onOpen(g.slug)}><span className="cn">{sp.name}</span><MonthStrip slug={g.slug} /></button>; })}
-      <p className="muted small">Based on the VFA's peak seasons, with the main spring snapper run from other sources. Mulloway, kingfish, snook and estuary perch are left out – no reliable seasonal source.</p>
+      <p className="muted small">Based on the VFA's peak seasons, with the main spring snapper run from other sources. Mulloway, kingfish, snook and Murray cod are left out – no reliable seasonal source. Estuary, golden and silver perch (city rivers and Albert Park Lake) use a rough warm-months guide from FishingMad, not an official VFA peak.</p>
     </section>
     {YEAR.filter((y) => y.month !== m).sort((a, b) => ((a.month - m + 12) % 12) - ((b.month - m + 12) % 12)).map((y) => <section key={y.month} className="card"><h3>{MONTHS[y.month - 1]} – {y.headline}</h3><ul className="plain">{y.points.map((p) => <li key={p}>{p}</li>)}</ul></section>)}
     <section className="card"><h3>Where this comes from</h3>{CAL_SOURCES.map((s) => <p key={s.u} className="small"><Ext href={s.u}>{s.t} ↗</Ext></p>)}
@@ -104,7 +104,7 @@ export function CalendarView({ onOpen }: { onOpen: (slug: string) => void }) {
 
 export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spot: LandSpot; place: Place; onBack: () => void; onMap: () => void; onUse: () => void; onSpecies: (slug: string) => void }) {
   void onBack;
-  const i = spot.info, m = curMonth(), st = nearestStation(spot.lat, spot.lon), now = Date.now();
+  const i = spot.info, m = curMonth(), st = i?.fresh ? null : nearestStation(spot.lat, spot.lon), now = Date.now();
   const evs = st ? eventsBetween(st.station, now - 3 * 3600000, now + 30 * 3600000).filter((e) => e.t > now - 3 * 3600000).slice(0, 4) : [];
   const fish = [...new Set(spot.species)].map((x) => ({ x, v: seasonVal(x, m) })).sort((a, b) => b.v - a.v);
   return <>
@@ -112,7 +112,7 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
       <h2>{spot.name}</h2>
       <p className="muted small">{i ? AREAS[i.area].name : ""} · {spot.type} · {Math.round(km(place, spot))} km from {place.name}</p>
       {i?.status?.closed && <div className="banner danger">⛔ Closed. {i.status.note}<br /><Ext href={i.status.url}>Official update ↗</Ext> <small>(as of {i.status.asOf})</small></div>}
-      {i?.src === "vfa" ? <p className="small">✅ Fish list and tips from the Victorian Fisheries Authority.</p> : <p className="muted small">General local knowledge – not an official VFA list.</p>}
+      {i?.fresh ? <p className="small">Fish list from VFA stocking records, Parks Victoria and FishingMad. A freshwater spot – <b>no tides here</b>.</p> : i?.src === "vfa" ? <p className="small">✅ Fish list and tips from the Victorian Fisheries Authority.</p> : <p className="muted small">General local knowledge – not an official VFA list.</p>}
       {!i?.status?.closed && <div className="row btns">
         <a className="btn" href={`https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lon}`} target="_blank" rel="noreferrer">🚗 Directions</a>
         <button className="btn alt" onClick={onMap}>🗺️ On the map</button></div>}
@@ -120,7 +120,7 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
     </section>
     {fish.length > 0 && <section className="card"><h2>🐟 Fish here</h2>
       {fish.map(({ x, v }) => <button key={x} className="item fish-chip" onClick={() => onSpecies(x)}><SpThumb name={x} size={64} /><span><b>{speciesBySlug(x)?.name ?? short(x)}</b>{i?.hot?.includes(x) ? " ⭐" : ""}<small className="block muted">{seasonLabel(x).t || ""}</small></span><span className="chev">›</span></button>)}
-      {i?.other?.length ? <p className="muted small">Also caught here (VFA): {i.other.join(", ")}.</p> : null}
+      {i?.other?.length ? <p className="muted small">Also caught here{i.fresh ? "" : " (VFA)"}: {i.other.join(", ")}.</p> : null}
       {i?.hot?.length ? <p className="muted small">⭐ = the VFA names this spot as a hot spot for that fish.</p> : null}
     </section>}
     <section className="card"><h2>ℹ️ Know before you go</h2>
@@ -130,12 +130,20 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
       {spot.windNote && <p><b>Wind:</b> {spot.windNote}</p>}
       {i?.noWind && <p className="muted small">We have not mapped which winds this spot is sheltered from – check the wind direction when you arrive.</p>}
     </section>
+    {i?.fresh && <section className="card"><h2>📏 Rules for the perch here</h2>
+      <p className="small"><b>Estuary perch:</b> min 27 cm, bag 5 (with Australian bass; no more than 2 bass).</p>
+      {!i.eat && <p className="small"><b>Golden perch (yellowbelly):</b> min 30 cm, bag 5.</p>}
+      {!i.eat && <p className="small"><b>Silver perch:</b> min 30 cm, bag 5 in Albert Park Lake (none may be taken from rivers north of the Great Dividing Range).</p>}
+      <p className="small"><b>Redfin (English perch):</b> no size or bag limit. The VFA asks you not to put them back.</p>
+      <p className="small"><b>Murray cod:</b> only 55–75 cm, bag {i.eat ? "1 in rivers" : "2 in Albert Park Lake"}. {i.eat ? "Closed 1 Sep–30 Nov in the Yarra River." : "The Sep–Nov closed season does not apply here (VFA)."}</p>
+      <p className="small">Estuary perch{i.eat ? "" : ", golden perch, silver perch"} and Murray cod must be kept whole until you are away from the water. Carp must not be put back. {i.eat ? "" : "Parks Victoria says fish from Albert Park Lake are not suitable to eat and encourages catch and release."} VFA checked 17 Oct 2026.</p>
+      <p className="small"><Ext href="https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons">VFA size and bag limits ↗</Ext></p></section>}
     {i?.eat && <section className="card"><h2>⚠️ Eating fish from the city rivers</h2>
       <p className="small">Health advice for the Lower Yarra and Maribyrnong: women who may become pregnant and children under 16 should not eat eel and should have no more than one 150 g serve a month of other fish; everyone else, no more than one eel serve a month and four serves of other fish a month. Fish from the Maribyrnong upstream of Solomons Ford (Avondale Heights) should not be eaten. Don't eat fish from flooded waters.</p>
       <p className="small"><Ext href="https://www.betterhealth.vic.gov.au/health/healthyliving/fishing-eat-your-catch-with-care">Better Health Channel ↗</Ext></p></section>}
     {st && evs.length > 0 && <section className="card"><h2>🌊 Tides</h2>
       <p className="muted small">Official BOM predictions for {st.station.name.replace(/ \(.*\)/, "")} ({Math.round(st.km)} km away).</p>
       {evs.map((e) => <div key={e.t} className="period"><b>{e.type === "High" ? "⬆ High" : "⬇ Low"} {clock(e.t, TZ)}</b><span>{dayKey(e.t, TZ) === dayKey(now, TZ) ? "Today" : "Tomorrow"} · {e.m.toFixed(2)} m</span></div>)}
-      <p className="muted small">The VFA suggests fishing a few hours either side of high tide for most pier fish.</p></section>}
+      <p className="muted small">The VFA suggests fishing a few hours either side of high tide for most pier fish.</p>{i?.eat && <p className="muted small">River tides arrive later the further upstream you are – by how much we haven't verified, so allow extra time.</p>}</section>}
   </>;
 }
