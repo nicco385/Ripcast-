@@ -39,3 +39,5 @@ To rename the app, edit `APP_NAME` in `src/config.ts`. The cover, title and mani
 - Fish seasons, spot details and tips: VFA Go Fishing pages (Port Phillip Bay, Western Port) and The Pelican's Pick; fish movements from FishingMad weekly reports, Peninsula Insider and Compleat Angler Dandenong (see the in-app sources).
 
 *Scores and tides are a guide only. Check BOM warnings and VFA rules, and fish safely.*
+
+- Tide dial (rising/falling + countdown), day tide graph with sunrise/sunset, moonrise/moonset, and solunar feeding times (traditional theory, guide only) – v1.2.0

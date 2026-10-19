@@ -11,6 +11,7 @@ import { LAND, ALL_LAND, seasonVal } from "./where";
 import { useNav, type Tab, type View } from "./nav";
 import { ScoreBadge, Arrow, Ico, SpThumb, Stat, Back, BASE, load, save, spImg } from "./ui";
 import { TideCard, TidesView } from "./tideviews";
+import { MoonCard, SolunarView } from "./moonviews";
 import { FishTab, SpeciesView, CalendarView, SpotView } from "./fishviews";
 import { Where, ReportsTab, More, Log, Rules, About } from "./views2";
 
@@ -70,14 +71,15 @@ export default function App() {
       <main key={`${nav.tab}-${v ? JSON.stringify(v) : ""}`} className="fade">
         {v && <h1 className="pagetitle">{TITLES[v.k]}</h1>}
         {needsWx && !shown && !err && <><div className="skel card-h" /><div className="skel card-h tall" /><div className="skel card-h" /></>}
-        {!v && nav.tab === "today" && shown && <Today f={shown} stale={shown.place.name !== place.name} place={place} onTides={() => push({ view: { k: "tides" } })} onWeek={() => push({ view: { k: "week" } })} onSpecies={openSpecies} />}
-        {!v && nav.tab === "today" && !shown && err && <TodayOffline place={place} onTides={() => push({ view: { k: "tides" } })} />}
+        {!v && nav.tab === "today" && shown && <Today f={shown} stale={shown.place.name !== place.name} place={place} onTides={() => push({ view: { k: "tides" } })} onSolunar={() => push({ view: { k: "solunar" } })} onWeek={() => push({ view: { k: "week" } })} onSpecies={openSpecies} />}
+        {!v && nav.tab === "today" && !shown && err && <TodayOffline place={place} onTides={() => push({ view: { k: "tides" } })} onSolunar={() => push({ view: { k: "solunar" } })} />}
         {!v && nav.tab === "where" && <Where place={place} onSpot={openSpot} onMap={() => push({ view: { k: "map" } })} />}
         {!v && nav.tab === "fish" && <FishTab onOpen={openSpecies} onCal={() => push({ view: { k: "calendar" } })} />}
         {!v && nav.tab === "reports" && <ReportsTab />}
         {!v && nav.tab === "more" && <More go={(k) => push({ view: { k } as View })} />}
         {v?.k === "week" && shown && <Week f={shown} />}
         {v?.k === "tides" && <TidesView place={place} />}
+        {v?.k === "solunar" && <SolunarView place={place} />}
         {v?.k === "spot" && (spot ? <SpotView spot={spot} place={place} onBack={back} onMap={() => push({ view: { k: "map", focus: spot.id } })} onUse={() => usePlace({ name: spot.name, lat: spot.lat, lon: spot.lon })} onSpecies={openSpecies} /> : <div className="card">That spot was not found.</div>)}
         {v?.k === "species" && <SpeciesView slug={v.slug} onSpot={openSpot} />}
         {v?.k === "calendar" && <CalendarView onOpen={openSpecies} />}
@@ -99,8 +101,8 @@ export default function App() {
 }
 
 /** Shown when the weather cannot load: the tide tables are built in, so tides still work offline. */
-function TodayOffline({ place, onTides }: { place: Place; onTides: () => void }) {
-  return <><div className="card"><h2>Weather isn't available</h2><p className="muted small">Tides and fish guides still work without a signal.</p></div><TideCard place={place} onMore={onTides} /></>;
+function TodayOffline({ place, onTides, onSolunar }: { place: Place; onTides: () => void; onSolunar: () => void }) {
+  return <><div className="card"><h2>Weather isn't available</h2><p className="muted small">Tides and fish guides still work without a signal.</p></div><TideCard place={place} onMore={onTides} /><MoonCard place={place} onMore={onSolunar} /></>;
 }
 
 function Picker({ favs, onPick, onRemoveFav }: { favs: Place[]; onPick: (p: Place) => void; onRemoveFav: (p: Place) => void }) {
@@ -172,7 +174,7 @@ function Cover({ f, onStart }: { f: Forecast | null; onStart: (g?: Go) => void }
 }
 
 
-function Today({ f, stale, place, onTides, onWeek, onSpecies }: { f: Forecast; stale: boolean; place: Place; onTides: () => void; onWeek: () => void; onSpecies: (slug: string) => void }) {
+function Today({ f, stale, place, onTides, onSolunar, onWeek, onSpecies }: { f: Forecast; stale: boolean; place: Place; onTides: () => void; onSolunar: () => void; onWeek: () => void; onSpecies: (slug: string) => void }) {
   const n = f.now; const [ico, txt] = weatherText(n.code);
   const sc = scoreDay(f, 0); const warn = safety(f);
   const nowKey = localNowKey(f.tz);
@@ -180,8 +182,7 @@ function Today({ f, stale, place, onTides, onWeek, onSpecies }: { f: Forecast; s
   const past3 = f.hours.filter((h) => h.time <= nowKey).slice(-4)[0];
   const dp = past3 ? n.pressure - past3.pressure : 0;
   const trend = dp > 0.7 ? "rising ↑" : dp < -0.7 ? "falling ↓" : "steady →";
-  const today = f.days[0]; const moon = moonInfo(new Date());
-  const periods = solunar(today.date, f.tz, f.place.lat, f.place.lon);
+  const today = f.days[0];
   const m = new Date().getMonth() + 1;
   const inSeason = SPECIES.map((s) => ({ s, v: seasonVal(s.slug, m) })).filter((o) => o.v >= 2).sort((a, b) => b.v - a.v).slice(0, 6);
   const cur = next[0];
@@ -215,18 +216,9 @@ function Today({ f, stale, place, onTides, onWeek, onSpecies }: { f: Forecast; s
         <button className="btn alt wide" onClick={onWeek}>7-day forecast ›</button>
       </section>
 
-      <section className="card">
-        <h2>🐟 Best feeding times today</h2>
-        <p className="muted small">Based on the moon's position (solunar) – a popular angler's guide, not proven science. Major = 2 hrs, minor = 1 hr.</p>
-        {periods.map((p) => <div key={p.mid} className={`period ${p.kind}`}><b>{hhmm(p.start)} – {hhmm(p.end)}</b><span>{p.kind === "major" ? "MAJOR" : "minor"} · {p.label}</span></div>)}
-        <div className="grid">
-          <Stat k="Sunrise" v={hhmm(today.sunrise)} s="dawn bite" />
-          <Stat k="Sunset" v={hhmm(today.sunset)} s="dusk bite" />
-          <Stat k="Moon" v={`${moon.icon} ${moon.pct}%`} s={moon.name} />
-        </div>
-      </section>
-
       <TideCard place={place} onMore={onTides} />
+
+      <MoonCard place={place} onMore={onSolunar} />
 
       <section className="card">
         <h2>⏱ Next 24 hours</h2>

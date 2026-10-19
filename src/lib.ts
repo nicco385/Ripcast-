@@ -127,13 +127,6 @@ export const fmtLocal = (d: Date, tz: string) => {
   return `${g("year")}-${g("month")}-${g("day")}T${g("hour").replace("24", "00")}:${g("minute")}`;
 };
 // UTC instant for local midnight of a date in tz (approx via offset at noon)
-function localMidnight(date: string, tz: string) {
-  const noon = new Date(date + "T12:00:00Z");
-  const loc = fmtLocal(noon, tz);
-  const offMin = (new Date(loc + ":00Z").getTime() - noon.getTime()) / 60000;
-  return new Date(new Date(date + "T00:00:00Z").getTime() - offMin * 60000);
-}
-
 // --- moon & solunar (computed on the device with SunCalc) ---
 export function moonInfo(date: Date) {
   const il = SunCalc.getMoonIllumination(date);
@@ -143,24 +136,8 @@ export function moonInfo(date: Date) {
   return { phase: p, pct: Math.round(il.fraction * 100), name, icon };
 }
 
-export type Period = { kind: "major" | "minor"; label: string; start: string; end: string; mid: string };
-export function solunar(date: string, tz: string, lat: number, lon: number): Period[] {
-  const t0 = localMidnight(date, tz).getTime();
-  const step = 5 * 60000; const alts: number[] = [];
-  for (let i = 0; i <= 288; i++) alts.push(SunCalc.getMoonPosition(new Date(t0 + i * step), lat, lon).altitude);
-  const out: Period[] = [];
-  const add = (i: number, kind: Period["kind"], label: string) => {
-    const mid = t0 + i * step, half = (kind === "major" ? 60 : 30) * 60000;
-    out.push({ kind, label, mid: fmtLocal(new Date(mid), tz), start: fmtLocal(new Date(mid - half), tz), end: fmtLocal(new Date(mid + half), tz) });
-  };
-  for (let i = 1; i < alts.length - 1; i++) {
-    if (alts[i] > alts[i - 1] && alts[i] >= alts[i + 1]) add(i, "major", "Moon overhead");
-    if (alts[i] < alts[i - 1] && alts[i] <= alts[i + 1]) add(i, "major", "Moon underfoot");
-    if (alts[i - 1] < 0 && alts[i] >= 0) add(i, "minor", "Moonrise");
-    if (alts[i - 1] > 0 && alts[i] <= 0) add(i, "minor", "Moonset");
-  }
-  return out.sort((a, b) => a.mid.localeCompare(b.mid));
-}
+export { solunar, type Period } from "./astro";
+import { solunar } from "./astro";
 
 // --- fishing score ---
 export type Score = { score: number; label: string; reasons: string[] };

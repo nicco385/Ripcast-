@@ -223,3 +223,9 @@ label.check input{accent-color:var(--gold)}
 .sheet{display:none}
 .wcard .cardbtn h3{margin:0}
 .spotphoto{margin:0 0 12px;text-align:center}.spotphoto img{width:100%;max-width:300px;height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:16px}.spotphoto figcaption{font-size:.85rem;opacity:.75;margin-top:6px}
+.dial{text-align:center;margin:6px 0 4px}.dial svg{width:100%;max-width:230px;height:auto}.dial .tide-now{margin:4px 0 8px}
+.rateline{display:flex;align-items:center;gap:10px;margin:6px 0}.rate{font-weight:800;letter-spacing:.06em;padding:6px 14px;border-radius:999px;font-size:1.05rem}
+.rate.r-High{background:#1f7a4d;color:#fff}.rate.r-Good{background:#3d7a3a;color:#fff}.rate.r-Fair{background:#8a6d1f;color:#fff}.rate.r-Low{background:#3b4a55;color:#dfe8ee}
+.fishrate{white-space:nowrap;font-size:.8rem;letter-spacing:1px}
+.solrow{padding:10px 12px;margin:8px 0;border-radius:14px;background:#ffffff0a}.solrow .period-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:1.05rem}
+.period span .fishrate{margin-right:4px}

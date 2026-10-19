@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { TIDE_STATIONS } from "./data/tides";
-import { type Station, nearestStation, stationById, eventsBetween, tideNow, tideStateText, clock, dayKey, distKm, TIDE_END } from "./tides";
+import { type Station, nearestStation, stationById, eventsBetween, tideNow, clock, dayKey, distKm, TIDE_END } from "./tides";
 import { type Place } from "./lib";
+import * as SunCalc from "suncalc";
+import { dayStart, dayEnd } from "./astro";
 import { Ext } from "./ui";
 
 const TZ = "Australia/Melbourne";
@@ -16,23 +18,54 @@ const dayLabel = (key: string, todayKey: string) => {
 };
 const short = (n: string) => n.replace(/ \(.*\)/, "");
 
-/** Small chart of the tide from 2 h ago to 22 h ahead, with a marker for now. */
-function Curve({ st, now }: { st: Station; now: number }) {
-  const W = 320, H = 96, from = now - 2 * 3600000, to = now + 22 * 3600000, N = 72;
+/** Tide chart for the local day (midnight to midnight) with sunrise, sunset and a marker for now. */
+export function DayCurve({ st, now, place }: { st: Station; now: number; place: Place }) {
+  const W = 340, H = 130, key = dayKey(now, TZ), from = dayStart(key, TZ), to = dayEnd(key, TZ), N = 144;
   const pts: [number, number][] = [];
   for (let i = 0; i <= N; i++) { const t = from + ((to - from) * i) / N; const n = tideNow(st, t); if (n) pts.push([i, n.m]); }
   if (pts.length < 10) return null;
   const lo = Math.min(...pts.map((p) => p[1])), hi = Math.max(...pts.map((p) => p[1])), span = Math.max(0.3, hi - lo);
-  const x = (i: number) => (i / N) * W, y = (m: number) => 14 + (1 - (m - lo) / span) * (H - 34);
-  const d = pts.map((p, k) => `${k ? "L" : "M"}${x(p[0]).toFixed(1)} ${y(p[1]).toFixed(1)}`).join("");
-  const nx = x(((now - from) / (to - from)) * N), nm = tideNow(st, now);
-  const ev = eventsBetween(st, from, to);
-  return <svg className="curve" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Tide chart for the next 24 hours">
-    <path d={`${d}L${W} ${H}L0 ${H}Z`} fill="#86a39222" /><path d={d} fill="none" stroke="#b9c9c4" strokeWidth="2.5" />
-    {ev.map((e) => { const i = ((e.t - from) / (to - from)) * N; return <g key={e.t}><circle cx={x(i)} cy={y(e.m)} r="3.5" fill="#d9b77e" /><text x={x(i)} y={e.type === "High" ? y(e.m) - 7 : y(e.m) + 15} textAnchor="middle" fontSize="10.5" fill="#cfe0da">{clock(e.t, TZ).replace(" ", "")}</text></g>; })}
-    <line x1={nx} x2={nx} y1="4" y2={H - 4} stroke="#ff8a7a" strokeDasharray="3 3" />{nm && <circle cx={nx} cy={y(nm.m)} r="5" fill="#ff8a7a" />}
-    <text x={nx + 4} y="12" fontSize="10.5" fill="#ff8a7a">now</text>
+  const x = (t: number) => ((t - from) / (to - from)) * W, y = (m: number) => 22 + (1 - (m - lo) / span) * (H - 52);
+  const d = pts.map((p, k) => `${k ? "L" : "M"}${((p[0] / N) * W).toFixed(1)} ${y(p[1]).toFixed(1)}`).join("");
+  const sun = SunCalc.getTimes(new Date(from + 12 * 3600000), place.lat, place.lon), sr = sun.sunrise?.getTime(), ss = sun.sunset?.getTime();
+  const nm = tideNow(st, now), ev = eventsBetween(st, from, to).filter((e) => e.t >= from && e.t < to);
+  return <svg className="curve" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Tide chart for today with sunrise, sunset and now">
+    {sr && ss && <><rect x="0" y="6" width={x(sr)} height={H - 28} fill="#00000033" /><rect x={x(ss)} y="6" width={W - x(ss)} height={H - 28} fill="#00000033" />
+      <text x={x(sr)} y="12" textAnchor="middle" fontSize="10" fill="#f6c453">☀↑ {clock(sr, TZ).replace(" ", "")}</text>
+      <text x={x(ss)} y="12" textAnchor="middle" fontSize="10" fill="#f6c453">☀↓ {clock(ss, TZ).replace(" ", "")}</text>
+      <line x1={x(sr)} x2={x(sr)} y1="16" y2={H - 22} stroke="#f6c45366" /><line x1={x(ss)} x2={x(ss)} y1="16" y2={H - 22} stroke="#f6c45366" /></>}
+    <path d={`${d}L${W} ${H - 22}L0 ${H - 22}Z`} fill="#86a39222" /><path d={d} fill="none" stroke="#b9c9c4" strokeWidth="2.5" />
+    {ev.map((e) => <g key={e.t}><circle cx={x(e.t)} cy={y(e.m)} r="3.5" fill={e.type === "High" ? "#7fb2e5" : "#e57f7f"} /><text x={x(e.t)} y={e.type === "High" ? y(e.m) - 7 : y(e.m) + 15} textAnchor="middle" fontSize="10.5" fill="#cfe0da">{clock(e.t, TZ).replace(" ", "")}</text></g>)}
+    {now >= from && now < to && <><line x1={x(now)} x2={x(now)} y1="16" y2={H - 22} stroke="#ff8a7a" strokeDasharray="3 3" />{nm && <circle cx={x(now)} cy={y(nm.m)} r="5" fill="#ff8a7a" />}<text x={Math.min(x(now) + 4, W - 26)} y={H - 26} fontSize="10.5" fill="#ff8a7a">now</text></>}
+    {["12 am", "6 am", "12 pm", "6 pm", "12 am"].map((l, i) => <text key={i} x={(i / 4) * W} y={H - 6} fontSize="9.5" fill="#9fb4ae" textAnchor={i === 0 ? "start" : i === 4 ? "end" : "middle"}>{l}</text>)}
   </svg>;
+}
+
+/** Round dial: top = high tide, bottom = low tide, right side = falling, left side = rising. */
+export function TideDial({ st, now }: { st: Station; now: number }) {
+  const evs = eventsBetween(st, now - 16 * 3600000, now + 16 * 3600000);
+  const prev = [...evs].reverse().find((e) => e.t <= now), next = evs.find((e) => e.t > now);
+  if (!prev || !next) return null;
+  const rising = next.type === "High", p = (now - prev.t) / (next.t - prev.t);
+  const theta = rising ? 180 + 180 * p : 180 * p; // clockwise from the top
+  const R = 70, C = 100, pt = (deg: number) => { const r = ((deg - 90) * Math.PI) / 180; return [C + R * Math.cos(r), C + R * Math.sin(r)]; };
+  const start = rising ? 180 : 0, [x0, y0] = pt(start), [x1, y1] = pt(theta), [xe, ye] = pt(theta);
+  const big = Math.abs(theta - start) > 180 ? 1 : 0, col = rising ? "#6fa8e6" : "#e57070";
+  const hi = rising ? next : prev, lo = rising ? prev : next;
+  const mins = Math.max(0, Math.round((next.t - now) / 60000)), hm = `${Math.floor(mins / 60) ? `${Math.floor(mins / 60)} h ` : ""}${mins % 60} min`;
+  return <div className="dial">
+    <svg viewBox="0 0 200 200" role="img" aria-label={`Tide is ${rising ? "rising" : "falling"}, ${hm} until ${next.type.toLowerCase()} tide`}>
+      <circle cx={C} cy={C} r={R} fill="none" stroke="#ffffff22" strokeWidth="16" />
+      <path d={`M${x0} ${y0}A${R} ${R} 0 ${big} 1 ${x1} ${y1}`} fill="none" stroke={col} strokeWidth="16" strokeLinecap="round" />
+      <circle cx={xe} cy={ye} r="9" fill="#fff" stroke={col} strokeWidth="4" />
+      <text x={C} y={C - 4} textAnchor="middle" fontSize="19" fontWeight="700" fill={col}>{rising ? "Rising" : "Falling"}</text>
+      <text x={C} y={C + 16} textAnchor="middle" fontSize="11" fill="#cfe0da">{rising ? "⬆" : "⬇"} {hm} to {next.type.toLowerCase()}</text>
+      <text x={C} y="14" textAnchor="middle" fontSize="12" fill="#9ec7f2" fontWeight="600">{rising ? "Next high" : "Last high"} {clock(hi.t, TZ)}</text>
+      <text x={C} y="196" textAnchor="middle" fontSize="12" fill="#f2a1a1" fontWeight="600">{rising ? "Last low" : "Next low"} {clock(lo.t, TZ)}</text>
+      <text x="4" y={C + 4} fontSize="11" fill="#9fb4ae">rising</text><text x="196" y={C + 4} textAnchor="end" fontSize="11" fill="#9fb4ae">falling</text>
+    </svg>
+    <p className="tide-now"><b>The water is {rising ? "rising" : "falling"}.</b> {hm} until {next.type.toLowerCase()} tide at <b>{clock(next.t, TZ)}</b>.</p>
+  </div>;
 }
 
 export function TideCard({ place, onMore }: { place: Place; onMore: () => void }) {
@@ -41,15 +74,15 @@ export function TideCard({ place, onMore }: { place: Place; onMore: () => void }
   const end = TIDE_END();
   if (now > end) return <section className="card"><h2>🌊 Tides</h2><p>The tide tables built into this app end on 31 December 2027. Please use the official Bureau of Meteorology tide tables.</p><Ext href={BOM_URL} cls="link">Official BOM tide tables ↗</Ext></section>;
   if (!hit) return <section className="card"><h2>🌊 Tides</h2><p className="muted">There is no official tide station within 40 km of {place.name}. Pick a pier, beach or river on the bay (try the Where tab) to see tide times.</p><button className="btn alt" onClick={onMore}>Choose another station</button></section>;
-  const st = hit.station, state = tideStateText(st, now, TZ);
+  const st = hit.station;
   const evs = eventsBetween(st, now, now + 30 * 3600000).slice(0, 4);
   const todayKey = dayKey(now, TZ);
   const inBay = st.lon > 144.4 && st.lon < 145.1 && st.lat > -38.4;
   return <section className="card">
     <h2>🌊 Tides – {short(st.name)}</h2>
     <p className="muted small">Official predictions for the nearest station, {Math.round(hit.km)} km from {place.name}. Melbourne time.</p>
-    {state && <p className="tide-now"><b>{state.rising ? "⬆ Rising" : "⬇ Falling"}</b> · {state.m.toFixed(2)} m now{state.next ? <> · next {state.next.type.toLowerCase()} at <b>{clock(state.next.t, TZ)}</b></> : null}</p>}
-    <Curve st={st} now={now} />
+    <TideDial st={st} now={now} />
+    <DayCurve st={st} now={now} place={place} />
     {evs.map((t) => <div key={t.t} className="period"><b>{t.type === "High" ? "⬆ High" : "⬇ Low"} {clock(t.t, TZ)}</b><span>{dayKey(t.t, TZ) === todayKey ? "Today" : "Tomorrow"} · {t.m.toFixed(2)} m</span></div>)}
     {hit.km > 12 && <p className="muted small">This station is a fair way from your spot, so times can be out by a bit. Use the Tides page to pick a closer one.</p>}
     {inBay && <p className="muted small">Port Phillip Bay's tide is small (about 1 m) and arrives roughly 3 hours after the Heads. Strong winds and pressure changes can shift it by more than usual.</p>}

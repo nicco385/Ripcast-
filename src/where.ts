@@ -2,6 +2,7 @@ import * as SunCalc from "suncalc";
 import { SPOTS, type Spot } from "./data/spots";
 import { GUIDES } from "./data/guides";
 import { j, compass, fmtLocal, marineTrust, solunar } from "./lib";
+import { bestTimes } from "./astro";
 import { nearestStation, eventsBetween, clock } from "./tides";
 
 export type SpotType = "pier" | "beach" | "rocks" | "estuary" | "lake" | "river";
@@ -116,18 +117,22 @@ export function rankSpot(s: LandSpot, r: Raw, mode: "now" | "today"): Rank {
 }
 
 function bestTime(s: LandSpot, st: ReturnType<typeof nearestStation> extends infer R ? (R extends { station: infer S } ? S : never) | undefined : never, sunrise: Date, sunset: Date, today: string, ssLocal: string) {
-  const lt = (d: Date) => clock(d.getTime(), TZ);
-  if (st) {
-    const hi = eventsBetween(st, sunrise.getTime() - 3 * 3600000, sunset.getTime() + 3 * 3600000).filter((e) => e.type === "High");
-    // VFA: a few hours either side of high tide, around dawn or dusk
-    let best: { k: string; at: Date; hi: { t: number } ; gap: number } | null = null;
-    for (const [k, at] of [["Dawn", sunrise], ["Dusk", sunset]] as const) for (const h of hi) { const g = Math.abs(h.t - at.getTime()); if (!best || g < best.gap) best = { k, at, hi: h, gap: g }; }
-    if (best && best.gap <= 3 * 3600000) return `${best.k} (${lt(best.at)}) – high tide ${clock(best.hi.t, TZ)} at ${st.name.replace(/ \(.*\)/, "")}`;
-    if (hi.length) return `Around high tide, ${clock(hi[0].t, TZ)} (${st.name.replace(/ \(.*\)/, "")}), or dusk (${lt(sunset)})`;
-  }
-  const maj = solunar(today, TZ, s.lat, s.lon).find((p) => p.kind === "major" && p.mid.startsWith(today));
   void ssLocal;
-  return maj ? `Dusk (${lt(sunset)}) or the moon's feeding time` : `Dawn (${lt(sunrise)}) or dusk (${lt(sunset)})`;
+  const lt = (d: Date | number) => clock(typeof d === "number" ? d : d.getTime(), TZ);
+  const periods = solunar(today, TZ, s.lat, s.lon);
+  const tides = st ? eventsBetween(st, sunrise.getTime() - 4 * 3600000, sunset.getTime() + 4 * 3600000).map((e) => ({ t: e.t, type: e.type })) : [];
+  // a feeding time that overlaps the chosen window (same moon theory as the Today screen)
+  const feed = (at: number) => { const p = periods.filter((x) => x.t0 <= at + 90 * 60000 && x.t1 >= at - 90 * 60000).sort((a, b) => b.rating - a.rating)[0]; return p ? ` · ${p.kind} feeding time ${lt(p.t0)}–${lt(p.t1)}` : ""; };
+  if (st) {
+    const hi = tides.filter((e) => e.type === "High");
+    // VFA: a few hours either side of high tide, around dawn or dusk
+    let best: { k: string; at: Date; hi: { t: number }; gap: number } | null = null;
+    for (const [k, at] of [["Dawn", sunrise], ["Dusk", sunset]] as const) for (const h of hi) { const g = Math.abs(h.t - at.getTime()); if (!best || g < best.gap) best = { k, at, hi: h, gap: g }; }
+    if (best && best.gap <= 3 * 3600000) return `${best.k} (${lt(best.at)}) – high tide ${lt(best.hi.t)} at ${st.name.replace(/ \(.*\)/, "")}${feed(best.at.getTime())}`;
+    if (hi.length) return `Around high tide, ${lt(hi[0].t)} (${st.name.replace(/ \(.*\)/, "")}), or dusk (${lt(sunset)})${feed(hi[0].t)}`;
+  }
+  const top = bestTimes(periods, tides)[0];
+  return top ? `${lt(top.p.t0)}–${lt(top.p.t1)} (${top.p.label.toLowerCase()}) or dawn (${lt(sunrise)}) / dusk (${lt(sunset)})` : `Dawn (${lt(sunrise)}) or dusk (${lt(sunset)})`;
 }
 
 export const km = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
