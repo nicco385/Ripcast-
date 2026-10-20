@@ -90,7 +90,7 @@ a{color:var(--aqua)}
 /* ===== Slate & sage theme (from the original app) ===== */
 :root{--navy:#0c1114;--deep:#11181c;--card:#161e22;--card2:#121a1e;--teal:#86a392;--aqua:#b9c9c4;--sun:#d9b77e;--coral:#c4a574;--txt:#eef3f3;--mut:#a3b0b3;--sage:#b9c9c4}
 html,body{background:radial-gradient(900px 500px at 50% -260px,#1d2a2e 0%,var(--navy) 70%) fixed,var(--navy);font-family:"Outfit","Segoe UI",system-ui,sans-serif}
-h1,h2,h3,.wordmark,.call-word{font-family:"Fraunces","Times New Roman",serif;letter-spacing:-.02em}
+h1,h2,h3,.wordmark{font-family:"Fraunces","Times New Roman",serif;letter-spacing:-.02em}
 .top{background:#0c1114f2}.hero{background:linear-gradient(150deg,#1b2629,#131b1f);border-color:#b9c9c42a}
 .big,.link-btn,.btn{background:var(--sage);color:#0c1114;box-shadow:0 6px 18px #0008}
 .link-btn.alt,.btn.alt{background:#232e33;color:var(--txt)}
@@ -104,7 +104,7 @@ h1,h2,h3,.wordmark,.call-word{font-family:"Fraunces","Times New Roman",serif;let
 /* ===== Navy / white / gold theme (poster) ===== */
 :root{--navy:#071631;--deep:#0a1d3d;--card:#0f2950;--card2:#0b2042;--sage:#f5b83d;--aqua:#7cc4ff;--txt:#f4f8ff;--mut:#a9bbd6;--gold:#f5b83d}
 html,body{background:radial-gradient(900px 500px at 50% -260px,#16407a 0%,var(--navy) 70%) fixed,var(--navy)}
-h1,h2,h3,.wordmark,.call-word{font-family:"Barlow Condensed","Outfit",system-ui,sans-serif;font-style:italic;font-weight:800;letter-spacing:.2px}
+h1,h2,h3,.wordmark{font-family:"Barlow Condensed","Outfit",system-ui,sans-serif;font-style:italic;font-weight:800;letter-spacing:.2px}
 .card h2{font-size:24px}
 .top{background:#071631f2}.hero{background:linear-gradient(150deg,#15407a,#0b2042);border-color:#7cc4ff33}
 .place,.icon{background:linear-gradient(180deg,#14335f,#0f2950)}.place small{color:var(--gold)}
@@ -152,12 +152,7 @@ button{-webkit-tap-highlight-color:transparent}
 .sub{margin:6px 0 0;font:italic 800 clamp(20px,6.2vw,26px)/1 "Barlow Condensed",sans-serif;letter-spacing:3px;text-transform:uppercase;color:#9fd3ff;text-shadow:0 2px 12px #000c}
 .tagline{display:inline-flex;margin:10px 0 0;font-size:12.5px;font-weight:600;letter-spacing:.36em;text-transform:uppercase;color:#fff;padding:6px 4px 6px 14px;border-top:1px solid #ffffff40;border-bottom:1px solid #ffffff40}
 .script{margin:22px 0 0 2px;font:italic 700 clamp(22px,6.6vw,28px)/1.08 "Barlow Condensed",sans-serif;color:#fff;transform:rotate(-5deg);transform-origin:left;text-shadow:0 2px 14px #000;max-width:62%}
-.spacer{flex:none;height:max(40px,calc(clamp(460px,68svh,760px) - 420px))}
-.eyebrow{margin:0;font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#c4d4ec}
-.call{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:118px;background:linear-gradient(135deg,#ffffff1f,#ffffff08);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);border:1px solid #ffffff2e;border-radius:22px;padding:14px 16px;box-shadow:0 18px 40px #0009,inset 0 1px 0 #ffffff26}
-.call-txt{min-width:0;flex:1}
-.call-word{margin:4px 0 2px;font-size:48px;line-height:.95;text-transform:uppercase}.c-Go{color:#5ee08c}.c-Maybe{color:#f5b83d}.c-Wait{color:#ff8a7a}
-.call-sub{margin:0;color:#e1e9f6;font-size:15px}
+.spacer{flex:none;height:max(80px,calc(clamp(460px,68svh,760px) - 372px))}
 .start{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:66px;border:0;border-radius:18px;font:italic 800 27px/1 "Barlow Condensed",sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#0a1a35;background:linear-gradient(180deg,#ffd77a 0%,#f5b83d 55%,#e09a1f 100%);box-shadow:0 14px 30px #f5b83d40,0 2px 0 #a8700f,inset 0 1px 0 #fff9;transition:transform .15s,box-shadow .15s}
 .start:active{transform:translateY(1px) scale(.985);box-shadow:0 6px 16px #f5b83d40,0 1px 0 #a8700f}.start svg{transition:transform .2s}.start:hover svg{transform:translateX(3px)}
 .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
@@ -169,7 +164,7 @@ button{-webkit-tap-highlight-color:transparent}
 .sp img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid #ffffff26;background:#0b1d3a;box-shadow:0 6px 14px #0007}
 .sp figcaption{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:center;color:#e6eefa;line-height:1.1}
 .places{margin:12px 0 0;text-align:center;font:italic 700 17px "Barlow Condensed",sans-serif;color:var(--gold);letter-spacing:.5px}.places i{color:#ffffff55;font-style:normal;margin:0 4px}
-@media (max-width:370px){.feats button{font-size:11px;min-height:70px}.sp figcaption{font-size:9.5px}.call-word{font-size:42px}}
+@media (max-width:370px){.feats button{font-size:11px;min-height:70px}.sp figcaption{font-size:9.5px}}
 @media (min-width:600px){.cover-hero{height:78vh}.cover-hero img{object-position:30% 50%}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 input,select{background:#0a1d3d;border-color:#ffffff26;color:#fff;min-height:52px}input::placeholder{color:#8ea3c4}

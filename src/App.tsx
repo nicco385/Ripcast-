@@ -62,7 +62,7 @@ export default function App() {
 
   return (
     <div className="app">
-      {cover && <Cover f={data} onStart={(g) => { if (g) push({ tab: g.tab, view: g.view ?? null }); setCover(false); }} />}
+      {cover && <Cover onStart={(g) => { if (g) push({ tab: g.tab, view: g.view ?? null }); setCover(false); }} />}
       <header className="top">
         {v ? <Back onClick={back} /> : null}
         <button className="place" onClick={() => push({ view: { k: "picker" } })} aria-label={`📍 ${place.name} change`}>
@@ -151,11 +151,9 @@ const FEATS: [Go, string, string][] = [[{ tab: "where" }, "Locations", "loc"], [
 const SPECIES_STRIP = ["Snapper", "Squid", "Whiting", "Garfish", "Flathead", "Mulloway", "Bream", "Estuary Perch"];
 const LeapFish = () => <svg className="leap" viewBox="0 0 64 40" aria-hidden="true"><path d="M4 31C14 12 34 4 50 9l9-6-3 10 5 8-11-4C40 26 22 31 4 31z" fill="#fff" /><circle cx="14" cy="25" r="1.8" fill="#0b2a55" /><path d="M24 20c8-6 16-8 24-7" stroke="#0b2a55" strokeWidth="1.6" fill="none" /><path d="M2 36q8-3 16 0t16 0" stroke="#f5b83d" strokeWidth="2" fill="none" strokeLinecap="round" /></svg>;
 
-function Cover({ f, onStart }: { f: Forecast | null; onStart: (g?: Go) => void }) {
+function Cover({ onStart }: { onStart: (g?: Go) => void }) {
   const [out, setOut] = useState(false);
   const go = (t?: Go) => { if (out) return; setOut(true); setTimeout(() => onStart(t), 380); };
-  const sc = f ? scoreDay(f, 0) : null;
-  const call = !sc ? null : sc.score >= 60 ? "Go" : sc.score >= 45 ? "Maybe" : "Wait";
   return <div className={`cover ${out ? "out" : ""}`} onClick={() => go()}>
     <div className="cover-hero" aria-hidden="true"><img src={`${BASE}cover-hero.webp`} alt="" width="1280" height="720" fetchPriority="high" decoding="async" /></div>
     <div className="cover-in">
@@ -166,10 +164,6 @@ function Cover({ f, onStart }: { f: Forecast | null; onStart: (g?: Go) => void }
       </header>
       <p className="script">Better decisions.<br />More bites.<br />Get out there.</p>
       <div className="spacer" />
-      <div className="call" aria-live="polite">
-        {sc ? <><div className="call-txt"><p className="eyebrow">Today's call · {f!.place.name}</p><p className={`call-word c-${call}`}>{call}</p><p className="call-sub">{sc.reasons[0]}</p></div>
-          <ScoreBadge {...sc} size={78} /></> : <div className="call-txt"><p className="eyebrow">Today's call</p><div className="skel line" /><div className="skel line short" /></div>}
-      </div>
       <button className="start" onClick={(e) => { e.stopPropagation(); go(); }}>Start fishing<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>
       <nav className="feats" aria-label="Shortcuts">{FEATS.map(([t, l, i]) => <button key={l} onClick={(e) => { e.stopPropagation(); go(t); }}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={FI[i]} /></svg>{l}</button>)}</nav>
       <p className="kicker">Your Victorian land-based fishing assistant</p>
