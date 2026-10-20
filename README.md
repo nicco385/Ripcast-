@@ -41,3 +41,4 @@ To rename the app, edit `APP_NAME` in `src/config.ts`. The cover, title and mani
 *Scores and tides are a guide only. Check BOM warnings and VFA rules, and fish safely.*
 
 - Tide dial (rising/falling + countdown), day tide graph with sunrise/sunset, moonrise/moonset, and solunar feeding times (traditional theory, guide only) – v1.2.0
+- Target a fish (v1.3.0): pick a species and the app ranks the best land-based spots for the next 24 hours from forecast wind/waves, BOM tides, time of day, moon and season, with plain-English verdicts, best times and a quick rig tip. "Tonight's best targets" on Today. Scenario checks: `npm run test:target`.

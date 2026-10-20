@@ -1,3 +1,4 @@
+import { profile } from "./target";
 import { useMemo } from "react";
 import { SPECIES, speciesBySlug, bagText, sizeText } from "./data/species";
 import { GUIDES, guideBySlug } from "./data/guides";
@@ -30,12 +31,13 @@ function MonthStrip({ slug }: { slug: string }) {
 }
 export const SeasonKey = () => <p className="muted small"><i className="dot" style={{ background: RUN }} /> main run &nbsp;<i className="dot" style={{ background: GOOD }} /> in season &nbsp;<i className="dot" style={{ background: OK }} /> possible &nbsp;<i className="dot" style={{ background: BAD }} /> quiet</p>;
 
-export function FishTab({ onOpen, onCal }: { onOpen: (slug: string) => void; onCal: () => void }) {
+export function FishTab({ onOpen, onCal, onTarget }: { onOpen: (slug: string) => void; onCal: () => void; onTarget: () => void }) {
   const m = curMonth();
   const list = useMemo(() => [...SPECIES].sort((a, b) => seasonVal(b.slug, m) - seasonVal(a.slug, m) || a.name.localeCompare(b.name)), [m]);
   return <>
     <section className="card"><h2>🐟 Fish guides</h2>
       <p className="muted small">Tap a fish for where to find it from the shore, the right rig, bait, tackle, tips and the legal size. Sorted by what is in season in {MONTHS[m - 1]}.</p>
+      <button className="big" onClick={onTarget}>🎯 Target a fish – where & when to go</button>
       <button className="big" onClick={onCal}>📅 What's biting – month by month</button>
       <SeasonKey />
     </section>
@@ -50,7 +52,7 @@ export function FishTab({ onOpen, onCal }: { onOpen: (slug: string) => void; onC
 
 const Sec = ({ title, items }: { title: string; items: string[] }) => items.length ? <><h3>{title}</h3><ul className="plain">{items.map((t) => <li key={t}>{t}</li>)}</ul></> : null;
 
-export function SpeciesView({ slug, onSpot }: { slug: string; onSpot: (id: string) => void }) {
+export function SpeciesView({ slug, onSpot, onTarget }: { slug: string; onSpot: (id: string) => void; onTarget?: (slug: string) => void }) {
   const sp = speciesBySlug(slug), g = guideBySlug(slug);
   const spots = useMemo(() => ALL_LAND.filter((s) => !s.info?.status?.closed && (s.species.includes(slug) || s.info?.hot?.includes(slug) || false))
     .sort((a, b) => Number(b.info?.hot?.includes(slug) ?? false) - Number(a.info?.hot?.includes(slug) ?? false) || Number(b.info?.src === "vfa") - Number(a.info?.src === "vfa")), [slug]);
@@ -68,6 +70,7 @@ export function SpeciesView({ slug, onSpot }: { slug: string; onSpot: (id: strin
       </div>
       {sp.measure && <p className="small">Measure: {sp.measure}.</p>}
       <p className="muted small">Size and bag limits checked against the VFA on {REGS.checked}. <Ext href={REGS.sourceUrl}>Check the latest ↗</Ext></p>
+      {onTarget && profile(slug) && <button className="big" onClick={() => onTarget(slug)}>🎯 Where to catch {sp.name.toLowerCase().replace("king george", "King George").replace("australian", "Australian")} now</button>}
     </section>
     {g.trust !== "good" && <div className="banner warn">{g.trust === "low" ? "Limited information: we could not find strong sources for this fish from the shore, so treat this page as a rough guide." : "Some details here come from local angler reports rather than the VFA – treat them as a guide."}</div>}
     <section className="card">

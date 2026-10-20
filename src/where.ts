@@ -27,7 +27,7 @@ export type LandSpot = (typeof ALL_LAND)[number];
 /** Places that can be ranked (not closed). */
 export const LAND = ALL_LAND.filter((s) => !s.info?.status?.closed);
 
-type Raw = { t: string[]; wind: number[]; gust: number[]; dir: number[]; wave: (number | null)[] };
+export type Raw = { t: string[]; wind: number[]; gust: number[]; dir: number[]; wave: (number | null)[] };
 const CK = "rc-where-v3";
 export async function getSpotWeather(): Promise<{ at: number; data: Record<string, Raw>; stale?: boolean }> {
   let c: { at: number; data: Record<string, Raw> } | null = null;
@@ -55,9 +55,9 @@ async function fetchSpots(): Promise<{ at: number; data: Record<string, Raw> }> 
   return out;
 }
 
-const diff = (a: number, b: number) => { const d = Math.abs(((a - b) % 360 + 360) % 360); return d > 180 ? 360 - d : d; };
-const WINDNAME: Record<string, string> = { N: "northerly", NE: "north-easterly", E: "easterly", SE: "south-easterly", S: "southerly", SW: "south-westerly", W: "westerly", NW: "north-westerly" };
-const c8 = (d: number) => ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(((d % 360) + 360) % 360 / 45) % 8];
+export const diff = (a: number, b: number) => { const d = Math.abs(((a - b) % 360 + 360) % 360); return d > 180 ? 360 - d : d; };
+export const WINDNAME: Record<string, string> = { N: "northerly", NE: "north-easterly", E: "easterly", SE: "south-easterly", S: "southerly", SW: "south-westerly", W: "westerly", NW: "north-westerly" };
+export const c8 = (d: number) => ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(((d % 360) + 360) % 360 / 45) % 8];
 const SHORT: Record<string, string> = { "king-george-whiting": "whiting", calamari: "squid", "australian-salmon": "salmon", "sand-flathead": "flathead", "black-bream": "bream", "silver-trevally": "trevally", "yellowtail-kingfish": "kingfish", "gummy-shark": "gummy shark", "elephant-fish": "elephant fish", "estuary-perch": "estuary perch" };
 export const short = (s: string) => SHORT[s] ?? s.replace(/-/g, " ");
 

@@ -12,11 +12,13 @@ import { useNav, type Tab, type View } from "./nav";
 import { ScoreBadge, Arrow, Ico, SpThumb, Stat, Back, BASE, load, save, spImg } from "./ui";
 import { TideCard, TidesView } from "./tideviews";
 import { MoonCard, SolunarView } from "./moonviews";
+import { TargetPicker, TargetView, TargetsCard } from "./targetviews";
+import { rainLast24 } from "./target";
 import { FishTab, SpeciesView, CalendarView, SpotView } from "./fishviews";
 import { Where, ReportsTab, More, Log, Rules, About } from "./views2";
 
 const DEFAULT: Place = { name: "Williamstown, VIC", lat: -37.8635, lon: 144.9056 };
-const TITLES: Record<string, string> = { spot: "Spot guide", species: "Fish guide", tides: "Tides", week: "7 days", map: "Map", picker: "Choose a spot", calendar: "What's biting", log: "Catch log", rules: "Rules & safety", about: "About" };
+const TITLES: Record<string, string> = { spot: "Spot guide", species: "Fish guide", tides: "Tides", week: "7 days", map: "Map", picker: "Choose a spot", calendar: "What's biting", target: "Target a fish", log: "Catch log", rules: "Rules & safety", about: "About" };
 
 export default function App() {
   const { nav, push, back, go } = useNav();
@@ -54,6 +56,8 @@ export default function App() {
   const openSpecies = (slug: string) => push({ view: { k: "species", slug } });
   const usePlace = (p: Place) => { setPlace(p); push({ tab: "today", view: null }); };
   const spot = v?.k === "spot" ? ALL_LAND.find((s) => s.id === v.id) : undefined;
+  const openTarget = (slug?: string) => push({ view: { k: "target", slug } });
+  const rain24 = rainLast24(shown);
   const needsWx = !v && nav.tab === "today" || v?.k === "week";
 
   return (
@@ -71,17 +75,19 @@ export default function App() {
       <main key={`${nav.tab}-${v ? JSON.stringify(v) : ""}`} className="fade">
         {v && <h1 className="pagetitle">{TITLES[v.k]}</h1>}
         {needsWx && !shown && !err && <><div className="skel card-h" /><div className="skel card-h tall" /><div className="skel card-h" /></>}
-        {!v && nav.tab === "today" && shown && <Today f={shown} stale={shown.place.name !== place.name} place={place} onTides={() => push({ view: { k: "tides" } })} onSolunar={() => push({ view: { k: "solunar" } })} onWeek={() => push({ view: { k: "week" } })} onSpecies={openSpecies} />}
+        {!v && nav.tab === "today" && shown && <Today f={shown} stale={shown.place.name !== place.name} place={place} onTides={() => push({ view: { k: "tides" } })} onSolunar={() => push({ view: { k: "solunar" } })} onWeek={() => push({ view: { k: "week" } })} onSpecies={openSpecies} rain24={rain24} onTarget={openTarget} />}
         {!v && nav.tab === "today" && !shown && err && <TodayOffline place={place} onTides={() => push({ view: { k: "tides" } })} onSolunar={() => push({ view: { k: "solunar" } })} />}
         {!v && nav.tab === "where" && <Where place={place} onSpot={openSpot} onMap={() => push({ view: { k: "map" } })} />}
-        {!v && nav.tab === "fish" && <FishTab onOpen={openSpecies} onCal={() => push({ view: { k: "calendar" } })} />}
+        {!v && nav.tab === "fish" && <FishTab onOpen={openSpecies} onCal={() => push({ view: { k: "calendar" } })} onTarget={() => openTarget()} />}
         {!v && nav.tab === "reports" && <ReportsTab />}
         {!v && nav.tab === "more" && <More go={(k) => push({ view: { k } as View })} />}
         {v?.k === "week" && shown && <Week f={shown} />}
         {v?.k === "tides" && <TidesView place={place} />}
         {v?.k === "solunar" && <SolunarView place={place} />}
         {v?.k === "spot" && (spot ? <SpotView spot={spot} place={place} onBack={back} onMap={() => push({ view: { k: "map", focus: spot.id } })} onUse={() => usePlace({ name: spot.name, lat: spot.lat, lon: spot.lon })} onSpecies={openSpecies} /> : <div className="card">That spot was not found.</div>)}
-        {v?.k === "species" && <SpeciesView slug={v.slug} onSpot={openSpot} />}
+        {v?.k === "species" && <SpeciesView slug={v.slug} onSpot={openSpot} onTarget={openTarget} />}
+        {v?.k === "target" && !v.slug && <TargetPicker onPick={openTarget} />}
+        {v?.k === "target" && v.slug && <TargetView slug={v.slug} place={place} rain24={rain24} onSpot={openSpot} onSpecies={openSpecies} />}
         {v?.k === "calendar" && <CalendarView onOpen={openSpecies} />}
         {v?.k === "picker" && <Picker favs={favs} onPick={usePlace} onRemoveFav={(p) => setFavs(favs.filter((f) => f.name !== p.name))} />}
         {v?.k === "map" && <Suspense fallback={<div className="skel map" />}><MapTab place={place} focus={v.focus ?? null} onPick={usePlace} onOpen={openSpot} /></Suspense>}
@@ -141,7 +147,7 @@ const FI: Record<string, string> = {
   tips: "M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5",
 };
 type Go = { tab: Tab; view?: View };
-const FEATS: [Go, string, string][] = [[{ tab: "where" }, "Locations", "loc"], [{ tab: "today" }, "Weather", "wx"], [{ tab: "today", view: { k: "tides" } }, "Tide times", "time"], [{ tab: "fish" }, "Fish guides", "sp"], [{ tab: "fish", view: { k: "calendar" } }, "What's biting", "rig"], [{ tab: "reports" }, "Reports", "tips"]];
+const FEATS: [Go, string, string][] = [[{ tab: "where" }, "Locations", "loc"], [{ tab: "fish", view: { k: "target" } }, "Target a fish", "sp"], [{ tab: "today", view: { k: "tides" } }, "Tide times", "time"], [{ tab: "fish" }, "Fish guides", "sp"], [{ tab: "fish", view: { k: "calendar" } }, "What's biting", "rig"], [{ tab: "reports" }, "Reports", "tips"]];
 const SPECIES_STRIP = ["Snapper", "Squid", "Whiting", "Garfish", "Flathead", "Mulloway", "Bream", "Estuary Perch"];
 const LeapFish = () => <svg className="leap" viewBox="0 0 64 40" aria-hidden="true"><path d="M4 31C14 12 34 4 50 9l9-6-3 10 5 8-11-4C40 26 22 31 4 31z" fill="#fff" /><circle cx="14" cy="25" r="1.8" fill="#0b2a55" /><path d="M24 20c8-6 16-8 24-7" stroke="#0b2a55" strokeWidth="1.6" fill="none" /><path d="M2 36q8-3 16 0t16 0" stroke="#f5b83d" strokeWidth="2" fill="none" strokeLinecap="round" /></svg>;
 
@@ -174,7 +180,7 @@ function Cover({ f, onStart }: { f: Forecast | null; onStart: (g?: Go) => void }
 }
 
 
-function Today({ f, stale, place, onTides, onSolunar, onWeek, onSpecies }: { f: Forecast; stale: boolean; place: Place; onTides: () => void; onSolunar: () => void; onWeek: () => void; onSpecies: (slug: string) => void }) {
+function Today({ f, stale, place, onTides, onSolunar, onWeek, onSpecies, rain24, onTarget }: { f: Forecast; stale: boolean; place: Place; onTides: () => void; onSolunar: () => void; onWeek: () => void; onSpecies: (slug: string) => void; rain24: number | null; onTarget: (slug?: string) => void }) {
   const n = f.now; const [ico, txt] = weatherText(n.code);
   const sc = scoreDay(f, 0); const warn = safety(f);
   const nowKey = localNowKey(f.tz);
@@ -201,6 +207,7 @@ function Today({ f, stale, place, onTides, onSolunar, onWeek, onSpecies }: { f: 
       {inSeason.length > 0 && <section className="card"><h2>🐟 In season now</h2>
         <div className="chips2">{inSeason.map(({ s, v }) => <button key={s.slug} onClick={() => onSpecies(s.slug)}><SpThumb name={s.name} size={72} /><b>{s.name}</b><small>{v === 3 ? "🔥 peak run" : "in season"}</small></button>)}</div>
         <p className="muted small">From the VFA's peak seasons. Tap a fish for the guide.</p></section>}
+      <TargetsCard rain24={rain24} onOpen={() => onTarget()} onPick={(s) => onTarget(s)} />
       <section className="card">
         <div className="now"><span className="bigico">{ico}</span><div><b className="xl">{Math.round(n.temp)}°</b> <span className="muted">feels {Math.round(n.feels)}°</span><div>{txt}</div></div></div>
         <div className="grid">

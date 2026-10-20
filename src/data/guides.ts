@@ -21,6 +21,7 @@ export const SRC = {
   fmAP: { t: "FishingMad – Albert Park Lake guide", u: "https://fishingmad.com.au/location/albert-park-lake/" },
   fmNong: { t: "FishingMad – Maribyrnong River guide", u: "https://fishingmad.com.au/location/maribrynong-river/" },
   fmBend: { t: "FishingMad – Yarra Bend Park guide", u: "https://fishingmad.com.au/location/yarra-bend-park/" },
+  vfaGF: { t: "VFA – Garfish (all species) rules", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/marine-and-estuarine-scale-fish/garfish-all-species" },
   burley: { t: "Compleat Angler Dandenong – The Burley Pot (Aug 2026)", u: "https://www.fishingcamping.com.au/the-burley-pot-august-2026/" },
 } as const;
 type Src = (typeof SRC)[keyof typeof SRC];
@@ -220,9 +221,9 @@ export const GUIDES: Guide[] = [
     hook: "Very small long-shank (size 10–12).",
     baits: ["Pipis", "Prawns", "Any fish flesh (VFA)", "Maggots or silverfish (Compleat Angler)"],
     lures: ["Not usually targeted with lures."],
-    tips: ["Berley is often the difference between catching and not catching (Compleat Angler)."],
+    tips: ["Berley is often the difference between catching and not catching (Compleat Angler).", "Garfish feed near the surface, so calm, clear water and light winds make them easier to find and the float easier to watch (common angler knowledge)."],
     care: ["No minimum size. Bag 40 (combined, all garfish species).", "Eat fresh or use as snapper bait."],
-    sources: [SRC.vfaPP, SRC.vfaWP, SRC.burley],
+    sources: [SRC.vfaPP, SRC.vfaWP, SRC.vfaGF, SRC.burley],
   }),
   G({
     slug: "mulloway", trust: "some",

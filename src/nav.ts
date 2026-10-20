@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export type Tab = "today" | "where" | "fish" | "reports" | "more";
 export type View =
-  | { k: "spot"; id: string } | { k: "species"; slug: string } | { k: "tides" } | { k: "solunar" } | { k: "week" } | { k: "map"; focus?: string }
+  | { k: "spot"; id: string } | { k: "species"; slug: string } | { k: "tides" } | { k: "solunar" } | { k: "target"; slug?: string } | { k: "week" } | { k: "map"; focus?: string }
   | { k: "picker" } | { k: "calendar" } | { k: "log" } | { k: "rules" } | { k: "about" };
 export type Nav = { tab: Tab; view: View | null; d: number };
 
