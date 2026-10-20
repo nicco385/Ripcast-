@@ -1,21 +1,22 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 const MapTab = lazy(() => import("./MapTab"));
-import { SPECIES } from "./data/species";
 import { AREAS, type Area } from "./data/spotinfo";
 import {
   type Forecast, type Place, getForecast, searchPlaces, compass, kmh, hhmm, dayName, weatherText,
-  moonInfo, solunar, scoreDay, safety, localNowKey,
+  moonInfo, safety, localNowKey,
 } from "./lib";
 import { APP_NAME, TAGLINE } from "./config";
-import { LAND, ALL_LAND, seasonVal } from "./where";
+import { LAND, ALL_LAND } from "./where";
 import { useNav, type Tab, type View } from "./nav";
-import { ScoreBadge, Arrow, Ico, SpThumb, Stat, Back, BASE, load, save, spImg } from "./ui";
+import { Arrow, Ico, Stat, Back, BASE, load, save, spImg } from "./ui";
 import { TideCard, TidesView } from "./tideviews";
 import { MoonCard, SolunarView } from "./moonviews";
-import { TargetPicker, TargetView, TargetsCard } from "./targetviews";
-import { rainLast24 } from "./target";
+import { TargetPicker, TargetView, FishingToday, VB, useWx } from "./targetviews";
+import { InstallPrompt } from "./install";
+import { rainLast24, dayOutlook, spanTxt, type DayOutlook } from "./target";
 import { FishTab, SpeciesView, CalendarView, SpotView } from "./fishviews";
-import { Where, ReportsTab, More, Log, Rules, About } from "./views2";
+import { Where, ReportsTab, More, Rules, About } from "./views2";
+import { Log } from "./catchlog";
 
 const DEFAULT: Place = { name: "Williamstown, VIC", lat: -37.8635, lon: 144.9056 };
 const TITLES: Record<string, string> = { spot: "Spot guide", species: "Fish guide", tides: "Tides", week: "7 days", map: "Map", picker: "Choose a spot", calendar: "What's biting", target: "Target a fish", log: "Catch log", rules: "Rules & safety", about: "About" };
@@ -75,13 +76,13 @@ export default function App() {
       <main key={`${nav.tab}-${v ? JSON.stringify(v) : ""}`} className="fade">
         {v && <h1 className="pagetitle">{TITLES[v.k]}</h1>}
         {needsWx && !shown && !err && <><div className="skel card-h" /><div className="skel card-h tall" /><div className="skel card-h" /></>}
-        {!v && nav.tab === "today" && shown && <Today f={shown} stale={shown.place.name !== place.name} place={place} onTides={() => push({ view: { k: "tides" } })} onSolunar={() => push({ view: { k: "solunar" } })} onWeek={() => push({ view: { k: "week" } })} onSpecies={openSpecies} rain24={rain24} onTarget={openTarget} />}
+        {!v && nav.tab === "today" && shown && <Today f={shown} stale={shown.place.name !== place.name} place={place} onTides={() => push({ view: { k: "tides" } })} onSolunar={() => push({ view: { k: "solunar" } })} onWeek={() => push({ view: { k: "week" } })} rain24={rain24} onTarget={openTarget} />}
         {!v && nav.tab === "today" && !shown && err && <TodayOffline place={place} onTides={() => push({ view: { k: "tides" } })} onSolunar={() => push({ view: { k: "solunar" } })} />}
         {!v && nav.tab === "where" && <Where place={place} onSpot={openSpot} onMap={() => push({ view: { k: "map" } })} />}
         {!v && nav.tab === "fish" && <FishTab onOpen={openSpecies} onCal={() => push({ view: { k: "calendar" } })} onTarget={() => openTarget()} />}
         {!v && nav.tab === "reports" && <ReportsTab />}
         {!v && nav.tab === "more" && <More go={(k) => push({ view: { k } as View })} />}
-        {v?.k === "week" && shown && <Week f={shown} />}
+        {v?.k === "week" && shown && <Week f={shown} place={place} rain24={rain24} />}
         {v?.k === "tides" && <TidesView place={place} />}
         {v?.k === "solunar" && <SolunarView place={place} />}
         {v?.k === "spot" && (spot ? <SpotView spot={spot} place={place} onBack={back} onMap={() => push({ view: { k: "map", focus: spot.id } })} onUse={() => usePlace({ name: spot.name, lat: spot.lat, lon: spot.lon })} onSpecies={openSpecies} /> : <div className="card">That spot was not found.</div>)}
@@ -174,86 +175,72 @@ function Cover({ onStart }: { onStart: (g?: Go) => void }) {
 }
 
 
-function Today({ f, stale, place, onTides, onSolunar, onWeek, onSpecies, rain24, onTarget }: { f: Forecast; stale: boolean; place: Place; onTides: () => void; onSolunar: () => void; onWeek: () => void; onSpecies: (slug: string) => void; rain24: number | null; onTarget: (slug?: string) => void }) {
+function Today({ f, stale, place, onTides, onSolunar, onWeek, rain24, onTarget }: { f: Forecast; stale: boolean; place: Place; onTides: () => void; onSolunar: () => void; onWeek: () => void; rain24: number | null; onTarget: (slug?: string) => void }) {
   const n = f.now; const [ico, txt] = weatherText(n.code);
-  const sc = scoreDay(f, 0); const warn = safety(f);
+  const warn = safety(f);
   const nowKey = localNowKey(f.tz);
-  const next = f.hours.filter((h) => h.time >= nowKey).slice(0, 24);
-  const past3 = f.hours.filter((h) => h.time <= nowKey).slice(-4)[0];
-  const dp = past3 ? n.pressure - past3.pressure : 0;
-  const trend = dp > 0.7 ? "rising ↑" : dp < -0.7 ? "falling ↓" : "steady →";
-  const today = f.days[0];
-  const m = new Date().getMonth() + 1;
-  const inSeason = SPECIES.map((s) => ({ s, v: seasonVal(s.slug, m) })).filter((o) => o.v >= 2).sort((a, b) => b.v - a.v).slice(0, 6);
-  const cur = next[0];
+  const cur = f.hours.find((h) => h.time >= nowKey);
   const age = Math.round((Date.now() - f.fetchedAt) / 60000);
   return (
     <>
       {stale && <div className="banner">Loading new spot… showing {f.place.name} for now.</div>}
       {warn.map((w) => <div key={w} className="banner danger">⚠️ {w}</div>)}
-      <section className="card hero">
-        <div>
-          <div className="muted">Fishing today</div>
-          <ScoreBadge {...sc} />
-        </div>
-        <ul className="reasons">{sc.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
-      </section>
-      {inSeason.length > 0 && <section className="card"><h2>🐟 In season now</h2>
-        <div className="chips2">{inSeason.map(({ s, v }) => <button key={s.slug} onClick={() => onSpecies(s.slug)}><SpThumb name={s.name} size={72} /><b>{s.name}</b><small>{v === 3 ? "🔥 peak run" : "in season"}</small></button>)}</div>
-        <p className="muted small">From the VFA's peak seasons. Tap a fish for the guide.</p></section>}
-      <TargetsCard rain24={rain24} onOpen={() => onTarget()} onPick={(s) => onTarget(s)} />
+      <FishingToday place={place} rain24={rain24} onOpen={() => onTarget()} onPick={(s) => onTarget(s)} />
+      <InstallPrompt />
       <section className="card">
         <div className="now"><span className="bigico">{ico}</span><div><b className="xl">{Math.round(n.temp)}°</b> <span className="muted">feels {Math.round(n.feels)}°</span><div>{txt}</div></div></div>
         <div className="grid">
           <Stat k="Wind" v={<><Arrow deg={n.dir} size={22} /> {Math.round(n.wind)} kn</>} s={`${kmh(n.wind)} km/h from ${compass(n.dir)}`} />
           <Stat k="Gusts" v={`${Math.round(n.gust)} kn`} s={`${kmh(n.gust)} km/h`} />
-          <Stat k="Pressure" v={`${Math.round(n.pressure)} hPa`} s={trend} />
-          <Stat k="Rain chance" v={`${cur?.rainChance ?? 0}%`} s={`${today.rainSum.toFixed(1)} mm today`} />
-          {f.hasMarine && cur?.seaTemp != null && <Stat k="Water temp" v={`${cur.seaTemp.toFixed(1)}°`} s="sea surface" />}
-          {f.inBay && <Stat k="Waves" v="Wind chop" s="no swell model inside the bay – go by the wind" />}
-          {f.hasMarine && cur?.wave != null && <Stat k="Waves" v={`${cur.wave.toFixed(1)} m`} s={cur.swell != null ? `swell ${cur.swell.toFixed(1)} m${cur.swellPeriod ? `, ${Math.round(cur.swellPeriod)}s` : ""}${cur.swellDir != null ? ` ${compass(cur.swellDir)}` : ""}` : ""} />}
+          <Stat k="Rain chance" v={`${cur?.rainChance ?? 0}%`} s={`${f.days[0].rainSum.toFixed(1)} mm today`} />
+          {f.hasMarine && cur?.wave != null ? <Stat k="Waves" v={`${cur.wave.toFixed(1)} m`} s={cur.swell != null ? `swell ${cur.swell.toFixed(1)} m` : ""} />
+            : f.hasMarine && cur?.seaTemp != null ? <Stat k="Water temp" v={`${cur.seaTemp.toFixed(1)}°`} s="sea surface" />
+            : <Stat k="Pressure" v={`${Math.round(n.pressure)} hPa`} />}
         </div>
-        <p className="muted small">Updated {age < 1 ? "just now" : `${age} min ago`} · Open-Meteo</p>
-        <button className="btn alt wide" onClick={onWeek}>7-day forecast ›</button>
+        <p className="muted small">Updated {age < 1 ? "just now" : `${age} min ago`} · Open-Meteo{f.inBay ? " · inside the bay, go by the wind (no wave model)" : ""}</p>
+        <button className="btn alt wide" onClick={onWeek}>Next 24 hours & 7-day forecast ›</button>
       </section>
-
-      <TideCard place={place} onMore={onTides} />
-
+      <TideCard place={place} onMore={onTides} compact />
       <MoonCard place={place} onMore={onSolunar} />
-
-      <section className="card">
-        <h2>⏱ Next 24 hours</h2>
-        <div className="hours">
-          {next.map((h) => { const [i] = weatherText(h.code); return (
-            <div key={h.time} className={`hr ${h.gust >= 28 ? "bad" : ""}`}>
-              <small>{hhmm(h.time).replace(":00", "")}</small><span>{i}</span><b>{Math.round(h.temp)}°</b>
-              <span className="wind"><Arrow deg={h.dir} size={16} />{Math.round(h.wind)}</span>
-              <small>g{Math.round(h.gust)}</small><small>💧{h.rainChance}%</small>
-              {h.wave != null && <small>🌊{h.wave.toFixed(1)}</small>}
-            </div>); })}
-        </div>
-        <p className="muted small">Wind in knots (kn). Arrow shows where the wind is blowing to. g = gusts.</p>
-      </section>
     </>
   );
 }
 
-
-function Week({ f }: { f: Forecast }) {
+function Week({ f, place, rain24 }: { f: Forecast; place: Place; rain24: number | null }) {
   const [open, setOpen] = useState(0);
-  return <><section className="card"><h2>7-day forecast</h2><p className="muted small">Tap a day for details.</p></section>{f.days.map((d, i) => { const sc = scoreDay(f, i); const [ico, txt] = weatherText(d.code); const m = moonInfo(new Date(d.date + "T12:00:00"));
-    return (
-      <section key={d.date} className="card day" onClick={() => setOpen(open === i ? -1 : i)}>
-        <div className="row"><div><b>{dayName(d.date, i)}</b><div className="muted">{ico} {txt} · {Math.round(d.tMin)}–{Math.round(d.tMax)}°</div>
-          <div className="muted small">Wind up to {Math.round(d.windMax)} kn {compass(d.dir)}, gusts {Math.round(d.gustMax)} · Rain {d.rainChance}% · {m.icon}</div></div>
-          <ScoreBadge {...sc} /></div>
-        {open === i && <><ul className="reasons">{sc.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
-          <div className="muted small">Sunrise {hhmm(d.sunrise)} · Sunset {hhmm(d.sunset)}</div>
-          {solunar(d.date, f.tz, f.place.lat, f.place.lon).map((p) => <div key={p.mid} className={`period ${p.kind}`}><b>{hhmm(p.start)} – {hhmm(p.end)}</b><span>{p.kind}</span></div>)}</>}
-        {open !== i && <div className="muted small">Tap for details</div>}
-      </section>); })}
-    <p className="muted small center">The fishing score is a simple guide combining wind, pressure, moon, feeding times, rain and swell. It's not a guarantee!</p></>;
+  const { wx, loading } = useWx();
+  const [outs, setOuts] = useState<DayOutlook[] | null>(null);
+  useEffect(() => { if (loading) return; const id = setTimeout(() => setOuts(f.days.map((d) => dayOutlook(wx?.data ?? null, d.date, { origin: place, rain24 }))), 0); return () => clearTimeout(id); }, [wx, loading, f, place.lat, place.lon, rain24]);
+  const nowKey = localNowKey(f.tz);
+  const next = f.hours.filter((h) => h.time >= nowKey).slice(0, 24);
+  return <>
+    <section className="card">
+      <h2>⏱ Next 24 hours</h2>
+      <div className="hours">
+        {next.map((h) => { const [i] = weatherText(h.code); return (
+          <div key={h.time} className={`hr ${h.gust >= 28 ? "bad" : ""}`}>
+            <small>{hhmm(h.time).replace(":00", "")}</small><span>{i}</span><b>{Math.round(h.temp)}°</b>
+            <span className="wind"><Arrow deg={h.dir} size={16} />{Math.round(h.wind)}</span>
+            <small>g{Math.round(h.gust)}</small><small>💧{h.rainChance}%</small>
+            {h.wave != null && <small>🌊{h.wave.toFixed(1)}</small>}
+          </div>); })}
+      </div>
+      <p className="muted small">Wind in knots (kn). Arrow shows where the wind is blowing to. g = gusts.</p>
+    </section>
+    <section className="card"><h2>7-day forecast</h2><p className="muted small">Each day is rated the same way as Today and Target a fish. Tap a day for details.</p></section>
+    {f.days.map((d, i) => { const o = outs?.[i]; const [ico, txt] = weatherText(d.code); const m = moonInfo(new Date(d.date + "T12:00:00")); const top = o?.plans[0], s = top?.spots[0];
+      return (
+        <section key={d.date} className="card day" onClick={() => setOpen(open === i ? -1 : i)}>
+          <div className="row"><div><b>{dayName(d.date, i)}</b><div className="muted">{ico} {txt} · {Math.round(d.tMin)}–{Math.round(d.tMax)}°</div>
+            <div className="muted small">Wind up to {Math.round(d.windMax)} kn {compass(d.dir)}, gusts {Math.round(d.gustMax)} · Rain {d.rainChance}%{d.rainSum >= 1 ? ` (${d.rainSum.toFixed(0)} mm)` : ""} · {m.icon}</div></div>
+            {o ? <VB v={o.verdict} /> : <div className="skel line short" style={{ width: 70 }} />}</div>
+          {top && s && <div className="small">🎯 Best: <b>{top.profile.name}</b> at {s.spot.name}, {spanTxt(s.from, s.to)}</div>}
+          {open === i && o && <>
+            {s && <ul className="reasons">{s.factors.filter((x) => x.pts !== 0).sort((a, b) => Math.abs(b.pts) - Math.abs(a.pts)).slice(0, 5).map((x) => <li key={x.txt}>{x.pts > 0 ? "👍" : "👎"} {x.txt}</li>)}</ul>}
+            {o.showery ? <p className="small">🌧️ Rain likely for much of the day, so it can't rate above Fair.</p> : o.damp && o.verdict === "Good" ? <p className="small">🌦️ Some rain about, so the day rates Good at best.</p> : null}
+            {o.noWind && <p className="muted small">No spot wind forecast for this day yet – rated on tide, time, moon and season only.</p>}
+            <div className="muted small">Sunrise {hhmm(d.sunrise)} · Sunset {hhmm(d.sunset)}</div></>}
+          {open !== i && <div className="muted small">Tap for details</div>}
+        </section>); })}
+    <p className="muted small center">The rating is a guide, not a guarantee. It looks at forecast wind, waves and rain, the tide, time of day, moon and fish season at spots within about 40 km.</p></>;
 }
-
-
-

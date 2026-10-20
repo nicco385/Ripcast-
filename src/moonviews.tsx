@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import * as SunCalc from "suncalc";
 import { type Place, moonInfo } from "./lib";
-import { solunar, moonDay, dayRating, bestTimes, dayStart, dayEnd, fmt, type Period, type TideEv } from "./astro";
+import { solunar, moonDay, dayRating, dayStart, dayEnd, fmt, type Period, type TideEv } from "./astro";
 import { nearestStation, eventsBetween, clock } from "./tides";
 
 const TZ = "Australia/Melbourne";
@@ -22,20 +22,12 @@ function dayData(place: Place, key: string) {
 
 /** Today screen: a short summary with a button for the full moon and feeding-times screen. */
 export function MoonCard({ place, onMore }: { place: Place; onMore: () => void }) {
-  const key = dateKey(0), now = Date.now();
+  const key = dateKey(0);
   const d = useMemo(() => dayData(place, key), [place.lat, place.lon, key]);
-  const best = bestTimes(d.periods, d.tides, now);
   return <section className="card">
     <h2>🌙 Moon & feeding times</h2>
     <p className="rateline"><span className={`rate r-${d.rating}`}>{d.rating.toUpperCase()}</span> <span className="muted small">feeding-time rating today</span></p>
-    {best.length > 0 ? <><p className="small"><b>Best times left today</b></p>
-      {best.map((b) => <div key={b.p.tm} className={`period ${b.p.kind}`}><b>{t12(b.p.t0)} – {t12(b.p.t1)}</b><span><Fish n={b.p.rating} /> {b.why.slice(1).join(", ") || b.p.label}</span></div>)}</>
-      : <p className="muted small">No more feeding times today – see tomorrow.</p>}
-    <div className="grid">
-      <div className="stat"><small>Moonrise</small><b>{t12(d.md.rise)}</b></div>
-      <div className="stat"><small>Moonset</small><b>{t12(d.md.set)}</b></div>
-      <div className="stat"><small>Moon</small><b>{d.moon.icon} {d.moon.pct}%</b><small>{d.moon.name}</small></div>
-    </div>
+    <p className="small">{d.moon.icon} <b>{d.moon.name}</b> ({d.moon.pct}% lit) · moonrise {t12(d.md.rise)} · moonset {t12(d.md.set)}</p>
     <p className="small">☀️ Sunrise {t12(d.sr)} · Sunset {t12(d.ss)}</p>
     <p className="muted small">Solunar is a traditional angling theory, not proven science – a guide only.</p>
     <button className="btn alt wide" onClick={onMore}>Moon, tide & feeding chart ›</button>
@@ -63,7 +55,6 @@ export function SolunarView({ place }: { place: Place }) {
   const keys = useMemo(() => [0, 1, 2, 3, 4, 5, 6].map(dateKey), []);
   const key = keys[i];
   const d = useMemo(() => dayData(place, key), [place.lat, place.lon, key]);
-  const best = bestTimes(d.periods, d.tides, i === 0 ? now : null);
   return <>
     <section className="card">
       <h2>🌙 Moon & feeding times</h2>
@@ -73,9 +64,6 @@ export function SolunarView({ place }: { place: Place }) {
       <DayBars d={d} key0={key} now={now} />
       <p className="muted small">Green bars = major periods, blue = minor. Taller = higher rating. Dots are {d.station ? `${d.station} tide turns` : "tides (no station nearby)"}.</p>
     </section>
-    {best.length > 0 && <section className="card"><h3>⭐ Best times {i === 0 ? "left today" : "this day"}</h3>
-      <p className="muted small">Picks the strongest feeding times, and puts extra weight on ones with a high tide in them (the VFA suggests fishing around high tide).</p>
-      {best.map((b) => <div key={b.p.tm} className={`period ${b.p.kind}`}><b>{t12(b.p.t0)} – {t12(b.p.t1)}</b><span><Fish n={b.p.rating} /> {b.why.join(" · ")}</span></div>)}</section>}
     <section className="card"><h3>Feeding periods</h3>
       {d.periods.map((p) => <div key={p.tm} className="solrow"><div className="period-head"><b>{t12(p.t0)} – {t12(p.t1)}</b> <Fish n={p.rating} /></div>
         <div><b>{p.kind === "major" ? "Major" : "Minor"}</b> · {WORD[p.rating]} · {p.label}</div>

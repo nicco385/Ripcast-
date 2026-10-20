@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { getSpotWeather } from "./where";
+import { getSpotWeather, peekSpotWeather } from "./where";
 import { AREAS } from "./data/spotinfo";
-import { PROFILES, planSpecies, bestTargets, sessionWindow, spotsFor, spanTxt, type Plan, type SpotPlan, type Verdict } from "./target";
+import { PROFILES, planSpecies, dayOutlook, spotsFor, spanTxt, type Plan, type SpotPlan, type Verdict, type DayOutlook } from "./target";
+import { fmt } from "./astro";
 import { seasonVal } from "./where";
 import { SpThumb, load, save } from "./ui";
 import type { Place } from "./lib";
@@ -12,12 +13,14 @@ const VB = ({ v }: { v: Verdict }) => <span className={`badge v-${v}`}>{ICON[v]}
 const LIST = PROFILES.filter((p) => spotsFor(p.slug).length >= 2);
 const m = () => new Date().getMonth() + 1;
 
-function useWx() {
-  const [wx, setWx] = useState<Wx | null>(null); const [failed, setFailed] = useState(false);
+/** Spot forecast: the saved copy straight away (instant first paint), then a fresh one in the background. */
+export function useWx() {
+  const [wx, setWx] = useState<Wx | null>(() => peekSpotWeather()); const [failed, setFailed] = useState(false);
   useEffect(() => { let live = true; getSpotWeather().then((w) => live && setWx(w)).catch(() => live && setFailed(true)); return () => { live = false; }; }, []);
   return { wx, failed, loading: !wx && !failed };
 }
 
+export { VB };
 /** Step 1: pick a fish. */
 export function TargetPicker({ onPick }: { onPick: (slug: string) => void }) {
   const list = useMemo(() => [...LIST].sort((a, b) => seasonVal(b.slug, m()) - seasonVal(a.slug, m())), []);
@@ -71,17 +74,27 @@ export function TargetView({ slug, place, rain24, onSpot, onSpecies }: { slug: s
   </>;
 }
 
-/** Today screen: the evening (or next morning) session's best fish to chase. */
-export function TargetsCard({ rain24, onOpen, onPick }: { rain24: number | null; onOpen: () => void; onPick: (slug: string) => void }) {
+/** Today screen hero: one rating for today from the same engine as Target a fish, with the best bets. */
+export function FishingToday({ place, rain24, onOpen, onPick }: { place: Place; rain24: number | null; onOpen: () => void; onPick: (slug: string) => void }) {
   const { wx, loading } = useWx();
-  const win = useMemo(() => sessionWindow(), []);
-  const list = useMemo(() => loading ? [] : bestTargets(wx?.data ?? null, win.from, win.to, { rain24 }), [wx, loading, win, rain24]);
-  return <section className="card"><h2>🎯 {win.label}'s best targets</h2>
-    {loading && <><div className="skel line" /><div className="skel line short" /></>}
-    {list.map((pl) => { const s = pl.spots[0];
-      return <button key={pl.profile.slug} className="item tline" onClick={() => onPick(pl.profile.slug)}>
-        <SpThumb name={pl.profile.name} size={64} /><span className="grow"><b>{pl.profile.name}</b> <VB v={pl.verdict} /><small className="block">{s.spot.name} · {spanTxt(s.from, s.to)}</small></span><span className="chev">›</span></button>; })}
-    {!loading && !wx && <p className="muted small">No wind forecast right now – based on tide, time and season only.</p>}
-    <button className="btn alt wide" onClick={onOpen}>🎯 Target a fish ›</button>
+  const [out, setOut] = useState<DayOutlook | null>(null);
+  const day = fmt(Date.now(), "Australia/Melbourne").slice(0, 10);
+  // work it out just after the first paint so the screen appears instantly
+  useEffect(() => { if (loading) return; const id = setTimeout(() => setOut(dayOutlook(wx?.data ?? null, day, { origin: place, rain24 })), 0); return () => clearTimeout(id); }, [wx, loading, place.lat, place.lon, rain24, day]);
+  const top = out?.plans[0], s = top?.spots[0];
+  return <section className="card hero2">
+    <p className="muted" style={{ margin: 0 }}>Fishing today near {place.name.replace(/, VIC$/, "")}</p>
+    {!out ? <><div className="skel line" /><div className="skel line short" /></> : <>
+      <div className="verdict-big"><VB v={out.verdict} /></div>
+      {top && s ? <p className="headline">Best bet: {top.profile.name.toLowerCase().replace("king george", "King George").replace("australian", "Australian").replace(/^./, (c) => c.toUpperCase())} at {s.spot.name}, {spanTxt(s.from, s.to)}.</p> : <p>No good options left today – check tomorrow in the 7-day forecast.</p>}
+      {out.showery ? <p className="small">🌧️ Rain is likely for much of the day.</p> : out.damp ? <p className="small">🌦️ Some rain about – pick a dry window.</p> : null}
+      {out.noWind && <p className="muted small">No wind forecast right now – this uses tide, time, moon and season only.</p>}
+      {out.plans.slice(1).map((pl) => { const x = pl.spots[0];
+        return <button key={pl.profile.slug} className="item tline" onClick={() => onPick(pl.profile.slug)}>
+          <SpThumb name={pl.profile.name} size={56} /><span className="grow"><b>{pl.profile.name}</b> <VB v={pl.verdict} /><small className="block">{x.spot.name} · {spanTxt(x.from, x.to)}</small></span><span className="chev">›</span></button>; })}
+      {top && <button className="btn wide" onClick={() => onPick(top.profile.slug)}>Why, and other spots ›</button>}
+    </>}
+    <button className="btn alt wide" onClick={onOpen}>🎯 Target a different fish ›</button>
+    <p className="muted small">Rated on wind, waves, rain, tide, time, moon and season at spots within 40 km – the same as everywhere else in the app. A guide only.</p>
   </section>;
 }

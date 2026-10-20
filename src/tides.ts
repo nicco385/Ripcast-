@@ -62,7 +62,8 @@ export function tideStateText(st: Station, at: number, tz: string) {
   return { rising: n.rising, m: n.m, next: ev, text: ev ? `${n.rising ? "Rising" : "Falling"} – ${ev.type.toLowerCase()} tide at ${clock(ev.t, tz)}` : n.rising ? "Rising" : "Falling" };
 }
 
-export const clock = (t: number, tz: string) => new Intl.DateTimeFormat("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: tz }).format(t).replace(" am", " am").replace(" pm", " pm");
+const CLK = new Map<string, Intl.DateTimeFormat>();
+export const clock = (t: number, tz: string) => (CLK.get(tz) ?? (CLK.set(tz, new Intl.DateTimeFormat("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: tz })), CLK.get(tz)!)).format(t).replace(" am", " am").replace(" pm", " pm");
 export const dayKey = (t: number, tz: string) => new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(t);
 
 /** Tide range over a typical day at this station – small ranges (like Williamstown) mean weak tide effects. */

@@ -5,8 +5,10 @@ import * as SunCalc from "suncalc";
 
 const MIN = 60000;
 /** "YYYY-MM-DDTHH:mm" in the given time zone. */
+const FMT = new Map<string, Intl.DateTimeFormat>();
 export function fmt(d: Date | number, tz: string) {
-  const p = new Intl.DateTimeFormat("en-CA", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date(d));
+  let f = FMT.get(tz); if (!f) { f = new Intl.DateTimeFormat("en-CA", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }); FMT.set(tz, f); }
+  const p = f.formatToParts(new Date(d));
   const g = (t: string) => p.find((x) => x.type === t)!.value;
   return `${g("year")}-${g("month")}-${g("day")}T${g("hour")}:${g("minute")}`;
 }
@@ -83,17 +85,3 @@ export function dayRating(p: Period[]): DayRating {
 }
 
 export type TideEv = { t: number; type: "High" | "Low" };
-export type Best = { p: Period; score: number; why: string[] };
-/** Best feeding windows of the day: feeding-time rating, plus a boost when a tide turns inside the window (the VFA suggests around high tide). */
-export function bestTimes(periods: Period[], tides: TideEv[], now: number | null = null): Best[] {
-  const list = periods.map((p) => {
-    const why: string[] = [`${p.label.toLowerCase()} (${p.kind === "major" ? "major" : "minor"} feeding time)`];
-    let score = p.rating * 2;
-    if (p.sun) { why.push(`lines up with ${p.sun}`); score += 1; }
-    const hi = tides.find((e) => e.type === "High" && e.t >= p.t0 - 30 * MIN && e.t <= p.t1 + 30 * MIN);
-    const lo = tides.find((e) => e.type === "Low" && e.t >= p.t0 && e.t <= p.t1);
-    if (hi) { why.push("high tide in this window"); score += 3; } else if (lo) { why.push("tide turns (low) in this window"); score += 1; }
-    return { p, score, why };
-  }).filter((b) => now == null || b.p.t1 > now);
-  return list.sort((a, b) => b.score - a.score).slice(0, 2).sort((a, b) => a.p.tm - b.p.tm);
-}

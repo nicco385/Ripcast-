@@ -1,6 +1,6 @@
 // Scenario checks for "Target a fish". Run: npm run test:target
 import assert from "node:assert/strict";
-import { planSpecies, bestTargets, sessionWindow, scoreHour, profile } from "../src/target";
+import { planSpecies, dayOutlook, rateSpot, scoreHour, profile, nearSpots } from "../src/target";
 import { LAND, type Raw } from "../src/where";
 import { dayStart, fmt } from "../src/astro";
 import { TIDE_START, TIDE_END } from "../src/tides";
@@ -69,9 +69,24 @@ ok("squid: calm beats 18 kn onshore", () => assert.ok(scoreHour(sq, stk, wx("202
 const mp = profile("mulloway")!, ms = LAND.find((s) => s.species.includes("mulloway"))!, W11 = wx("2026-10-21", 8, 0)[ms.id];
 ok("mulloway: after rain scores higher", () => assert.ok(scoreHour(mp, ms, W11, at("2026-10-21T21:00:00+11:00"), { rain24: 15 }).score > scoreHour(mp, ms, W11, at("2026-10-21T21:00:00+11:00"), { rain24: 0 }).score));
 
-// 12. Tonight's targets: sensible list, no out-of-season species
-const sw = sessionWindow(oct);
-const bt = bestTargets(wx("2026-10-21", 10, 180), sw.from, sw.to, { now: oct });
-ok("best targets tonight: 3 in-season species", () => { assert.equal(sw.label, "Tonight"); assert.equal(bt.length, 3); assert.ok(!bt.some((p) => p.profile.slug === "garfish" && p.notes.length)); });
-console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n"), "\n Tonight:", bt.map((p) => `${p.profile.name} ${p.verdict} @ ${p.spots[0].spot.name}`).join(" | "));
+// 12. One engine: the day rating equals the best fish-and-spot from Target a fish over the same window and spots
+const W12 = wx("2026-10-21", 10, 180), origin = { lat: -37.86, lon: 144.9 };
+const d12 = dayOutlook(W12, "2026-10-21", { now: oct, origin });
+const within = new Set(nearSpots(origin).map((s) => s.id));
+const best12 = Math.max(...["snapper", "calamari", "silver-trevally", "black-bream", "sand-flathead"].map((sl) => planSpecies(sl, W12, { now: oct, from: d12.from, to: d12.to, within })?.spots[0]?.score ?? 0));
+ok("Today rating = best Target-a-fish result (same engine)", () => assert.ok(d12.score >= best12 && d12.plans[0].spots[0].score === d12.score));
+ok("Where rating for a spot matches Target a fish for its best fish", () => { const s = LAND.find((x) => x.id === "st-kilda-pier")!; const r = rateSpot(s, W12[s.id], d12.from, d12.to)!; const pl = planSpecies(r.profile.slug, W12, { now: oct, from: d12.from, to: d12.to, within: new Set([s.id]) })!; assert.equal(r.score, pl.spots[0].score); });
+
+// 13. Rain: a showery day can't be Great or Good, even near the full moon
+function wetWx(day: string): Record<string, Raw> { const w = wx(day, 6, 0); for (const k in w) { w[k].pop = w[k].t.map(() => 75); w[k].rain = w[k].t.map(() => 0.4); } return w; }
+const fullMoonDay = "2026-10-26";
+const dry = dayOutlook(wx(fullMoonDay, 6, 0), fullMoonDay, { now: at("2026-10-26T05:00:00+11:00"), origin });
+const wet = dayOutlook(wetWx(fullMoonDay), fullMoonDay, { now: at("2026-10-26T05:00:00+11:00"), origin });
+ok("drizzly full-moon day → Fair or worse, and below the dry day", () => { assert.match(wet.verdict, /Fair|Poor/); assert.ok(wet.showery); assert.ok(wet.score < dry.score); });
+const heavy = (() => { const w = wx(fullMoonDay, 6, 0); for (const k in w) w[k].rain = w[k].t.map(() => 3); return dayOutlook(w, fullMoonDay, { now: at("2026-10-26T05:00:00+11:00"), origin }); })();
+ok("steady rain → Poor or Fair", () => assert.match(heavy.verdict, /Fair|Poor/));
+const damp = (() => { const w = wx(fullMoonDay, 6, 0); for (const k in w) { w[k].pop = w[k].t.map(() => 0); w[k].rain = w[k].t.map(() => 0); const i = w[k].t.findIndex((t) => t.endsWith("T15:00")); if (i >= 0) { w[k].pop![i] = 65; } } return dayOutlook(w, fullMoonDay, { now: at("2026-10-26T05:00:00+11:00"), origin }); })();
+ok("one drizzly afternoon on a full-moon day → Good at best, never Great", () => { assert.equal(dry.verdict, "Great"); assert.notEqual(damp.verdict, "Great"); assert.ok(damp.damp); });
+
+console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);

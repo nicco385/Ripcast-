@@ -137,51 +137,6 @@ export function moonInfo(date: Date) {
 }
 
 export { solunar, type Period } from "./astro";
-import { solunar } from "./astro";
-
-// --- fishing score ---
-export type Score = { score: number; label: string; reasons: string[] };
-export function scoreDay(f: Forecast, dayIdx: number): Score {
-  const d = f.days[dayIdx];
-  const hrs = f.hours.filter((h) => h.time.startsWith(d.date));
-  const reasons: string[] = []; let s = 50;
-  // wind (daylight average)
-  const day = hrs.filter((h) => h.time >= d.sunrise.slice(0, 13) && h.time <= d.sunset);
-  const avgWind = day.length ? day.reduce((a, h) => a + h.wind, 0) / day.length : d.windMax;
-  if (avgWind < 8) { s += 15; reasons.push("👍 Light winds – easy fishing"); }
-  else if (avgWind < 13) { s += 5; reasons.push("👌 Moderate breeze"); }
-  else if (avgWind < 18) { s -= 10; reasons.push("👎 Fresh wind – choose a sheltered spot"); }
-  else { s -= 25; reasons.push("⚠️ Strong wind – tough and possibly unsafe"); }
-  if (d.gustMax >= 30) { s -= 10; reasons.push(`⚠️ Gusts up to ${Math.round(d.gustMax)} kn`); }
-  // pressure trend over the day
-  const p0 = hrs[6]?.pressure, p1 = hrs[18]?.pressure;
-  if (p0 && p1) {
-    const dp = p1 - p0;
-    if (dp > 1.5) { s += 8; reasons.push("👍 Pressure rising – anglers often rate this a good sign"); }
-    else if (dp < -3) { s -= 5; reasons.push("👎 Pressure dropping fast (weather change coming)"); }
-    else if (dp < -1) { s += 5; reasons.push("👍 Pressure easing slightly – often a good bite before a change"); }
-    else { s += 3; reasons.push("👌 Steady pressure"); }
-  }
-  // moon
-  const mi = moonInfo(new Date(d.date + "T12:00:00"));
-  const nearNF = Math.min(mi.phase, 1 - mi.phase, Math.abs(mi.phase - 0.5));
-  if (nearNF < 0.07) { s += 10; reasons.push(`👍 ${mi.name} – bigger tides (often a stronger bite)`); }
-  else if (nearNF > 0.18) { s -= 3; reasons.push(`${mi.name} – smaller tides`); }
-  // solunar overlapping dawn/dusk
-  const per = solunar(d.date, f.tz, f.place.lat, f.place.lon);
-  const near = (a: string, b: string) => Math.abs(toMin(a) - toMin(b)) <= 90;
-  if (per.some((p) => near(p.mid, d.sunrise) || near(p.mid, d.sunset))) { s += 8; reasons.push("👍 A feeding time lines up with sunrise or sunset"); }
-  // rain
-  if (d.rainSum > 10) { s -= 8; reasons.push(`🌧️ Heavy rain expected (${Math.round(d.rainSum)} mm)`); }
-  else if (d.rainSum > 2) { s -= 2; reasons.push(`🌦️ Some rain (${d.rainSum.toFixed(1)} mm)`); }
-  // swell
-  const maxWave = Math.max(0, ...hrs.map((h) => h.wave ?? 0));
-  if (maxWave > 2.5) { s -= 10; reasons.push(`🌊 Big seas (${maxWave.toFixed(1)} m) – stay off exposed rocks`); }
-  s = Math.max(0, Math.min(100, Math.round(s)));
-  const label = s >= 75 ? "Great" : s >= 60 ? "Good" : s >= 45 ? "Fair" : "Poor";
-  return { score: s, label, reasons };
-}
-const toMin = (t: string) => new Date(t.slice(0, 16) + ":00Z").getTime() / 60000;
 
 export function safety(f: Forecast): string[] {
   const out: string[] = [];

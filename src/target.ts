@@ -7,7 +7,7 @@ import * as SunCalc from "suncalc";
 import { GUIDES } from "./data/guides";
 import { SPECIES } from "./data/species";
 import { type LandSpot, type Raw, LAND, seasonVal, diff, c8, WINDNAME, km } from "./where";
-import { solunar, nearNewFull, fmt, type Period } from "./astro";
+import { solunar, nearNewFull, fmt, dayStart, dayEnd, type Period } from "./astro";
 import { nearestStation, eventsBetween, clock, type Station } from "./tides";
 
 const TZ = "Australia/Melbourne", H = 3600000;
@@ -80,7 +80,10 @@ const solCache = new Map<string, Period[]>();
 const periodsFor = (day: string) => { let p = solCache.get(day); if (!p) { p = solunar(day, TZ, -38.0, 144.95); solCache.set(day, p); } return p; };
 const sunCache = new Map<string, { sr: number; ss: number }>();
 const sunFor = (day: string) => { let s = sunCache.get(day); if (!s) { const t = SunCalc.getTimes(new Date(day + "T02:00:00Z"), -38.0, 144.95); s = { sr: t.sunrise!.getTime(), ss: t.sunset!.getTime() }; sunCache.set(day, s); } return s; };
-const keyOf = (t: number) => fmt(t, TZ).slice(0, 13) + ":00";
+const FC = new Map<number, string>();
+/** cached local "YYYY-MM-DDTHH:mm" (Intl formatting is the slow part of scoring) */
+const lf = (t: number) => { let v = FC.get(t); if (v === undefined) { v = fmt(t, TZ); if (FC.size > 20000) FC.clear(); FC.set(t, v); } return v; };
+const keyOf = (t: number) => lf(t).slice(0, 13) + ":00";
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 function relWind(s: LandSpot, dir: number) {
@@ -112,17 +115,22 @@ function windFactor(p: Profile, s: LandSpot, w: number, dir: number, prevMaxOn: 
 }
 
 const lightOf = (t: number) => {
-  const day = fmt(t, TZ).slice(0, 10), { sr, ss } = sunFor(day);
+  const day = lf(t).slice(0, 10), { sr, ss } = sunFor(day);
   if (Math.abs(t - sr) <= 75 * 60000) return { k: "dd" as const, txt: "Around sunrise" };
   if (Math.abs(t - ss) <= 75 * 60000) return { k: "dd" as const, txt: "Around sunset" };
   return t > sr && t < ss ? { k: "day" as const, txt: "Daylight" } : { k: "night" as const, txt: "After dark" };
 };
 
+const STN = new Map<string, Station | undefined>();
+const stationFor = (s: LandSpot) => { if (!STN.has(s.id)) STN.set(s.id, nearestStation(s.lat, s.lon)?.station); return STN.get(s.id); };
+const TEV = new Map<string, ReturnType<typeof eventsBetween>>();
+const tideEv = (st: Station, mid: number) => { const k = st.id + mid; let v = TEV.get(k); if (!v) { v = eventsBetween(st, mid - 8 * H, mid + 8 * H); if (TEV.size > 20000) TEV.clear(); TEV.set(k, v); } return [...v]; };
+
 /** Score one spot at one hour (t = start of the hour). */
 export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number, extra: { rain24?: number | null } = {}) {
   const mid = t + H / 2, fs: Factor[] = []; let avoid = false, ceil = 100;
   // season (month-level, VFA peak tables)
-  const g = GUIDES.find((x) => x.slug === p.slug)!, m = Number(fmt(t, TZ).slice(5, 7)), sv = seasonVal(p.slug, m);
+  const g = GUIDES.find((x) => x.slug === p.slug)!, m = Number(lf(t).slice(5, 7)), sv = seasonVal(p.slug, m);
   if (sv === 3) fs.push({ pts: 12, txt: "Main run season", kind: "season" });
   else if (sv === 2) fs.push({ pts: 8, txt: "In season (VFA)", kind: "season" });
   else if (sv === 0 && g.best.length) fs.push({ pts: -18, txt: "Out of its main season", kind: "season" });
@@ -143,6 +151,10 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
       windTxt = `${Math.round(w)} kn from the ${c8(dir)}`;
       const wave = r.wave.length ? r.wave[i] : null, rel = relWind(s, dir);
       if (wave != null && ((s.type === "rocks" && wave >= 1.5 && rel !== "sheltered") || (wave >= 2.5 && rel === "onshore" && s.type !== "estuary"))) { avoid = true; fs.push({ pts: -30, txt: `Big waves (${wave.toFixed(1)} m) – stay off the rocks and edges`, kind: "wave" }); }
+      const rain = r.rain?.[i] ?? null, pop = r.pop?.[i] ?? null;
+      if (rain != null && rain >= 1) { fs.push({ pts: -18, txt: `Rain (${rain.toFixed(1)} mm in the hour)`, kind: "rain" }); ceil = Math.min(ceil, 60); }
+      else if ((rain != null && rain >= 0.2) || (pop != null && pop >= 60)) { fs.push({ pts: -12, txt: `Showers or drizzle likely${pop != null ? ` (${pop}% chance)` : ""}`, kind: "rain" }); ceil = Math.min(ceil, 74); }
+      else if (pop != null && pop >= 40) fs.push({ pts: -3, txt: `Chance of a shower (${pop}%)`, kind: "rain" });
       if (p.clear && rel === "onshore" && w >= 15) fs.push({ pts: -6, txt: "Rough water is usually murky – hard for sight feeders", kind: "wind" });
     }
   }
@@ -151,13 +163,13 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
   let lp = p.light[L.k]; let ltxt = L.txt;
   if (L.k === "night" && p.nightPier && s.kind === "pier") { lp = 8; ltxt = "After dark under the pier lights"; }
   fs.push({ pts: lp, txt: ltxt, kind: "light" });
-  const hr = Number(fmt(t, TZ).slice(11, 13));
+  const hr = Number(lf(t).slice(11, 13));
   if (hr >= 0 && hr < 4 && L.k === "night" && p.light.night < 10) fs.push({ pts: -4, txt: "Very late night", kind: "light" });
   // tide (BOM, nearest station)
   let tideTxt: string | null = null;
-  const st: Station | undefined = s.info?.fresh ? undefined : nearestStation(s.lat, s.lon)?.station;
+  const st: Station | undefined = s.info?.fresh ? undefined : stationFor(s);
   if (st) {
-    const ev = eventsBetween(st, mid - 8 * H, mid + 8 * H);
+    const ev = tideEv(st, mid);
     const next = ev.find((e) => e.t > mid), prev = [...ev].reverse().find((e) => e.t <= mid);
     const hi = ev.filter((e) => e.type === "High").sort((a, b) => Math.abs(a.t - mid) - Math.abs(b.t - mid))[0];
     const near = ev.sort((a, b) => Math.abs(a.t - mid) - Math.abs(b.t - mid))[0];
@@ -170,7 +182,7 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
     if (tt) fs.push({ pts: tp, txt: tt, kind: "tide" });
   }
   // moon
-  const day = fmt(mid, TZ).slice(0, 10), per = periodsFor(day).find((q) => q.t0 < t + H && q.t1 > t);
+  const day = lf(mid).slice(0, 10), per = periodsFor(day).find((q) => q.t0 < t + H && q.t1 > t);
   if (per) fs.push({ pts: per.rating * 2, txt: `${per.kind === "major" ? "Major" : "Minor"} solunar feeding time (traditional theory)`, kind: "moon" });
   if (p.moonBig && nearNewFull(mid)) fs.push({ pts: 8, txt: "Near the new or full moon", kind: "moon" });
   if (p.afterRain && extra.rain24 != null && extra.rain24 >= 5) fs.push({ pts: 6, txt: `After rain (${Math.round(extra.rain24)} mm in the last day)`, kind: "rain" });
@@ -192,12 +204,13 @@ export const spanTxt = (a: number, b: number) => { const x = clock(a, TZ), y = c
 const joinAnd = (a: string[]) => a.length <= 1 ? a.join("") : `${a.slice(0, -1).join(", ")} and ${a[a.length - 1]}`;
 
 /** Rank spots for one species between `from` and `to` (default: the next 24 hours). */
-export function planSpecies(slug: string, wx: Wx, o: { now?: number; from?: number; to?: number; origin?: { lat: number; lon: number } | null; maxKm?: number; rain24?: number | null } = {}): Plan | null {
+export function planSpecies(slug: string, wx: Wx, o: { now?: number; from?: number; to?: number; origin?: { lat: number; lon: number } | null; maxKm?: number; rain24?: number | null; within?: Set<string> } = {}): Plan | null {
   const p = profile(slug); if (!p) return null;
   const now = o.now ?? Date.now(), from = Math.floor((o.from ?? now) / H) * H, to = o.to ?? from + 24 * H;
   let spots = spotsFor(slug);
+  if (o.within) spots = spots.filter((s) => o.within!.has(s.id));
   if (o.origin && o.maxKm) { const near = spots.filter((s) => km(o.origin!, s) <= o.maxKm!); if (near.length) spots = near; }
-  const noWind = !wx;
+  const noWind = !wx || !spots.some((s) => wx[s.id]?.t.includes(keyOf(from)) || wx[s.id]?.t.includes(keyOf(to - H)));
   const plans: SpotPlan[] = spots.map((s) => {
     const r = wx?.[s.id];
     const hrs: { t: number; v: ReturnType<typeof scoreHour> }[] = [];
@@ -241,18 +254,56 @@ export function rainLast24(f: { hours: { time: string; rain: number }[]; place: 
   const h = f.hours.filter((x) => x.time > start && x.time <= end); return h.length >= 12 ? h.reduce((a, x) => a + (x.rain ?? 0), 0) : null;
 }
 
-/** Best targets for a session window (e.g. tonight): one line per species, best first. */
-export function bestTargets(wx: Wx, from: number, to: number, o: { now?: number; rain24?: number | null; n?: number } = {}) {
-  return PROFILES.filter((p) => spotsFor(p.slug).length >= 2)
-    .map((p) => planSpecies(p.slug, wx, { now: o.now, from, to, rain24: o.rain24 })!).filter(Boolean)
-    .filter((pl) => !pl.notes.some((n) => n.includes("out of their main season")))
-    .sort((a, b) => b.spots[0].score - a.spots[0].score).slice(0, o.n ?? 3);
-}
-/** The evening session if it is still ahead, otherwise tomorrow morning. */
-export function sessionWindow(now = Date.now()) {
-  const today = fmt(now, TZ).slice(0, 10), { ss } = sunFor(today);
-  if (now < ss + 3 * H) return { label: "Tonight", from: Math.max(now, ss - 2 * H), to: ss + 4 * H };
-  const tm = fmt(now + 12 * H, TZ).slice(0, 10), { sr } = sunFor(tm);
-  return { label: "Tomorrow morning", from: Math.max(now, sr - 2 * H), to: sr + 4 * H };
-}
 export const speciesName = (slug: string) => SPECIES.find((s) => s.slug === slug)?.name ?? slug;
+
+// ---- one rating engine for the whole app: Today, Where, Target a fish and the 7-day forecast ----
+export type SpotRating = { spot: LandSpot; profile: Profile; score: number; verdict: Verdict; from: number; to: number; peak: number; factors: Factor[]; avoid: boolean; windTxt: string | null; tideTxt: string | null; noWind: boolean };
+/** Rate a spot for whichever of its fish suits the conditions best, between `from` and `to`. */
+export function rateSpot(s: LandSpot, r: Raw | undefined, from: number, to: number, o: { rain24?: number | null } = {}): SpotRating | null {
+  const ps = PROFILES.filter((p) => s.species.includes(p.slug)); if (!ps.length) return null;
+  from = Math.floor(from / H) * H; if (to <= from) to = from + H;
+  let best: SpotRating | null = null;
+  for (const p of ps) {
+    const hrs: { t: number; v: ReturnType<typeof scoreHour> }[] = [];
+    for (let t = from; t < to; t += H) hrs.push({ t, v: scoreHour(p, s, r, t, o) });
+    let bi = 0; hrs.forEach((h, i) => { if (h.v.score > hrs[bi].v.score) bi = i; });
+    const sc = hrs[bi].v.score;
+    if (best && sc <= best.score) continue;
+    let a = bi, b = bi;
+    while (a > 0 && b - a < 3 && hrs[a - 1].v.score >= sc - 4) a--;
+    while (b < hrs.length - 1 && b - a < 3 && hrs[b + 1].v.score >= sc - 4) b++;
+    const v = hrs[bi].v, noWind = !r || !r.t.includes(keyOf(hrs[bi].t));
+    best = { spot: s, profile: p, score: sc, verdict: noWind && sc >= 65 ? "Fair" : verdictOf(sc), from: hrs[a].t, to: hrs[b].t + H, peak: hrs[bi].t, factors: v.factors, avoid: v.avoid, windTxt: v.windTxt, tideTxt: v.tideTxt, noWind };
+  }
+  return best;
+}
+
+/** Spots that count as "near" a place for the Today and 7-day ratings. */
+export function nearSpots(origin: { lat: number; lon: number }, radiusKm = 40) {
+  const all = LAND.map((s) => ({ s, d: km(origin, s) })).sort((a, b) => a.d - b.d);
+  const near = all.filter((x) => x.d <= radiusKm); return (near.length >= 3 ? near : all.slice(0, 8)).map((x) => x.s);
+}
+export type DayOutlook = { day: string; verdict: Verdict; showery: boolean; damp: boolean; score: number; plans: Plan[]; noWind: boolean; from: number; to: number };
+/** The day's rating = the best fish-and-spot combination near the place (same engine as Target a fish). */
+export function dayOutlook(wx: Wx, day: string, o: { now?: number; origin: { lat: number; lon: number }; rain24?: number | null; n?: number }): DayOutlook {
+  const now = o.now ?? Date.now(), ds = dayStart(day, TZ), de = dayEnd(day, TZ);
+  const from = Math.max(ds + 4 * H, Math.floor(now / H) * H), to = de;
+  const within = new Set(nearSpots(o.origin).map((s) => s.id));
+  const plans = PROFILES.filter((p) => spotsFor(p.slug).some((s) => within.has(s.id)))
+    .map((p) => planSpecies(p.slug, wx, { now, from, to, within, rain24: o.rain24, origin: o.origin })).filter((x): x is Plan => !!x)
+    .filter((pl) => !pl.notes.some((n) => n.includes("out of their main season")))
+    .sort((a, b) => b.spots[0].score - a.spots[0].score);
+  const top = plans[0];
+  // a wet day stays a wet day: if most daylight hours look showery, the day can't rate above Fair
+  // (or if 5 mm or more is forecast between 7am and 7pm)
+  let wet = 0, hrs = 0, mm = 0; const sp = top?.spots[0]?.spot, r = sp && wx?.[sp.id];
+  if (r) for (let t = Math.max(from, ds + 7 * H); t < ds + 19 * H; t += H) { const i = r.t.indexOf(keyOf(t)); if (i < 0) continue; hrs++; mm += r.rain?.[i] ?? 0; if ((r.pop?.[i] ?? 0) >= 60 || (r.rain?.[i] ?? 0) >= 0.2) wet++; }
+  const showery = (hrs >= 4 && wet / hrs >= 0.6) || (hrs >= 2 && mm >= 5);
+  // a drizzly day (any real chance of rain from 5am to 9pm) can be Good but never Great – the moon can't lift it
+  let damp = false;
+  if (r) for (let t = Math.max(from, ds + 5 * H); t < ds + 21 * H; t += H) { const i = r.t.indexOf(keyOf(t)); if (i < 0) continue; if ((r.pop?.[i] ?? 0) >= 50 || (r.rain?.[i] ?? 0) >= 0.2) { damp = true; break; } }
+  let verdict: Verdict = top ? top.verdict : "Poor";
+  if (showery && (verdict === "Great" || verdict === "Good")) verdict = "Fair";
+  else if (damp && verdict === "Great") verdict = "Good";
+  return { day, verdict, showery, damp, score: top ? top.spots[0].score : 0, plans: plans.slice(0, o.n ?? 3), noWind: top ? top.noWind : true, from, to };
+}

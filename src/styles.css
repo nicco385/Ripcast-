@@ -230,3 +230,23 @@ label.check input{accent-color:var(--gold)}
 .thero .row{gap:12px;align-items:center;justify-content:flex-start}.headline{font-size:1.2rem;font-weight:700;line-height:1.35;margin:8px 0}.verdict{margin-top:10px}
 .why{list-style:none;padding:0;margin:6px 0}.why li{margin:4px 0;font-size:1rem}.tspot h3{margin:0}
 .tline{display:flex;align-items:center;gap:10px;text-align:left}.tline .badge{font-size:12px;padding:3px 9px;margin-left:4px}.block{display:block}
+.stale{display:inline-block;margin-top:4px;padding:4px 10px;border-radius:10px;background:#8a6a2c;color:#fff;font-size:13px;font-weight:600}.stale a{color:#fff;text-decoration:underline}
+.verdict-big .badge{font-size:22px;padding:8px 18px}.hero2 .headline{font-size:1.25rem}.a2hs .row{justify-content:space-between;align-items:center}.a2hs{border:1px solid #f5b83d66}
+.catchphoto{display:block;width:100%;max-height:340px;object-fit:cover;border-radius:14px;margin:8px 0}
+.catch2 .row{align-items:flex-start;gap:10px}.filebtn{display:flex;justify-content:center;align-items:center;cursor:pointer;margin-top:8px}
+optgroup{font-weight:700}
+/* v1.4 facilities */
+.facrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(127,127,127,.18)}
+.facrow:last-of-type{border-bottom:0}
+.facic{font-size:1.3rem;width:1.6rem;text-align:center}
+.facl{flex:1;min-width:0}
+.fac{font-weight:700;font-size:.85rem;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.fac-yes{background:#1f7a3a;color:#fff}
+.fac-no{background:#8a2a2a;color:#fff}
+.fac-unknown{background:rgba(127,127,127,.22)}
+.btn.wide{display:block;text-align:center;margin:8px 0}
+.tidenow{font-size:1.05rem;margin:10px 0 4px}
+.tidearrow{font-size:1.2rem}
+.fishrow2{display:flex;align-items:center;gap:12px}
+.fishrow2 .grow{flex:1;min-width:0}
+.fishrow2 .chev{margin-left:auto}

@@ -1,3 +1,5 @@
+import { FACILITIES, FAC_CHECKED, SRC, type Facilities } from "./data/facilities";
+import { StaleNote } from "./stale";
 import { profile } from "./target";
 import { useMemo } from "react";
 import { SPECIES, speciesBySlug, bagText, sizeText } from "./data/species";
@@ -31,6 +33,8 @@ function MonthStrip({ slug }: { slug: string }) {
 }
 export const SeasonKey = () => <p className="muted small"><i className="dot" style={{ background: RUN }} /> main run &nbsp;<i className="dot" style={{ background: GOOD }} /> in season &nbsp;<i className="dot" style={{ background: OK }} /> possible &nbsp;<i className="dot" style={{ background: BAD }} /> quiet</p>;
 
+/** Thin guides (little reliable shore info) live in a separate "More fish" section. */
+export const THIN = ["snook", "yellowtail-kingfish", "murray-cod"];
 export function FishTab({ onOpen, onCal, onTarget }: { onOpen: (slug: string) => void; onCal: () => void; onTarget: () => void }) {
   const m = curMonth();
   const list = useMemo(() => [...SPECIES].sort((a, b) => seasonVal(b.slug, m) - seasonVal(a.slug, m) || a.name.localeCompare(b.name)), [m]);
@@ -41,11 +45,15 @@ export function FishTab({ onOpen, onCal, onTarget }: { onOpen: (slug: string) =>
       <button className="big" onClick={onCal}>📅 What's biting – month by month</button>
       <SeasonKey />
     </section>
-    {list.map((s) => { const sl = seasonLabel(s.slug); const g = guideBySlug(s.slug);
+    {list.filter((s) => !THIN.includes(s.slug)).map((s) => { const sl = seasonLabel(s.slug); const g = guideBySlug(s.slug);
       return <button key={s.slug} className="card fishrow" onClick={() => onOpen(s.slug)}>
         <SpThumb name={s.name} size={96} />
         <span className="fr-txt"><b>{s.name}</b><small>{sl.t}</small><small>{s.minCm && s.maxCm ? `${s.minCm}–${s.maxCm} cm only` : s.minCm ? `Min ${s.minCm} cm` : "No min size"} · bag {bagText(s)}</small>{g?.trust === "low" && <small className="lowtrust">Limited information</small>}</span>
         <span className="chev" aria-hidden="true">›</span></button>; })}
+    <section className="card morefish"><h2>More fish</h2>
+      <p className="muted small">Fish that are rarely caught from the shore around Melbourne, or that we have limited reliable information on. Treat these guides as rough.</p>
+      {list.filter((s) => THIN.includes(s.slug)).map((s) => { const g = guideBySlug(s.slug); return <button key={s.slug} className="item fishrow2" onClick={() => onOpen(s.slug)}><SpThumb name={s.name} size={72} /><span className="grow"><b>{s.name}</b><small className="block muted">{g?.intro.split(".")[0]}.</small></span><span className="chev">›</span></button>; })}
+    </section>
     <p className="muted small center">Seasons come from the VFA's Go Fishing pages (Port Phillip Bay and Western Port). Guides are for fishing from the shore.</p>
   </>;
 }
@@ -69,7 +77,7 @@ export function SpeciesView({ slug, onSpot, onTarget }: { slug: string; onSpot: 
         <div className="stat"><small>Bag limit</small><b>{bagText(sp)}</b>{sp.bagNote && <small>{sp.bagNote}</small>}</div>
       </div>
       {sp.measure && <p className="small">Measure: {sp.measure}.</p>}
-      <p className="muted small">Size and bag limits checked against the VFA on {REGS.checked}. <Ext href={REGS.sourceUrl}>Check the latest ↗</Ext></p>
+      <p className="muted small">Size and bag limits checked against the VFA on {REGS.checked}. <Ext href={REGS.sourceUrl}>Check the latest ↗</Ext> <StaleNote checked={REGS.checked} what="limits" /></p>
       {onTarget && profile(slug) && <button className="big" onClick={() => onTarget(slug)}>🎯 Where to catch {sp.name.toLowerCase().replace("king george", "King George").replace("australian", "Australian")} now</button>}
     </section>
     {g.trust !== "good" && <div className="banner warn">{g.trust === "low" ? "Limited information: we could not find strong sources for this fish from the shore, so treat this page as a rough guide." : "Some details here come from local angler reports rather than the VFA – treat them as a guide."}</div>}
@@ -116,11 +124,12 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
       <h2>{spot.name}</h2>
       {i?.photo && <figure className="spotphoto"><img src={BASE + i.photo.src} alt={i.photo.cap} width={280} height={350} loading="lazy" /><figcaption>{i.photo.cap}</figcaption></figure>}
       <p className="muted small">{i ? AREAS[i.area].name : ""} · {spot.type} · {Math.round(km(place, spot))} km from {place.name}</p>
-      {i?.status?.closed && <div className="banner danger">⛔ Closed. {i.status.note}<br /><Ext href={i.status.url}>Official update ↗</Ext> <small>(as of {i.status.asOf})</small></div>}
+      {i?.status?.closed && <div className="banner danger">⛔ Closed. {i.status.note}<br /><Ext href={i.status.url}>Official update ↗</Ext> <small>(as of {i.status.asOf})</small> <StaleNote checked={i.status.asOf} what="closure" /></div>}
       {i?.fresh ? <p className="small">Fish list from VFA stocking records, Parks Victoria and FishingMad. A freshwater spot – <b>no tides here</b>.</p> : i?.src === "vfa" ? <p className="small">✅ Fish list and tips from the Victorian Fisheries Authority.</p> : <p className="muted small">General local knowledge – not an official VFA list.</p>}
       {!i?.status?.closed && <div className="row btns">
         <a className="btn" href={`https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lon}`} target="_blank" rel="noreferrer">🚗 Directions</a>
         <button className="btn alt" onClick={onMap}>🗺️ On the map</button></div>}
+      {!i?.status?.closed && <a className="btn alt wide" href={`https://www.google.com/maps/search/bait+and+tackle/@${spot.lat},${spot.lon},13z`} target="_blank" rel="noreferrer">🎣 Bait &amp; tackle near here ↗</a>}
       {!i?.status?.closed && <button className="big" onClick={onUse}>Show conditions here</button>}
     </section>
     {fish.length > 0 && <section className="card"><h2>🐟 Fish here</h2>
@@ -135,6 +144,7 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
       {spot.windNote && <p><b>Wind:</b> {spot.windNote}</p>}
       {i?.noWind && <p className="muted small">We have not mapped which winds this spot is sheltered from – check the wind direction when you arrive.</p>}
     </section>
+    <FacilitiesCard id={spot.id} />
     {i?.report && <section className="card"><h2>🎣 Angler report</h2>{i.report.items.map((r) => <div key={r.t}><p className="small">{r.t}</p>{r.photo && <figure className="spotphoto" style={{ marginTop: 8 }}><img src={BASE + r.photo.src} alt={r.photo.cap} width={240} height={r.photo.src.includes("bream") ? 300 : 150} loading="lazy" style={r.photo.src.includes("snapper") ? { aspectRatio: "16/10" } : undefined} /><figcaption>{r.photo.cap}</figcaption></figure>}</div>)}
       <p className="small">{i.report.note}</p>
       <p className="small"><b>Snapper rules (VFA):</b> minimum 28 cm, bag 10, and no more than 3 may be 40 cm or longer. Keep whole until you are away from the water.</p>{i.report.items.some((r) => /bream/i.test(r.t)) && <p className="small"><b>Black bream rules (VFA):</b> minimum 28 cm, bag 10 (combined with other bream and tarwhine), no maximum size here (the 38 cm maximum is only for the Gippsland Lakes). Keep whole until you are away from the water.</p>}</section>}
@@ -156,4 +166,16 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
       {evs.map((e) => <div key={e.t} className="period"><b>{e.type === "High" ? "⬆ High" : "⬇ Low"} {clock(e.t, TZ)}</b><span>{dayKey(e.t, TZ) === dayKey(now, TZ) ? "Today" : "Tomorrow"} · {e.m.toFixed(2)} m</span></div>)}
       <p className="muted small">The VFA suggests fishing a few hours either side of high tide for most pier fish.</p>{i?.eat && <p className="muted small">River tides arrive later the further upstream you are – by how much we haven't verified, so allow extra time.</p>}</section>}
   </>;
+}
+
+const FAC_ROWS: [keyof Omit<Facilities, "src">, string, string][] = [["toilets", "🚻", "Toilets"], ["parking", "🅿️", "Parking"], ["lights", "💡", "Lights at night"], ["rails", "🛡️", "Railings"], ["cleaning", "🔪", "Fish-cleaning table"]];
+function FacilitiesCard({ id }: { id: string }) {
+  const fa = FACILITIES[id];
+  if (!fa) return null;
+  const word = (h: string) => h === "yes" ? "Yes" : h === "no" ? "No" : "Not known";
+  return <section className="card"><h2>🚻 Facilities</h2>
+    {FAC_ROWS.map(([k, ic, label]) => { const x = fa[k]; return <div key={k} className="facrow"><span className="facic">{ic}</span><span className="facl"><b>{label}</b>{x.note && <small className="block muted">{x.note}</small>}</span><span className={"fac fac-" + x.has}>{word(x.has)}</span></div>; })}
+    <p className="muted small">"Not known" means we couldn't confirm it in an official or trusted source, so we haven't guessed. Toilet hours can change – some close at night. Checked {FAC_CHECKED}.</p>
+    <details className="small"><summary>Where this comes from</summary>{fa.src.map((k) => <p key={k}><Ext href={SRC[k].u}>{SRC[k].t} ↗</Ext></p>)}</details>
+  </section>;
 }

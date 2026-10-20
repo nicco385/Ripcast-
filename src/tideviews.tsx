@@ -68,7 +68,17 @@ export function TideDial({ st, now }: { st: Station; now: number }) {
   </div>;
 }
 
-export function TideCard({ place, onMore }: { place: Place; onMore: () => void }) {
+/** One plain line for the Today screen: rising/falling and time to the next turn. */
+function TideNow({ st, now }: { st: Parameters<typeof eventsBetween>[0]; now: number }) {
+  const evs = eventsBetween(st, now - 16 * 3600000, now + 16 * 3600000);
+  const prev = [...evs].reverse().find((e) => e.t <= now), next = evs.find((e) => e.t > now);
+  if (!prev || !next) return null;
+  const rising = next.type === "High", mins = Math.max(0, Math.round((next.t - now) / 60000));
+  const hm = `${Math.floor(mins / 60) ? `${Math.floor(mins / 60)} h ` : ""}${mins % 60} min`;
+  return <p className="tidenow"><span className="tidearrow">{rising ? "⬆" : "⬇"}</span> <b>{rising ? "Rising" : "Falling"}</b> – {next.type.toLowerCase()} tide at <b>{clock(next.t, TZ)}</b> ({hm})</p>;
+}
+
+export function TideCard({ place, onMore, compact }: { place: Place; onMore: () => void; compact?: boolean }) {
   const now = Date.now();
   const hit = useMemo(() => nearestStation(place.lat, place.lon), [place.lat, place.lon]);
   const end = TIDE_END();
@@ -80,13 +90,15 @@ export function TideCard({ place, onMore }: { place: Place; onMore: () => void }
   const inBay = st.lon > 144.4 && st.lon < 145.1 && st.lat > -38.4;
   return <section className="card">
     <h2>🌊 Tides – {short(st.name)}</h2>
-    <p className="muted small">Official predictions for the nearest station, {Math.round(hit.km)} km from {place.name}. Melbourne time.</p>
-    <TideDial st={st} now={now} />
-    <DayCurve st={st} now={now} place={place} />
-    {evs.map((t) => <div key={t.t} className="period"><b>{t.type === "High" ? "⬆ High" : "⬇ Low"} {clock(t.t, TZ)}</b><span>{dayKey(t.t, TZ) === todayKey ? "Today" : "Tomorrow"} · {t.m.toFixed(2)} m</span></div>)}
+    <p className="muted small">{compact ? `Official BOM times · ${Math.round(hit.km)} km from ${place.name}` : `Official predictions for the nearest station, ${Math.round(hit.km)} km from ${place.name}. Melbourne time.`}</p>
+    {compact ? <TideNow st={st} now={now} /> : <TideDial st={st} now={now} />}
+    {end - now < 60 * 86400000 && <div className="banner warn">The tide tables built into this app end on 31 December 2027 ({Math.ceil((end - now) / 86400000)} days left). An app update will be needed after that.</div>}
+    {!compact && <DayCurve st={st} now={now} place={place} />}
+    {!compact && evs.map((t) => <div key={t.t} className="period"><b>{t.type === "High" ? "⬆ High" : "⬇ Low"} {clock(t.t, TZ)}</b><span>{dayKey(t.t, TZ) === todayKey ? "Today" : "Tomorrow"} · {t.m.toFixed(2)} m</span></div>)}
+    {compact && <p className="small muted">Then: {evs.slice(1, 4).map((t) => `${t.type.toLowerCase()} ${clock(t.t, TZ)}`).join(" · ")}</p>}
     {hit.km > 12 && <p className="muted small">This station is a fair way from your spot, so times can be out by a bit. Use the Tides page to pick a closer one.</p>}
-    {inBay && <p className="muted small">Port Phillip Bay's tide is small (about 1 m) and arrives roughly 3 hours after the Heads. Strong winds and pressure changes can shift it by more than usual.</p>}
-    <button className="btn" onClick={onMore}>Tides for the week & other places ›</button>
+    {inBay && !compact && <p className="muted small">Port Phillip Bay's tide is small (about 1 m) and arrives roughly 3 hours after the Heads. Strong winds and pressure changes can shift it by more than usual.</p>}
+    <button className="btn" onClick={onMore}>{compact ? "Tide graph, week & other places ›" : "Tides for the week & other places ›"}</button>
   </section>;
 }
 
@@ -106,7 +118,9 @@ export function TidesView({ place }: { place: Place }) {
       <h2>🌊 Tide times</h2>
       <label>Place<select value={id} onChange={(e) => setId(e.target.value)}>{near.map(({ s, km }) => <option key={s.id} value={s.id}>{short(s.name)} · {Math.round(km)} km</option>)}</select></label>
       <p className="muted small">Closest to {place.name} is first. Heights are in metres above the chart's lowest level. All times are Melbourne local time (including daylight saving).</p>
-      {now > end && <div className="banner warn">The built-in tables end on 31 Dec 2027. Use the official BOM site.</div>}
+      {now > end ? <div className="banner warn">The built-in tables end on 31 Dec 2027. Use the official BOM site.</div>
+        : end - now < 60 * 86400000 ? <div className="banner warn">The built-in tables end on 31 Dec 2027 ({Math.ceil((end - now) / 86400000)} days left).</div> : null}
+      <DayCurve st={st} now={now} place={place} />
     </section>
     {days.map(([k, evs]) => <section key={k} className="card"><h3>{dayLabel(k, todayKey)}</h3>
       {evs.map((e) => <div key={e.t} className="period"><b>{e.type === "High" ? "⬆ High" : "⬇ Low"} {clock(e.t, TZ)}</b><span>{e.m.toFixed(2)} m</span></div>)}</section>)}
