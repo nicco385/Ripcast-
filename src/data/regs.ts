@@ -1,6 +1,6 @@
 export const REGS = {
   source: "2026 Victorian Recreational Fishing Guide (VFA)",
-  checked: "13 October 2026",
+  checked: "21 October 2026",
   sourceUrl: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons",
   licence:
     "You need a Victorian Recreational Fishing Licence (from $10 for 3 days) unless you are exempt: under 18, 70 or over, a Victorian Seniors Card holder, certain pensioner and veterans' card holders, or Aboriginal or Torres Strait Islander. Buy it online through Service Victoria.",
