@@ -18,8 +18,8 @@ export const AUDIT: Record<string, Audit> = {
   "hampton-pier": { occ: ["calamari"], why: { calamari: "No recent Hampton squid reports found, and FishingMad's Sandringham breakwater guide next door doesn't list squid." } },
   "seaford-pier": { add: ["australian-salmon"], occ: ["calamari", "snapper"], why: {
     "australian-salmon": "VFA: casting for salmon is 'more reliable' here.", calamari: "VFA: calamari 'occasionally'.", snapper: "VFA: 'occasionally, a good snapper'." } },
-  "altona-pier": { add: ["king-george-whiting", "garfish", "australian-salmon", "black-bream"], why: {
-    calamari: "VFA: calamari and whiting off the sides of the pier over weed.", "king-george-whiting": "VFA (western Port Phillip page).",
+  "altona-pier": { add: ["king-george-whiting", "garfish", "australian-salmon", "black-bream"], occ: ["calamari"], why: {
+    calamari: "Occasional only. The VFA's western Port Phillip guide (written before the new pier opened in Dec 2023) says calamari can be caught off the sides over the weed beds, but we found almost no real catch reports from the pier: one disputed 2005 forum claim, a 2019 forum reply saying 'No squid' and that you need weed beds, and none since the new pier opened. Local anglers say squid are rarely caught here. Boat anglers do catch them out from the pier and towards Point Cook.", "king-george-whiting": "VFA (western Port Phillip page).",
     garfish: "VFA: garfish under a light berley.", "australian-salmon": "VFA: the reefs attract salmon.", "black-bream": "VFA: bream live under the pier." } },
   "gem-pier": { add: ["sand-flathead"], occ: ["silver-trevally", "mulloway"], why: {
     "sand-flathead": "VFA: pinky snapper and flathead are taken here.", "silver-trevally": "VFA: 'occasional' trevally.",

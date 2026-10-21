@@ -234,7 +234,9 @@ export function planSpecies(slug: string, wx: Wx, o: { now?: number; from?: numb
     while (b < hrs.length - 1 && b - a < 3 && hrs[b + 1].v.score >= best - 4) b++;
     const v = hrs[bi].v;
     return { spot: s, score: best, verdict: verdictOf(best), from: hrs[a].t, to: hrs[b].t + H, peak: hrs[bi].t, factors: v.factors, avoid: v.avoid, dist: o.origin ? km(o.origin, s) : null, windTxt: v.windTxt, tideTxt: v.tideTxt };
-  }).sort((x, y) => y.score - x.score || (x.dist ?? 0) - (y.dist ?? 0));
+  // Occasional-catch spots (data/audit.ts) always rank below regular spots, so they are never the top pick
+  // while a regular spot exists – even on days when their wind shelter scores them higher.
+  }).sort((x, y) => Number(isOcc(x.spot, p.slug)) - Number(isOcc(y.spot, p.slug)) || y.score - x.score || (x.dist ?? 0) - (y.dist ?? 0));
   if (!plans.length) return null;
   const top = plans[0]; let verdict = top.verdict;
   if (noWind && (verdict === "Great" || verdict === "Good")) verdict = "Fair";
