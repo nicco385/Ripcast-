@@ -5,7 +5,7 @@ import { AREAS, type Area } from "./data/spotinfo";
 import { REPORTS, NO_REPORTS, REPORT_CHECKED } from "./data/reports";
 import { APP_NAME, APP_VERSION } from "./config";
 import { type Place } from "./lib";
-import { LAND, ALL_LAND, km, inSeasonHere, short } from "./where";
+import { LAND, ALL_LAND, km, inSeasonHere, short, fromTxt } from "./where";
 import { rateSpot, spanTxt, type SpotRating } from "./target";
 import { useWx, VB } from "./targetviews";
 import { fmt, dayEnd } from "./astro";
@@ -39,7 +39,7 @@ export function Where({ place, onSpot, onMap }: { place: Place; onSpot: (id: str
       <div className="seg">{(["now", "today"] as const).map((k) => <button key={k} className={mode === k ? "on" : ""} onClick={() => setMode(k)}>{k === "now" ? "Right now" : "Rest of today"}</button>)}</div>
       <div className="chips" role="group" aria-label="Area">{(["all", ...Object.keys(AREAS)] as (Area | "all")[]).map((k) => <button key={k} className={area === k ? "on" : ""} onClick={() => setArea(k)}>{k === "all" ? "All areas" : AREAS[k].name}</button>)}</div>
       <div className="seg">{[0, 30, 60, 100].map((k) => <button key={k} className={maxKm === k ? "on" : ""} onClick={() => setMaxKm(k)}>{k ? `${k} km` : "Any"}</button>)}</div>
-      <p className="muted small">Distance from: <b>{origin.name}</b> · <button className="linkish" onClick={gps}>use my location</button> {gpsMsg}</p>
+      <p className="muted small">Distance from: <b>{fromTxt(origin.name)}</b> · <button className="linkish" onClick={gps}>use my location</button> {gpsMsg}</p>
       <button className="btn alt wide" onClick={onMap}>🗺️ See all spots on the map</button>
     </section>
     {failed && !wx && <div className="banner warn">{navigator.onLine ? "Can't reach the weather service right now, so spots are rated on tide, time, moon and season only." : "You're offline, so spots are rated on tide, time, moon and season only."}</div>}

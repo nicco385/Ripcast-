@@ -1,6 +1,6 @@
 import * as SunCalc from "suncalc";
 
-export type Place = { name: string; lat: number; lon: number };
+export type Place = { name: string; lat: number; lon: number; /** picked by tapping the map – the name is a friendly guess */ fromMap?: boolean };
 
 export type Hour = {
   time: string; temp: number; code: number; wind: number; gust: number; dir: number;
@@ -99,6 +99,18 @@ export async function searchPlaces(q: string): Promise<Place[]> {
   let d = await j(base + "&countryCode=AU"); // Australian places first
   if (!d.results?.length) d = await j(base);
   return (d.results ?? []).map((r: any) => ({ name: [r.name, r.admin1, r.country_code === "AU" ? "" : r.country].filter(Boolean).join(", "), lat: r.latitude, lon: r.longitude }));
+}
+
+/** Suburb or town name for a map point (OpenStreetMap Nominatim). Returns null if offline or nothing found. */
+export async function reverseName(lat: number, lon: number): Promise<string | null> {
+  try {
+    const ctl = new AbortController(); const id = setTimeout(() => ctl.abort(), 6000);
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=en&lat=${lat}&lon=${lon}`, { signal: ctl.signal });
+    clearTimeout(id); if (!r.ok) return null;
+    const a = (await r.json())?.address ?? {};
+    const n = a.suburb || a.town || a.village || a.city_district || a.hamlet || a.locality;
+    return typeof n === "string" && n.trim() ? n.trim() : null;
+  } catch { return null; }
 }
 
 // --- helpers ---

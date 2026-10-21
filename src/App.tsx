@@ -2,11 +2,11 @@ import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 const MapTab = lazy(() => import("./MapTab"));
 import { AREAS, type Area } from "./data/spotinfo";
 import {
-  type Forecast, type Place, getForecast, searchPlaces, compass, kmh, hhmm, dayName, weatherText,
+  type Forecast, type Place, getForecast, searchPlaces, reverseName, compass, kmh, hhmm, dayName, weatherText,
   moonInfo, safety, localNowKey,
 } from "./lib";
 import { APP_NAME, TAGLINE } from "./config";
-import { LAND, ALL_LAND } from "./where";
+import { LAND, ALL_LAND, nearName } from "./where";
 import { useNav, type Tab, type View } from "./nav";
 import { Arrow, Ico, Stat, Back, BASE, load, save, spImg } from "./ui";
 import { TideCard, TidesView } from "./tideviews";
@@ -19,12 +19,14 @@ import { Where, ReportsTab, More, Rules, About } from "./views2";
 import { Log } from "./catchlog";
 
 const DEFAULT: Place = { name: "Williamstown, VIC", lat: -37.8635, lon: 144.9056 };
+// older versions named map taps "Map spot -37.867, 144.913" – never show raw numbers
+const fixName = (p: Place): Place => /^Map spot -?\d/.test(p.name) ? { ...p, name: nearName(p), fromMap: true } : p;
 const TITLES: Record<string, string> = { spot: "Spot guide", species: "Fish guide", tides: "Tides", week: "7 days", map: "Map", picker: "Choose a spot", calendar: "What's biting", target: "Target a fish", log: "Catch log", rules: "Rules & safety", about: "About" };
 
 export default function App() {
   const { nav, push, back, go } = useNav();
-  const [place, setPlace] = useState<Place>(() => load("rc-place", DEFAULT));
-  const [favs, setFavs] = useState<Place[]>(() => load("rc-favs", []));
+  const [place, setPlace] = useState<Place>(() => fixName(load("rc-place", DEFAULT)));
+  const [favs, setFavs] = useState<Place[]>(() => load<Place[]>("rc-favs", []).map(fixName));
   const [data, setData] = useState<Forecast | null>(() => load<Forecast | null>("rc-cache", null));
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,7 +57,11 @@ export default function App() {
   const v = nav.view;
   const openSpot = (id: string) => push({ view: { k: "spot", id } });
   const openSpecies = (slug: string) => push({ view: { k: "species", slug } });
-  const usePlace = (p: Place) => { setPlace(p); push({ tab: "today", view: null }); };
+  const usePlace = (p: Place) => {
+    setPlace(p); push({ tab: "today", view: null });
+    // map taps get a friendly offline name straight away, then the suburb name if we can look it up
+    if (p.fromMap) reverseName(p.lat, p.lon).then((n) => { if (n) setPlace((cur) => cur.lat === p.lat && cur.lon === p.lon ? { ...cur, name: `Near ${n}` } : cur); });
+  };
   const spot = v?.k === "spot" ? ALL_LAND.find((s) => s.id === v.id) : undefined;
   const openTarget = (slug?: string) => push({ view: { k: "target", slug } });
   const rain24 = rainLast24(shown);
@@ -242,5 +248,5 @@ function Week({ f, place, rain24 }: { f: Forecast; place: Place; rain24: number 
             <div className="muted small">Sunrise {hhmm(d.sunrise)} · Sunset {hhmm(d.sunset)}</div></>}
           {open !== i && <div className="muted small">Tap for details</div>}
         </section>); })}
-    <p className="muted small center">The rating is a guide, not a guarantee. It looks at forecast wind, waves and rain, the tide, time of day, moon and fish season at spots within about 40 km.</p></>;
+    <p className="muted small center">The rating is a guide, not a guarantee. It looks at forecast wind, waves and rain, the tide, time of day, moon and fish season at spots within about 25 km by road (not across the bay or the Heads).</p></>;
 }

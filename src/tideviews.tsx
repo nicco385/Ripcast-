@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { TIDE_STATIONS } from "./data/tides";
 import { type Station, nearestStation, stationById, eventsBetween, tideNow, clock, dayKey, distKm, TIDE_END } from "./tides";
 import { type Place } from "./lib";
+import { fromTxt } from "./where";
 import * as SunCalc from "suncalc";
 import { dayStart, dayEnd } from "./astro";
 import { Ext } from "./ui";
@@ -83,14 +84,14 @@ export function TideCard({ place, onMore, compact }: { place: Place; onMore: () 
   const hit = useMemo(() => nearestStation(place.lat, place.lon), [place.lat, place.lon]);
   const end = TIDE_END();
   if (now > end) return <section className="card"><h2>🌊 Tides</h2><p>The tide tables built into this app end on 31 December 2027. Please use the official Bureau of Meteorology tide tables.</p><Ext href={BOM_URL} cls="link">Official BOM tide tables ↗</Ext></section>;
-  if (!hit) return <section className="card"><h2>🌊 Tides</h2><p className="muted">There is no official tide station within 40 km of {place.name}. Pick a pier, beach or river on the bay (try the Where tab) to see tide times.</p><button className="btn alt" onClick={onMore}>Choose another station</button></section>;
+  if (!hit) return <section className="card"><h2>🌊 Tides</h2><p className="muted">There is no official tide station within 40 km of {fromTxt(place.name)}. Pick a pier, beach or river on the bay (try the Where tab) to see tide times.</p><button className="btn alt" onClick={onMore}>Choose another station</button></section>;
   const st = hit.station;
   const evs = eventsBetween(st, now, now + 30 * 3600000).slice(0, 4);
   const todayKey = dayKey(now, TZ);
   const inBay = st.lon > 144.4 && st.lon < 145.1 && st.lat > -38.4;
   return <section className="card">
     <h2>🌊 Tides – {short(st.name)}</h2>
-    <p className="muted small">{compact ? `Official BOM times · ${Math.round(hit.km)} km from ${place.name}` : `Official predictions for the nearest station, ${Math.round(hit.km)} km from ${place.name}. Melbourne time.`}</p>
+    <p className="muted small">{compact ? `Official BOM times · ${Math.round(hit.km)} km from ${fromTxt(place.name)}` : `Official predictions for the nearest station, ${Math.round(hit.km)} km from ${fromTxt(place.name)}. Melbourne time.`}</p>
     {compact ? <TideNow st={st} now={now} /> : <TideDial st={st} now={now} />}
     {end - now < 60 * 86400000 && <div className="banner warn">The tide tables built into this app end on 31 December 2027 ({Math.ceil((end - now) / 86400000)} days left). An app update will be needed after that.</div>}
     {!compact && <DayCurve st={st} now={now} place={place} />}
@@ -117,7 +118,7 @@ export function TidesView({ place }: { place: Place }) {
     <section className="card">
       <h2>🌊 Tide times</h2>
       <label>Place<select value={id} onChange={(e) => setId(e.target.value)}>{near.map(({ s, km }) => <option key={s.id} value={s.id}>{short(s.name)} · {Math.round(km)} km</option>)}</select></label>
-      <p className="muted small">Closest to {place.name} is first. Heights are in metres above the chart's lowest level. All times are Melbourne local time (including daylight saving).</p>
+      <p className="muted small">Closest to {fromTxt(place.name)} is first. Heights are in metres above the chart's lowest level. All times are Melbourne local time (including daylight saving).</p>
       {now > end ? <div className="banner warn">The built-in tables end on 31 Dec 2027. Use the official BOM site.</div>
         : end - now < 60 * 86400000 ? <div className="banner warn">The built-in tables end on 31 Dec 2027 ({Math.ceil((end - now) / 86400000)} days left).</div> : null}
       <DayCurve st={st} now={now} place={place} />

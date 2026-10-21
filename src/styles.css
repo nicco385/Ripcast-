@@ -250,3 +250,6 @@ optgroup{font-weight:700}
 .fishrow2{display:flex;align-items:center;gap:12px}
 .fishrow2 .grow{flex:1;min-width:0}
 .fishrow2 .chev{margin-left:auto}
+/* badges never split their emoji and word across lines */
+.badge{white-space:nowrap;display:inline-block;flex-shrink:0;line-height:1.25}
+.tline .grow b{margin-right:2px}

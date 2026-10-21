@@ -293,17 +293,36 @@ export function rateSpot(s: LandSpot, r: Raw | undefined, from: number, to: numb
   return best;
 }
 
-/** Spots that count as "near" a place for the Today and 7-day ratings. */
-export function nearSpots(origin: { lat: number; lon: number }, radiusKm = 40) {
+/** How far counts as "near" for Today, the 7-day outlook and Target a fish's "Nearby" setting. */
+export const NEAR_KM = 25;
+/** Rough driving reality: Geelong & Bellarine are a long drive around the bay from everywhere else, and
+ *  Queenscliff ↔ Sorrento/Western Port is across the Heads (ferry or a very long drive). */
+const roadKm = (from: string | undefined, to: string | undefined, d: number) => {
+  if (!from || !to || from === to) return d;
+  const w = (a: string) => a === "bellarine", e = (a: string) => a === "peninsula" || a === "westernport";
+  if ((w(from) && e(to)) || (e(from) && w(to))) return d * 6;
+  if (w(from) !== w(to)) return d * 2;
+  return d;
+};
+export type NearInfo = { spots: LandSpot[]; nearest: { spot: LandSpot; km: number }; far: boolean; radiusKm: number };
+/** Spots near a place, nearest first. If fewer than 3 are within the radius, the nearest few within 40 km are used;
+ *  `far` is true when nothing at all is within the radius. */
+export function nearInfo(origin: { lat: number; lon: number }, radiusKm = NEAR_KM): NearInfo {
   const all = LAND.map((s) => ({ s, d: km(origin, s) })).sort((a, b) => a.d - b.d);
-  const near = all.filter((x) => x.d <= radiusKm); return (near.length >= 3 ? near : all.slice(0, 8)).map((x) => x.s);
+  const side = all[0]?.s.info?.area;
+  const eff = all.map((x) => ({ ...x, e: roadKm(side, x.s.info?.area, x.d) })).sort((a, b) => a.e - b.e);
+  const near = eff.filter((x) => x.e <= radiusKm);
+  let pick = near.length >= 3 ? near : eff.filter((x) => x.e <= 40).slice(0, Math.max(3, near.length));
+  if (!pick.length) pick = eff.slice(0, 3);
+  return { spots: pick.map((x) => x.s), nearest: { spot: all[0].s, km: all[0].d }, far: !near.length, radiusKm };
 }
-export type DayOutlook = { day: string; verdict: Verdict; showery: boolean; damp: boolean; score: number; plans: Plan[]; noWind: boolean; from: number; to: number };
+export function nearSpots(origin: { lat: number; lon: number }, radiusKm = NEAR_KM) { return nearInfo(origin, radiusKm).spots; }
+export type DayOutlook = { day: string; verdict: Verdict; showery: boolean; damp: boolean; score: number; plans: Plan[]; noWind: boolean; from: number; to: number; near: NearInfo };
 /** The day's rating = the best fish-and-spot combination near the place (same engine as Target a fish). */
 export function dayOutlook(wx: Wx, day: string, o: { now?: number; origin: { lat: number; lon: number }; rain24?: number | null; n?: number }): DayOutlook {
   const now = o.now ?? Date.now(), ds = dayStart(day, TZ), de = dayEnd(day, TZ);
   const from = Math.max(ds + 4 * H, Math.floor(now / H) * H), to = de;
-  const within = new Set(nearSpots(o.origin).map((s) => s.id));
+  const near = nearInfo(o.origin), within = new Set(near.spots.map((s) => s.id));
   const plans = PROFILES.filter((p) => spotsFor(p.slug).some((s) => within.has(s.id)))
     .map((p) => planSpecies(p.slug, wx, { now, from, to, within, rain24: o.rain24, origin: o.origin })).filter((x): x is Plan => !!x)
     .filter((pl) => !pl.notes.some((n) => n.includes("out of their main season")))
@@ -320,5 +339,5 @@ export function dayOutlook(wx: Wx, day: string, o: { now?: number; origin: { lat
   let verdict: Verdict = top ? top.verdict : "Poor";
   if (showery && (verdict === "Great" || verdict === "Good")) verdict = "Fair";
   else if (damp && verdict === "Great") verdict = "Good";
-  return { day, verdict, showery, damp, score: top ? top.spots[0].score : 0, plans: plans.slice(0, o.n ?? 3), noWind: top ? top.noWind : true, from, to };
+  return { day, verdict, showery, damp, score: top ? top.spots[0].score : 0, plans: plans.slice(0, o.n ?? 3), noWind: top ? top.noWind : true, from, to, near };
 }

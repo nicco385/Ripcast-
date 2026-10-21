@@ -85,3 +85,11 @@ export const km = (a: { lat: number; lon: number }, b: { lat: number; lon: numbe
   return 2 * R * Math.asin(Math.sqrt(x));
 };
 export type { Spot };
+/** "Distance from …" wording that reads well for map taps ("Near Williamstown" → "your map spot near Williamstown"). */
+export const fromTxt = (name: string) => /^Near /.test(name) ? `your map spot ${name.replace(/^Near/, "near")}` : /^\d+ km from /.test(name) ? `your map spot (${name})` : name;
+/** Offline friendly name for a point on the map: the nearest fishing spot in the app (never raw coordinates). */
+export function nearName(p: { lat: number; lon: number }) {
+  const n = ALL_LAND.map((s) => ({ s, d: km(p, s) })).sort((a, b) => a.d - b.d)[0];
+  if (!n) return "Chosen map spot";
+  return n.d < 2 ? `Near ${n.s.name}` : `${Math.round(n.d)} km from ${n.s.name}`;
+}

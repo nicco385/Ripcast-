@@ -100,5 +100,10 @@ ok("whiting in October (month before VFA season) is a shoulder month, not 'out o
 const sqS = planSpecies("calamari", wx("2027-04-15", 21, 190), { now: at("2027-04-15T04:00:00+10:00") })!;
 ok("21 kn southerly: squid at a sheltered north-facing pier is Fair at best, and the pick is sheltered", () => { assert.ok(sqS.spots[0].score <= 64); assert.ok(sqS.spots[0].spot.shelteredFrom.includes("S"), sqS.spots[0].spot.name); });
 
+// 16. "Near" means near by road: a Williamstown map tap never picks Portarlington or Patterson River; Queenscliff never gets Sorrento
+const wil = new Set(nearSpots({ lat: -37.867, lon: 144.913 }).map((s) => s.id)), qc = new Set(nearSpots({ lat: -38.267, lon: 144.661 }).map((s) => s.id));
+ok("Williamstown map spot: no Portarlington or Patterson River in Today's picks", () => { assert.ok(!wil.has("portarlington-pier") && !wil.has("patterson-shore") && wil.has("gem-pier")); });
+ok("Queenscliff: Sorrento (across the Heads) doesn't count as near", () => { assert.ok(!qc.has("sorrento-pier") && qc.has("queenscliff-pier")); });
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);

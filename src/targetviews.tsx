@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { getSpotWeather, peekSpotWeather } from "./where";
+import { getSpotWeather, peekSpotWeather, km, fromTxt } from "./where";
 import { AREAS } from "./data/spotinfo";
-import { PROFILES, planSpecies, dayOutlook, spotsFor, spanTxt, type Plan, type SpotPlan, type Verdict, type DayOutlook } from "./target";
+import { PROFILES, planSpecies, dayOutlook, spotsFor, spanTxt, nearSpots, NEAR_KM, type Plan, type SpotPlan, type Verdict, type DayOutlook } from "./target";
 import { fmt } from "./astro";
 import { seasonVal } from "./where";
 import { SpThumb, load, save } from "./ui";
@@ -50,9 +50,16 @@ function SpotCard({ s, i, onSpot }: { s: SpotPlan; i: number; onSpot: (id: strin
 /** Step 2: where and when to go for that fish. */
 export function TargetView({ slug, place, rain24, onSpot, onSpecies }: { slug: string; place: Place; rain24: number | null; onSpot: (id: string) => void; onSpecies: (slug: string) => void }) {
   const { wx, failed, loading } = useWx();
-  const [maxKm, setMaxKm] = useState<number>(() => load("rc-where-km", 0));
-  useEffect(() => save("rc-where-km", maxKm), [maxKm]);
-  const plan: Plan | null = useMemo(() => loading ? null : planSpecies(slug, wx?.data ?? null, { origin: place, maxKm, rain24 }), [slug, wx, loading, place.lat, place.lon, maxKm, rain24]);
+  // "Nearby" (default) uses the same spots as Today, so "Why, and other spots" matches the Today pick
+  const [maxKm, setMaxKm] = useState<number>(() => load("rc-target-km", NEAR_KM));
+  useEffect(() => save("rc-target-km", maxKm), [maxKm]);
+  const { plan, wide } = useMemo(() => {
+    if (loading) return { plan: null as Plan | null, wide: false };
+    const o = { origin: place, rain24 };
+    if (!maxKm) return { plan: planSpecies(slug, wx?.data ?? null, o), wide: false };
+    const near = planSpecies(slug, wx?.data ?? null, { ...o, within: new Set(nearSpots(place, maxKm).map((s) => s.id)) });
+    return near ? { plan: near, wide: false } : { plan: planSpecies(slug, wx?.data ?? null, o), wide: true };
+  }, [slug, wx, loading, place.lat, place.lon, maxKm, rain24]);
   const p = PROFILES.find((x) => x.slug === slug);
   if (!p) return <div className="card">That fish can't be targeted yet.</div>;
   return <>
@@ -61,8 +68,9 @@ export function TargetView({ slug, place, rain24, onSpot, onSpecies }: { slug: s
       {loading && <><p className="muted small">Checking the wind at every spot…</p><div className="skel line" /><div className="skel line short" /></>}
       {plan && <><div className="verdict"><VB v={plan.verdict} /></div><p className="headline">{plan.headline}</p>
         <p className="muted small">Looking at the next 24 hours{wx?.stale ? " (using the last saved wind forecast)" : ""}. Melbourne time.</p></>}
-      <div className="seg" role="group" aria-label="Distance">{[0, 30, 60].map((k) => <button key={k} className={maxKm === k ? "on" : ""} onClick={() => setMaxKm(k)}>{k ? `Within ${k} km` : "Any distance"}</button>)}</div>
-      <p className="muted small">Distance from {place.name}.</p>
+      <div className="seg" role="group" aria-label="Distance">{[NEAR_KM, 60, 0].map((k) => <button key={k} className={maxKm === k ? "on" : ""} onClick={() => setMaxKm(k)}>{k === NEAR_KM ? `Nearby (${k} km)` : k ? `Within ${k} km` : "Any distance"}</button>)}</div>
+      <p className="muted small">Distance from {fromTxt(place.name)}{maxKm ? " – by road, so spots across the bay or the Heads don't count as near" : ""}.</p>
+      {wide && <div className="banner warn">No {p.name.toLowerCase()} spots within {maxKm} km of here, so this shows the best spots anywhere.</div>}
     </section>
     {failed && <div className="banner warn">Can't get the wind forecast right now, so spots are ranked on tide, time, moon and season only.</div>}
     {plan?.notes.map((n) => <div key={n} className="banner">{n}</div>)}
@@ -83,18 +91,19 @@ export function FishingToday({ place, rain24, onOpen, onPick }: { place: Place; 
   useEffect(() => { if (loading) return; const id = setTimeout(() => setOut(dayOutlook(wx?.data ?? null, day, { origin: place, rain24 })), 0); return () => clearTimeout(id); }, [wx, loading, place.lat, place.lon, rain24, day]);
   const top = out?.plans[0], s = top?.spots[0];
   return <section className="card hero2">
-    <p className="muted" style={{ margin: 0 }}>Fishing today near {place.name.replace(/, VIC$/, "")}</p>
+    <p className="muted" style={{ margin: 0 }}>Fishing today {/^(Near |\d+ km from )/.test(place.name) ? place.name.replace(/^N/, "n") : `near ${place.name.replace(/, VIC$/, "")}`}</p>
+    {out?.near.far && <div className="banner warn">No fishing spots in the app within {out.near.radiusKm} km of here. The nearest is {out.near.nearest.spot.name}, {Math.round(out.near.nearest.km)} km away – these picks are the closest ones.</div>}
     {!out ? <><div className="skel line" /><div className="skel line short" /></> : <>
       <div className="verdict-big"><VB v={out.verdict} /></div>
-      {top && s ? <p className="headline">Best bet: {top.profile.name.toLowerCase().replace("king george", "King George").replace("australian", "Australian").replace(/^./, (c) => c.toUpperCase())} at {s.spot.name}, {spanTxt(s.from, s.to)}.</p> : <p>No good options left today – check tomorrow in the 7-day forecast.</p>}
+      {top && s ? <p className="headline">Best bet: {top.profile.name.toLowerCase().replace("king george", "King George").replace("australian", "Australian").replace(/^./, (c) => c.toUpperCase())} at {s.spot.name} ({Math.round(km(place, s.spot))} km), {spanTxt(s.from, s.to)}.</p> : <p>No good options left today – check tomorrow in the 7-day forecast.</p>}
       {out.showery ? <p className="small">🌧️ Rain is likely for much of the day.</p> : out.damp ? <p className="small">🌦️ Some rain about – pick a dry window.</p> : null}
       {out.noWind && <p className="muted small">No wind forecast right now – this uses tide, time, moon and season only.</p>}
       {out.plans.slice(1).map((pl) => { const x = pl.spots[0];
         return <button key={pl.profile.slug} className="item tline" onClick={() => onPick(pl.profile.slug)}>
-          <SpThumb name={pl.profile.name} size={56} /><span className="grow"><b>{pl.profile.name}</b> <VB v={pl.verdict} /><small className="block">{x.spot.name} · {spanTxt(x.from, x.to)}</small></span><span className="chev">›</span></button>; })}
+          <SpThumb name={pl.profile.name} size={56} /><span className="grow"><b>{pl.profile.name}</b> <VB v={pl.verdict} /><small className="block">{x.spot.name} · {Math.round(km(place, x.spot))} km · {spanTxt(x.from, x.to)}</small></span><span className="chev">›</span></button>; })}
       {top && <button className="btn wide" onClick={() => onPick(top.profile.slug)}>Why, and other spots ›</button>}
     </>}
     <button className="btn alt wide" onClick={onOpen}>🎯 Target a different fish ›</button>
-    <p className="muted small">Rated on wind, waves, rain, tide, time, moon and season at spots within 40 km – the same as everywhere else in the app. A guide only.</p>
+    <p className="muted small">Rated on wind, waves, rain, tide, time, moon and season at spots within about {NEAR_KM} km by road (not across the bay or the Heads) – the same engine as everywhere else in the app. A guide only.</p>
   </section>;
 }

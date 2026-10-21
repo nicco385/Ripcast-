@@ -3,7 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { SPOTS } from "./data/spots";
 import { MPAS } from "./data/mpa";
-import { ALL_LAND } from "./where";
+import { ALL_LAND, nearName } from "./where";
 import type { Place } from "./lib";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
@@ -30,7 +30,7 @@ export default function MapTab({ place, focus, onPick, onOpen }: { place: Place;
     });
     map.on("click", (e: L.LeafletMouseEvent) => {
       const div = document.createElement("div"); const b = document.createElement("button"); b.className = "btn"; b.textContent = "Check conditions here";
-      b.onclick = () => pick.current({ name: `Map spot ${e.latlng.lat.toFixed(3)}, ${e.latlng.lng.toFixed(3)}`, lat: +e.latlng.lat.toFixed(4), lon: +e.latlng.lng.toFixed(4) });
+      b.onclick = () => { const lat = +e.latlng.lat.toFixed(4), lon = +e.latlng.lng.toFixed(4); pick.current({ name: nearName({ lat, lon }), lat, lon, fromMap: true }); };
       div.appendChild(b); L.popup().setLatLng(e.latlng).setContent(div).openOn(map);
     });
     return () => { map.remove(); };
