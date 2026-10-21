@@ -210,7 +210,7 @@ export const SPECIES: Species[] = [
     methods: ["Live bait", "Soft plastic along walls"],
     habitat: "Yarra and Maribyrnong, Patterson River, Warmies, Hobsons Bay after dark.",
     notes:
-      "The city's quietly serious fish. Flood pulses and a night tide against structure. Kayaks around Williamstown and Port Melbourne do the damage after rain.",
+      "The city's quietly serious fish. Best in autumn and winter; night tides against structure, and the lower river after rain (VFA-funded tagging; FishingMad).",
   },
   {
     slug: "snook",
