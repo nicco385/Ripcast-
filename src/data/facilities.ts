@@ -68,6 +68,7 @@ export const FACILITIES: Record<string, Facilities> = {
   "tooradin-jetty": f(Y("Tooradin foreshore, about 200 m – 6am–9pm"), Y("Car parking (VFA)"), ["vfaWP"]),
   "san-remo-pier": f(Y("Marine Parade foreshore reserve, about 150 m – daylight hours"), Y("Plenty of parking close by (VFA)"), ["vfaWP"]),
   "cowes-jetty": f(Y("Cowes Beach, about 150 m – daylight hours"), Y("Parking at the Cowes Beach toilets"), ["vfaWP"]),
+  "corinella-pier": f(Y("In the caravan park next to the pier (VFA) – check they're open to the public"), U, ["vfaWP"]),
   "albert-park-lake": f(Y("At the Swan, Coot and Cormorant/Grebe picnic grounds around the lake"), Y("Paid parking in several areas – watch the time limits"), ["pvAlbert"]),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),
   "st-helens": f(Y("St Helens Coast Guard, about 60 m – open 24 hours"), Y("Car park beside the boat ramp"), ["geelong"], { lights: Y("Solar lights on the harbour rock walls"), cleaning: Y("Fish cleaning table at the rock walls") }),
