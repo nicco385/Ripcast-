@@ -88,5 +88,17 @@ ok("steady rain → Poor or Fair", () => assert.match(heavy.verdict, /Fair|Poor/
 const damp = (() => { const w = wx(fullMoonDay, 6, 0); for (const k in w) { w[k].pop = w[k].t.map(() => 0); w[k].rain = w[k].t.map(() => 0); const i = w[k].t.findIndex((t) => t.endsWith("T15:00")); if (i >= 0) { w[k].pop![i] = 65; } } return dayOutlook(w, fullMoonDay, { now: at("2026-10-26T05:00:00+11:00"), origin }); })();
 ok("one drizzly afternoon on a full-moon day → Good at best, never Great", () => { assert.equal(dry.verdict, "Great"); assert.notEqual(damp.verdict, "Great"); assert.ok(damp.damp); });
 
+// 13. Species audit (21 Oct 2026): occasional species are labelled and never a top pick
+import { SPOTS } from "../src/data/spots";
+const sqA = planSpecies("calamari", wx("2027-04-15", 4, 0), { now: at("2027-04-15T04:00:00+10:00") })!;
+ok("squid: Kerferd Road is only 'occasional' and capped at Fair", () => { const k = sqA.spots.find((x) => x.spot.id === "kerferd-pier")!; assert.ok(k.score <= 64); assert.ok(k.factors.some((f) => /occasional/.test(f.txt))); });
+ok("squid: top pick is a proven squid spot", () => assert.ok(!sqA.spots[0].spot.occ?.includes("calamari"), sqA.spots[0].spot.name));
+ok("squid never listed at river, estuary or lake spots", () => assert.ok(SPOTS.filter((s) => ["estuary", "river", "lake"].includes((s as { type?: string }).type ?? "") || s.info?.fresh).every((s) => !s.species.includes("calamari"))));
+ok("every VFA hot-spot fish is in the spot's list", () => assert.ok(SPOTS.every((s) => (s.info?.hot ?? []).every((h) => s.species.includes(h)))));
+const kgOct = planSpecies("king-george-whiting", wx("2026-10-24", 4, 0), { now: at("2026-10-24T04:00:00+11:00") })!;
+ok("whiting in October (month before VFA season) is a shoulder month, not 'out of season'", () => { assert.ok(kgOct.spots[0].factors.some((f) => /Just outside/.test(f.txt))); assert.ok(kgOct.notes.some((n) => n.includes("just outside"))); });
+const sqS = planSpecies("calamari", wx("2027-04-15", 21, 190), { now: at("2027-04-15T04:00:00+10:00") })!;
+ok("21 kn southerly: squid at a sheltered north-facing pier is Fair at best, and the pick is sheltered", () => { assert.ok(sqS.spots[0].score <= 64); assert.ok(sqS.spots[0].spot.shelteredFrom.includes("S"), sqS.spots[0].spot.name); });
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);

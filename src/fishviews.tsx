@@ -7,6 +7,8 @@ import { GUIDES, guideBySlug } from "./data/guides";
 import { REGS, MONTHS } from "./data/regs";
 import { YEAR, CAL_SOURCES } from "./data/calendar";
 import { AREAS } from "./data/spotinfo";
+import { isOcc } from "./data/spots";
+import { AUDIT } from "./data/audit";
 import { ALL_LAND, seasonVal, short, km, type LandSpot } from "./where";
 import { eventsBetween, nearestStation, clock, dayKey } from "./tides";
 import { type Place } from "./lib";
@@ -62,8 +64,8 @@ const Sec = ({ title, items }: { title: string; items: string[] }) => items.leng
 
 export function SpeciesView({ slug, onSpot, onTarget }: { slug: string; onSpot: (id: string) => void; onTarget?: (slug: string) => void }) {
   const sp = speciesBySlug(slug), g = guideBySlug(slug);
-  const spots = useMemo(() => ALL_LAND.filter((s) => !s.info?.status?.closed && (s.species.includes(slug) || s.info?.hot?.includes(slug) || false))
-    .sort((a, b) => Number(b.info?.hot?.includes(slug) ?? false) - Number(a.info?.hot?.includes(slug) ?? false) || Number(b.info?.src === "vfa") - Number(a.info?.src === "vfa")), [slug]);
+  const spots = useMemo(() => ALL_LAND.filter((s) => !s.info?.status?.closed && s.species.includes(slug))
+    .sort((a, b) => Number(isOcc(a, slug)) - Number(isOcc(b, slug)) || Number(b.info?.hot?.includes(slug) ?? false) - Number(a.info?.hot?.includes(slug) ?? false) || Number(b.info?.src === "vfa") - Number(a.info?.src === "vfa")), [slug]);
   if (!sp || !g) return <div className="card">That fish was not found.</div>;
   const sl = seasonLabel(slug);
   return <>
@@ -85,7 +87,7 @@ export function SpeciesView({ slug, onSpot, onTarget }: { slug: string; onSpot: 
       <h2>📅 When</h2><p><b>{sl.t}</b></p><MonthStrip slug={slug} /><SeasonKey /><p className="small">{g.seasonText}</p>
     </section>
     <section className="card"><h2>📍 Where from the shore</h2><Sec title="" items={g.where} />
-      {spots.length > 0 && <><h3>Spots in this app</h3>{spots.slice(0, 8).map((s) => <button key={s.id} className="item" onClick={() => onSpot(s.id)}>{s.name}{s.info?.hot?.includes(slug) ? " ⭐ VFA hot spot" : ""}<small className="block muted">{AREAS[s.info?.area ?? "east"].name}</small></button>)}</>}
+      {spots.length > 0 && <><h3>Spots in this app</h3>{spots.slice(0, 8).map((s) => <button key={s.id} className="item" onClick={() => onSpot(s.id)}>{s.name}{s.info?.hot?.includes(slug) ? " ⭐ VFA hot spot" : ""}{isOcc(s, slug) ? " (occasional)" : ""}<small className="block muted">{AREAS[s.info?.area ?? "east"].name}</small></button>)}</>}
     </section>
     <section className="card"><h2>🕒 Best time & tide</h2><Sec title="" items={g.when} /><p className="muted small">See today's tide times on the Today tab.</p></section>
     <section className="card"><h2>🎣 Rig & tackle</h2><Sec title="Rig" items={g.rig} /><h3>Rod, reel and line</h3><p>{g.gear}</p><h3>Hook</h3><p>{g.hook}</p>
@@ -118,14 +120,14 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
   void onBack;
   const i = spot.info, m = curMonth(), st = i?.fresh ? null : nearestStation(spot.lat, spot.lon), now = Date.now();
   const evs = st ? eventsBetween(st.station, now - 3 * 3600000, now + 30 * 3600000).filter((e) => e.t > now - 3 * 3600000).slice(0, 4) : [];
-  const fish = [...new Set(spot.species)].map((x) => ({ x, v: seasonVal(x, m) })).sort((a, b) => b.v - a.v);
+  const fish = [...new Set(spot.species)].map((x) => ({ x, v: seasonVal(x, m), o: isOcc(spot, x) })).sort((a, b) => Number(a.o) - Number(b.o) || b.v - a.v);
   return <>
     <section className="card">
       <h2>{spot.name}</h2>
       {i?.photo && <figure className="spotphoto"><img src={BASE + i.photo.src} alt={i.photo.cap} width={280} height={350} loading="lazy" /><figcaption>{i.photo.cap}</figcaption></figure>}
       <p className="muted small">{i ? AREAS[i.area].name : ""} · {spot.type} · {Math.round(km(place, spot))} km from {place.name}</p>
       {i?.status?.closed && <div className="banner danger">⛔ Closed. {i.status.note}<br /><Ext href={i.status.url}>Official update ↗</Ext> <small>(as of {i.status.asOf})</small> <StaleNote checked={i.status.asOf} what="closure" /></div>}
-      {i?.fresh ? <p className="small">Fish list from VFA stocking records, Parks Victoria and FishingMad. A freshwater spot – <b>no tides here</b>.</p> : i?.src === "vfa" ? <p className="small">✅ Fish list and tips from the Victorian Fisheries Authority.</p> : <p className="muted small">General local knowledge – not an official VFA list.</p>}
+      {i?.fresh ? <p className="small">Fish list from VFA stocking records, Parks Victoria and FishingMad. A freshwater spot – <b>no tides here</b>.</p> : i?.src === "vfa" ? <p className="small">✅ Fish list and tips from the Victorian Fisheries Authority.</p> : <p className="muted small">Fish list checked against VFA regional guides, FishingMad and local reports (Oct 2026) – not an official VFA list.</p>}
       {!i?.status?.closed && <div className="row btns">
         <a className="btn" href={`https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lon}`} target="_blank" rel="noreferrer">🚗 Directions</a>
         <button className="btn alt" onClick={onMap}>🗺️ On the map</button></div>}
@@ -133,7 +135,7 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
       {!i?.status?.closed && <button className="big" onClick={onUse}>Show conditions here</button>}
     </section>
     {fish.length > 0 && <section className="card"><h2>🐟 Fish here</h2>
-      {fish.map(({ x, v }) => <button key={x} className="item fish-chip" onClick={() => onSpecies(x)}><SpThumb name={x} size={64} /><span><b>{speciesBySlug(x)?.name ?? short(x)}</b>{i?.hot?.includes(x) ? " ⭐" : ""}<small className="block muted">{seasonLabel(x).t || ""}</small></span><span className="chev">›</span></button>)}
+      {fish.map(({ x, o }) => <button key={x} className="item fish-chip" onClick={() => onSpecies(x)}><SpThumb name={x} size={64} /><span><b>{speciesBySlug(x)?.name ?? short(x)}</b>{i?.hot?.includes(x) ? " ⭐" : ""}{o ? <span className="muted"> (occasional)</span> : null}<small className="block muted">{o ? AUDIT[spot.id]?.why?.[x] ?? "Only caught now and then here." : seasonLabel(x).t || ""}</small></span><span className="chev">›</span></button>)}
       {i?.other?.length ? <p className="muted small">Also caught here{i.fresh ? "" : " (VFA)"}: {i.other.join(", ")}.</p> : null}
       {i?.hot?.length ? <p className="muted small">⭐ = the VFA names this spot as a hot spot for that fish.</p> : null}
     </section>}

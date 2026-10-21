@@ -81,6 +81,7 @@ export function SolunarView({ place }: { place: Place }) {
     <section className="card"><h3>How this works</h3>
       <p className="small"><b>Solunar is a traditional angling theory.</b> It says fish feed more when the moon is overhead or underfoot (major periods, about 2 hours) and when it rises or sets (minor periods, about 1 hour). There is no firm scientific proof, so treat it as a guide only – wind, tide, weather and the fish's season matter more.</p>
       <p className="small">Ratings of 1–3 fish: a major period starts at 2 and a minor at 1. Add 1 if it lines up with sunrise or sunset (within 30 minutes), and add 1 around a new or full moon (bigger tides). The day rating adds the periods up.</p>
+      <p className="small">Around a new or full moon the tides run harder. That can switch fish on, but near the Heads (Queenscliff, Portsea, Sorrento) and in Western Port the current gets strong – take heavier sinkers and fish the slower water near the tide change.</p>
       <p className="small">Moonrise, moonset and the overhead time are calculated from astronomy formulas and were checked against timeanddate.com for Melbourne (all within about 4 minutes). They change a little with your location.</p></section>
   </>;
 }

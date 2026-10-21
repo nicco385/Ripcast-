@@ -72,10 +72,10 @@ export const seasonVal = (slug: string, m: number) => {
   return g.run?.includes(m) ? 3 : g.best.includes(m) ? 2 : g.yearRound ? 1 : 0;
 };
 
-/** Fish at this spot that are in season this month (VFA peak tables), best first. */
+/** Fish at this spot that are in season this month (VFA peak tables), best first. Occasional catches are left out. */
 export function inSeasonHere(s: LandSpot, m: number) {
   const hot = new Set(s.info?.hot ?? []);
-  return [...new Set(s.species)].map((x) => ({ x, v: seasonVal(x, m), hot: hot.has(x) })).filter((o) => o.v >= 2 || (o.v === 1 && o.hot))
+  return [...new Set(s.species)].map((x) => ({ x, v: seasonVal(x, m), hot: hot.has(x) })).filter((o) => (o.v >= 2 || (o.v === 1 && o.hot)) && !s.occ?.includes(o.x))
     .sort((a, b) => (b.v + (b.hot ? 1 : 0)) - (a.v + (a.hot ? 1 : 0))).slice(0, 3);
 }
 

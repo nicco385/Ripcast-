@@ -9,6 +9,8 @@ import { SPECIES } from "./data/species";
 import { type LandSpot, type Raw, LAND, seasonVal, diff, c8, WINDNAME, km } from "./where";
 import { solunar, nearNewFull, fmt, dayStart, dayEnd, type Period } from "./astro";
 import { nearestStation, eventsBetween, clock, type Station } from "./tides";
+import { FACILITIES } from "./data/facilities";
+import { isOcc } from "./data/spots";
 
 const TZ = "Australia/Melbourne", H = 3600000;
 type WindPref = "calm" | "mid" | "stir";
@@ -133,8 +135,14 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
   const g = GUIDES.find((x) => x.slug === p.slug)!, m = Number(lf(t).slice(5, 7)), sv = seasonVal(p.slug, m);
   if (sv === 3) fs.push({ pts: 12, txt: "Main run season", kind: "season" });
   else if (sv === 2) fs.push({ pts: 8, txt: "In season (VFA)", kind: "season" });
-  else if (sv === 0 && g.best.length) fs.push({ pts: -18, txt: "Out of its main season", kind: "season" });
+  else if (sv === 0 && g.best.length) {
+    // fish don't switch on or off on the 1st of the month: the month either side of the season is a "shoulder"
+    const shoulder = g.best.includes((m % 12) + 1) || g.best.includes(((m + 10) % 12) + 1);
+    fs.push(shoulder ? { pts: -6, txt: "Just outside its main season – fewer about", kind: "season" } : { pts: -18, txt: "Out of its main season", kind: "season" });
+  }
   if (s.info?.hot?.includes(p.slug)) fs.push({ pts: 6, txt: "VFA hot spot", kind: "spot" });
+  // only an occasional catch here (data/audit.ts): shown, but never a top pick
+  if (isOcc(s, p.slug)) { fs.push({ pts: -12, txt: "Only an occasional catch at this spot", kind: "spot" }); ceil = 64; }
   // wind and waves
   let windTxt: string | null = null;
   if (r) {
@@ -146,7 +154,9 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
       fs.push(...windFactor(p, s, w, dir, prevMaxOn));
       // hard limits: light-line species in a strong wind, anything in a gale, are a poor bet however sheltered
       const relH = relWind(s, dir), shelH = relH === "sheltered" || relH === "offshore";
-      if ((p.wind === "calm" && (w >= 20 || (w >= 15 && !shelH))) || (p.wind === "mid" && w >= 22) || w >= 25) ceil = 49;
+      if ((p.wind === "calm" && (w >= 24 || (w >= 15 && !shelH))) || (p.wind === "mid" && w >= 22) || w >= 25) ceil = 49;
+      // a sheltered pier in a 20–24 kn blow is fishable for light-line fish, but never better than Fair
+      else if (p.wind === "calm" && w >= 20) ceil = 64;
       if (gust >= 30) fs.push({ pts: -10, txt: `Gusts to ${Math.round(gust)} kn`, kind: "wind" });
       windTxt = `${Math.round(w)} kn from the ${c8(dir)}`;
       const wave = r.wave.length ? r.wave[i] : null, rel = relWind(s, dir);
@@ -161,7 +171,10 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
   // time of day
   const L = lightOf(mid);
   let lp = p.light[L.k]; let ltxt = L.txt;
-  if (L.k === "night" && p.nightPier && s.kind === "pier") { lp = 8; ltxt = "After dark under the pier lights"; }
+  if (L.k === "night" && p.nightPier && s.kind === "pier") {
+    if (FACILITIES[s.id]?.lights.has === "yes") { lp = 8; ltxt = "After dark under the pier lights"; }
+    else { lp = 6; ltxt = "After dark – fish any pier lights (we couldn't confirm lights here)"; }
+  }
   fs.push({ pts: lp, txt: ltxt, kind: "light" });
   const hr = Number(lf(t).slice(11, 13));
   if (hr >= 0 && hr < 4 && L.k === "night" && p.light.night < 10) fs.push({ pts: -4, txt: "Very late night", kind: "light" });
@@ -235,15 +248,15 @@ export function planSpecies(slug: string, wx: Wx, o: { now?: number; from?: numb
   const season = top.factors.find((f) => f.kind === "season" && f.pts < 0);
   let headline: string;
   if (verdict === "Great" || verdict === "Good") headline = `${verdict} ${when} to target ${name} – ${good2.map((f) => lower(f).replace(/^around sun/, "change of light around sun")).join(", ") || lower(goodF) || "conditions suit them"}. Best at ${joinAnd(names)}.`;
-  else if (verdict === "Fair") headline = `Fair ${when} for ${name}${season ? " – out of its main season" : noWind ? " – no wind forecast, so check before you go" : badF ? ` – ${lower(badF)}` : goodF ? ` – ${lower(goodF)}` : ""}. Best bet: ${top.spot.name}, ${spanTxt(top.from, top.to)}.`;
+  else if (verdict === "Fair") headline = `Fair ${when} for ${name}${season ? (season.pts > -10 ? " – just outside its main season" : " – out of its main season") : noWind ? " – no wind forecast, so check before you go" : badF ? ` – ${lower(badF)}` : goodF ? ` – ${lower(goodF)}` : ""}. Best bet: ${top.spot.name}, ${spanTxt(top.from, top.to)}.`;
   else {
-    const why = season ? "it's out of its main season" : windMed >= 0.6 ? "too windy at most spots" : lower(badF) || "conditions don't suit them";
+    const why = season ? (season.pts > -10 ? "it's just outside its main season" : "it's out of its main season") : windMed >= 0.6 ? "too windy at most spots" : lower(badF) || "conditions don't suit them";
     const shel = top.factors.some((f) => /^Sheltered/.test(f.txt));
     headline = top.score < 35 || (windMed >= 0.6 && top.factors.some((f) => f.kind === "wind" && f.pts <= -12)) ? `Poor ${when} for ${name} – ${why}. Best to wait for a better day.` : `Poor ${when} for ${name} – ${why}. ${shel ? `If you go, try sheltered ${top.spot.name}` : `Least-bad option: ${top.spot.name}`} (${spanTxt(top.from, top.to)}).`;
   }
   const notes: string[] = [];
   if (noWind) notes.push("No wind forecast right now (offline or the weather service is down), so this uses only the tide, time of day, moon and season. Check the wind before you go.");
-  if (season) notes.push(`${p.name} are out of their main season this month (${GUIDES.find((g) => g.slug === slug)!.seasonText.replace(/\.$/, "")}).`);
+  if (season) notes.push(`${p.name} are ${season.pts > -10 ? "just outside" : "out of"} their main season this month (${GUIDES.find((g) => g.slug === slug)!.seasonText.replace(/\.$/, "")}).`);
   return { profile: p, verdict, headline, spots: plans, notes, noWind, from, to };
 }
 

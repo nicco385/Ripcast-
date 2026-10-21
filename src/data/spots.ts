@@ -1,4 +1,5 @@
 import { INFO, EXTRA, type Info } from "./spotinfo";
+import { AUDIT } from "./audit";
 export type Cardinal8 = "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
 
 export type SpotKind = "pier" | "shore" | "ramp" | "mark" | "sanctuary";
@@ -20,6 +21,8 @@ export type Spot = {
   shelteredFrom: Cardinal8[];
   noTake?: boolean;
   tideLagHours: number;
+  /** Species only caught now and then here (see data/audit.ts). */
+  occ?: string[];
 };
 
 const RAW: Spot[] = [
@@ -129,8 +132,8 @@ const RAW: Spot[] = [
     id: "sorrento-pier",
     name: "Sorrento Pier",
     kind: "pier",
-    lat: -38.3436,
-    lon: 144.7563,
+    lat: -38.3368,
+    lon: 144.7452,
     shore: "south",
     depth: "6–10 m",
     species: ["calamari", "yellowtail-kingfish", "australian-salmon", "snapper"],
@@ -932,6 +935,11 @@ export const KIND_LABEL: Record<SpotKind, string> = {
 
 export type FullSpot = Spot & { info?: Info };
 /** All places. Land-based spots carry curated info (area, source, hot-spot species, closures). */
+const audited = (s: FullSpot): FullSpot => {
+  const a = AUDIT[s.id]; if (!a) return s;
+  const species = [...s.species.filter((x) => !a.remove?.includes(x)), ...(a.add ?? []).filter((x) => !s.species.includes(x))];
+  return { ...s, species, occ: a.occ?.filter((x) => species.includes(x)) };
+};
 export const SPOTS: FullSpot[] = [
   ...RAW.map((s): FullSpot => {
     const i = INFO[s.id]; if (!i) return s;
@@ -939,4 +947,6 @@ export const SPOTS: FullSpot[] = [
     return { ...s, ...rest, tideNote: "", info: i };
   }),
   ...EXTRA.map(([s, i]): FullSpot => ({ ...s, info: i })),
-];
+].map(audited);
+/** True when a species is only an occasional catch at this spot. */
+export const isOcc = (s: { occ?: string[] }, slug: string) => !!s.occ?.includes(slug);
