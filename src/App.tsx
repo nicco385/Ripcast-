@@ -6,7 +6,7 @@ import {
   moonInfo, safety, localNowKey,
 } from "./lib";
 import { APP_NAME, TAGLINE } from "./config";
-import { LAND, ALL_LAND, nearName } from "./where";
+import { LAND, ALL_LAND, nearName, spotAt } from "./where";
 import { useNav, type Tab, type View } from "./nav";
 import { Arrow, Ico, Stat, Back, BASE, load, save, spImg } from "./ui";
 import { TideCard, TidesView } from "./tideviews";
@@ -216,7 +216,7 @@ function Week({ f, place, rain24 }: { f: Forecast; place: Place; rain24: number 
   const [open, setOpen] = useState(0);
   const { wx, loading } = useWx();
   const [outs, setOuts] = useState<DayOutlook[] | null>(null);
-  useEffect(() => { if (loading) return; const id = setTimeout(() => setOuts(f.days.map((d) => dayOutlook(wx?.data ?? null, d.date, { origin: place, rain24 }))), 0); return () => clearTimeout(id); }, [wx, loading, f, place.lat, place.lon, rain24]);
+  useEffect(() => { if (loading) return; const id = setTimeout(() => setOuts(f.days.map((d) => dayOutlook(wx?.data ?? null, d.date, { origin: place, rain24, only: spotAt(place) }))), 0); return () => clearTimeout(id); }, [wx, loading, f, place.lat, place.lon, rain24]);
   const nowKey = localNowKey(f.tz);
   const next = f.hours.filter((h) => h.time >= nowKey).slice(0, 24);
   return <>

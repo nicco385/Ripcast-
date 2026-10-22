@@ -319,10 +319,11 @@ export function nearInfo(origin: { lat: number; lon: number }, radiusKm = NEAR_K
 export function nearSpots(origin: { lat: number; lon: number }, radiusKm = NEAR_KM) { return nearInfo(origin, radiusKm).spots; }
 export type DayOutlook = { day: string; verdict: Verdict; showery: boolean; damp: boolean; score: number; plans: Plan[]; noWind: boolean; from: number; to: number; near: NearInfo };
 /** The day's rating = the best fish-and-spot combination near the place (same engine as Target a fish). */
-export function dayOutlook(wx: Wx, day: string, o: { now?: number; origin: { lat: number; lon: number }; rain24?: number | null; n?: number }): DayOutlook {
+export function dayOutlook(wx: Wx, day: string, o: { now?: number; origin: { lat: number; lon: number }; rain24?: number | null; n?: number; only?: LandSpot }): DayOutlook {
   const now = o.now ?? Date.now(), ds = dayStart(day, TZ), de = dayEnd(day, TZ);
   const from = Math.max(ds + 4 * H, Math.floor(now / H) * H), to = de;
-  const near = nearInfo(o.origin), within = new Set(near.spots.map((s) => s.id));
+  // `only`: the place IS a known spot – rate just that spot (its own fish list), not the area
+  const near = nearInfo(o.origin), within = new Set(o.only ? [o.only.id] : near.spots.map((s) => s.id));
   const plans = PROFILES.filter((p) => spotsFor(p.slug).some((s) => within.has(s.id)))
     .map((p) => planSpecies(p.slug, wx, { now, from, to, within, rain24: o.rain24, origin: o.origin })).filter((x): x is Plan => !!x)
     .filter((pl) => !pl.notes.some((n) => n.includes("out of their main season")))
@@ -341,3 +342,12 @@ export function dayOutlook(wx: Wx, day: string, o: { now?: number; origin: { lat
   else if (damp && verdict === "Great") verdict = "Good";
   return { day, verdict, showery, damp, score: top ? top.spots[0].score : 0, plans: plans.slice(0, o.n ?? 3), noWind: top ? top.noWind : true, from, to, near };
 }
+
+/** How much better a nearby option must score to be worth a mention next to the chosen spot. */
+export const BETTER_BY = 10;
+/** Nearby options that are notably better than the chosen spot today (one per fish, best first). */
+export function betterNearby(here: LandSpot, hereScore: number, area: DayOutlook | null) {
+  return (area?.plans ?? []).map((pl) => ({ pl, s: pl.spots.find((x) => x.spot.id !== here.id) })).filter((x): x is { pl: Plan; s: SpotPlan } => !!x.s && x.s.score >= hereScore + BETTER_BY)
+    .sort((a, b) => b.s.score - a.s.score).slice(0, 2);
+}
+

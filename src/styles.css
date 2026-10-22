@@ -253,3 +253,9 @@ optgroup{font-weight:700}
 /* badges never split their emoji and word across lines */
 .badge{white-space:nowrap;display:inline-block;flex-shrink:0;line-height:1.25}
 .tline .grow b{margin-right:2px}
+/* place pill: the name shrinks with "…", the "change" link always shows */
+.place{display:flex;align-items:center;gap:6px;min-width:0}
+.place>span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.place>small{flex:0 0 auto;margin-left:0}
+.nearalt{margin-top:10px;border-top:1px solid #ffffff22;padding-top:6px}.nearalt h3{font-size:1rem;margin:6px 0}
+.sechead{margin:14px 4px 6px;font-size:1rem}

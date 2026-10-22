@@ -85,6 +85,12 @@ export const km = (a: { lat: number; lon: number }, b: { lat: number; lon: numbe
   return 2 * R * Math.asin(Math.sqrt(x));
 };
 export type { Spot };
+/** The app spot a place IS: chosen with "Show conditions here" (same name) or a map tap within 300 m of it. */
+export function spotAt(p: { name: string; lat: number; lon: number }): LandSpot | undefined {
+  return ALL_LAND.find((s) => s.name === p.name) ?? ALL_LAND.map((s) => ({ s, d: km(p, s) })).filter((x) => x.d <= 0.3).sort((a, b) => a.d - b.d)[0]?.s;
+}
+/** "Ferguson Street Pier (Williamstown)" → "Ferguson Street Pier, Williamstown" (no double brackets next to a distance). */
+export const spotLabel = (name: string) => name.replace(/\s*\(([^)]+)\)\s*$/, ", $1");
 /** "Distance from …" wording that reads well for map taps ("Near Williamstown" → "your map spot near Williamstown"). */
 export const fromTxt = (name: string) => /^Near /.test(name) ? `your map spot ${name.replace(/^Near/, "near")}` : /^\d+ km from /.test(name) ? `your map spot (${name})` : name;
 /** Offline friendly name for a point on the map: the nearest fishing spot in the app (never raw coordinates). */

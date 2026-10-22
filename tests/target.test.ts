@@ -1,6 +1,7 @@
 // Scenario checks for "Target a fish". Run: npm run test:target
 import assert from "node:assert/strict";
-import { planSpecies, dayOutlook, rateSpot, scoreHour, profile, nearSpots } from "../src/target";
+import { planSpecies, dayOutlook, rateSpot, scoreHour, profile, nearSpots, betterNearby, BETTER_BY } from "../src/target";
+import { spotAt, spotLabel } from "../src/where";
 import { LAND, type Raw } from "../src/where";
 import { dayStart, fmt } from "../src/astro";
 import { TIDE_START, TIDE_END } from "../src/tides";
@@ -104,6 +105,14 @@ ok("21 kn southerly: squid at a sheltered north-facing pier is Fair at best, and
 const wil = new Set(nearSpots({ lat: -37.867, lon: 144.913 }).map((s) => s.id)), qc = new Set(nearSpots({ lat: -38.267, lon: 144.661 }).map((s) => s.id));
 ok("Williamstown map spot: no Portarlington or Patterson River in Today's picks", () => { assert.ok(!wil.has("portarlington-pier") && !wil.has("patterson-shore") && wil.has("gem-pier")); });
 ok("Queenscliff: Sorrento (across the Heads) doesn't count as near", () => { assert.ok(!qc.has("sorrento-pier") && qc.has("queenscliff-pier")); });
+
+// 17. Spot first: when the chosen place IS a spot, Today rates that spot (its own fish), and only notably better spots are offered
+const ker = LAND.find((s) => s.id === "kerferd-pier")!;
+ok("spotAt: same name, or a map tap within 300 m, is that spot; 1 km away is not", () => { assert.equal(spotAt({ name: ker.name, lat: ker.lat, lon: ker.lon })?.id, ker.id); assert.equal(spotAt({ name: "Near x", lat: ker.lat + 0.001, lon: ker.lon })?.id, ker.id); assert.equal(spotAt({ name: "Near x", lat: ker.lat + 0.01, lon: ker.lon }), undefined); });
+const kd = dayOutlook(W12, "2026-10-21", { now: oct, origin: ker, only: ker, n: 5 }), ka = dayOutlook(W12, "2026-10-21", { now: oct, origin: ker, n: 8 });
+ok("Today at Kerferd Road Pier: every pick is at Kerferd Road Pier and is one of its fish", () => { assert.ok(kd.plans.length > 0); for (const pl of kd.plans) { assert.equal(pl.spots[0].spot.id, ker.id); assert.ok(ker.species.includes(pl.profile.slug)); } });
+ok("Nearby alternatives are other spots and at least BETTER_BY points better", () => { for (const b of betterNearby(ker, kd.score, ka)) { assert.notEqual(b.s.spot.id, ker.id); assert.ok(b.s.score >= kd.score + BETTER_BY); } });
+ok("spotLabel: no double brackets", () => assert.equal(spotLabel("Ferguson Street Pier (Williamstown)"), "Ferguson Street Pier, Williamstown"));
 
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);
