@@ -1,10 +1,10 @@
 // Facilities at each land spot. Only facts we could check in a published source.
 // Anything we could not confirm is "unknown" — never a guess.
-// Checked 21 Oct 2026. Toilet distances are from the spot's map pin (National Public Toilet Map).
+// Checked 21–23 Oct 2026. Toilet distances are from the spot's map pin (National Public Toilet Map).
 export type Has = "yes" | "no" | "unknown";
 export type Fac = { has: Has; note?: string };
 export type Facilities = { toilets: Fac; parking: Fac; lights: Fac; rails: Fac; cleaning: Fac; src: string[] };
-export const FAC_CHECKED = "21 Oct 2026";
+export const FAC_CHECKED = "21–23 Oct 2026";
 
 export const SRC: Record<string, { t: string; u: string }> = {
   vfaPP: { t: "VFA – Go Fishing Port Phillip Bay", u: "https://vfa.vic.gov.au/recreational-fishing/fishing-locations/go-fishing-port-phillip-bay" },
@@ -24,6 +24,48 @@ export const SRC: Record<string, { t: string; u: string }> = {
   geelong: { t: "City of Greater Geelong – boat ramps and jetties", u: "https://www.geelongcity.vic.gov.au/services/venues-and-facilities/boat-ramps-jetties-and-boardwalks" },
   pvAlbert: { t: "Parks Victoria – Albert Park access info", u: "https://www.parks.vic.gov.au/get-into-nature/all-abilities-access/park-accessibility-information/albert-park-accessibility" },
   pvYarraBend: { t: "Parks Victoria – Yarra Bend Park access info", u: "https://www.parks.vic.gov.au/get-into-nature/all-abilities-access/park-accessibility-information/yarra-bend-park-accessibility" },
+  // Local-angler sources, added 23 Oct 2026 (forum posts are one angler's account; Bite Compass guides are a secondary source)
+  fmWebb: { t: "FishingMad – Webb Dock fishing guide", u: "https://fishingmad.com.au/location/webb-dock/" },
+  fmBest: { t: "FishingMad – Best land-based fishing spots around Melbourne", u: "https://fishingmad.com.au/article/best-land-based-fishing-spots-around-melbourne/" },
+  reedySept: { t: "Reedy's Rigs – Snapper, whiting & trevally report (Sept 2025)", u: "https://reedysrigs.com/reedys-report-snapper-whiting-trevally-sept-2025/" },
+  reedyEarly: { t: "Reedy's Rigs – Early-season snapper, northern Port Phillip Bay", u: "https://reedysrigs.com/early-season-snapper-northern-port-phillip-bay/" },
+  fvWebb12: { t: "Fishing Victoria forum – Port Melbourne, Webb Dock rocks (2012)", u: "https://www.fishing-victoria.com/viewtopic.php?t=2090" },
+  fvWebb23: { t: "Fishing Victoria forum – Quick session at Webb Dock (Oct 2023)", u: "https://fishing-victoria.com/viewtopic.php?t=26849" },
+  pomVisit: { t: "Port of Melbourne – Visiting the port (Webb Dock Trail)", u: "https://www.portofmelbourne.com/community-education/visiting-the-port/" },
+  pomNews: { t: "Port of Melbourne – Community updates (Webb Dock Trail works)", u: "https://www.portofmelbourne.com/community-education/community-newsletter/" },
+  pomMap: { t: "Port of Melbourne – Precincts & public access areas map (2021)", u: "https://www.portofmelbourne.com/wp-content/uploads/PoM-Precincts-Public-Access-Areas.pdf" },
+  pomSust: { t: "Port of Melbourne – 2021 Sustainability Report (line bins at Webb Dock Trail)", u: "https://www.portofmelbourne.com/wp-content/uploads/2021-Sustainability-Report-FINAL.pdf" },
+  vfaWest: { t: "VFA – Where to fish: western Port Phillip", u: "https://vfa.vic.gov.au/recreational-fishing/victorias-top-fishing-destinations/port-phillip/where-to-fish-port-phillip/western" },
+  fvHamptonGroynes: { t: "Fishing Victoria forum – Hampton rock groynes (2019)", u: "https://www.fishing-victoria.com/viewtopic.php?t=23696" },
+  fvHamptonWindy: { t: "Fishing Victoria forum – Windy is better? (Hampton, 2018)", u: "https://fishing-victoria.com/viewtopic.php?t=20825" },
+  fvHamptonSquid: { t: "Fishing Victoria forum – Squid help (Hampton to Sandringham, 2018)", u: "https://fishing-victoria.com/viewtopic.php?t=19769" },
+  fvSnapperSeason: { t: "Fishing Victoria forum – Snapper / pinky season (Hampton)", u: "https://fishing-victoria.com/viewtopic.php?t=19845" },
+  bcGroynes: { t: "Bite Compass – South Road / Hampton groynes", u: "https://bitecompass.com/vic/locations/south-road-groynes" },
+  fvWillPiers: { t: "Fishing Victoria forum – Best piers for snapper and pinkies (2016)", u: "https://www.fishing-victoria.com/viewtopic.php?t=17145" },
+  fvWillGloucester: { t: "Fishing Victoria forum – Williamstown rock wall (2019)", u: "https://www.fishing-victoria.com/viewtopic.php?t=22703" },
+  bcGellibrand: { t: "Bite Compass – Point Gellibrand", u: "https://bitecompass.com/vic/locations/point-gellibrand" },
+  fmSandy: { t: "FishingMad – Sandringham breakwater fishing guide", u: "https://fishingmad.com.au/location/sandringham-breakwater/" },
+  bcSandy: { t: "Bite Compass – Sandringham breakwater", u: "https://bitecompass.com/vic/locations/sandringham-breakwater" },
+  fvSandyWall: { t: "Fishing Victoria forum – Sandringham rock wall (2023)", u: "https://www.fishing-victoria.com/viewtopic.php?t=26801" },
+  syc: { t: "Sandringham Yacht Club – breakwater works notice", u: "https://syc.com.au/sandringham-breakwater/" },
+  pvHampton: { t: "Parks Victoria – Hampton Pier", u: "https://www.parks.vic.gov.au/places-to-see/sites/hampton-pier" },
+  baysideHampton: { t: "Bayside City Council – Hampton's new pier opens (19 Jan 2026)", u: "https://www.bayside.vic.gov.au/news/hamptons-new-pier-opens" },
+  bcPrinces: { t: "Bite Compass – Princes Pier", u: "https://bitecompass.com/vic/locations/princes-pier" },
+  mpPrinces: { t: "Melbourne Point – Princes Pier (fishing and access notes)", u: "https://www.melbournepoint.com.au/attractions/princes-pier/" },
+  fvPortMel18: { t: "Fishing Victoria forum – Port Melbourne fishing! (2018)", u: "https://www.fishing-victoria.com/viewtopic.php?t=20410" },
+  fvPortMel21: { t: "Fishing Victoria forum – Lagoon Pier report (June 2021)", u: "https://fishing-victoria.com/viewtopic.php?t=25488" },
+  fvPortMelbSection: { t: "Fishing Victoria forum – Port Melbourne to St Kilda section", u: "https://www.fishing-victoria.com/viewforum.php?f=124" },
+  pvLagoon: { t: "Parks Victoria – Lagoon Pier", u: "https://www.parks.vic.gov.au/places-to-see/sites/lagoon-pier" },
+  fmLagoon: { t: "FishingMad – Lagoon Pier fishing guide", u: "https://fishingmad.com.au/location/lagoon-pier-port-melbourne/" },
+  bcLagoon: { t: "Bite Compass – Lagoon Pier", u: "https://bitecompass.com/vic/locations/lagoon-pier" },
+  fvLagoonKerferd: { t: "Fishing Victoria forum – Lagoon Pier or Kerferd Road Pier? (2019)", u: "https://fishing-victoria.com/viewtopic.php?t=23628" },
+  fvLagoon21: { t: "Fishing Victoria forum – Lagoon Pier report (2021)", u: "https://fishing-victoria.com/viewtopic.php?t=25488" },
+  pvBlackRock: { t: "Parks Victoria – Black Rock Jetty", u: "https://www.parks.vic.gov.au/places-to-see/sites/black-rock-jetty" },
+  fmBlackRock: { t: "FishingMad – Black Rock Jetty fishing guide", u: "https://fishingmad.com.au/location/black-rock-jetty/" },
+  bcBlackRock: { t: "Bite Compass – Black Rock Jetty", u: "https://bitecompass.com/vic/locations/black-rock-jetty" },
+  fvSquidHelp: { t: "Fishing Victoria forum – Squid help (Black Rock and Beaumaris piers, 2018)", u: "https://fishing-victoria.com/viewtopic.php?t=19769" },
+  sqBeaumaris: { t: "SquidFishing.com.au – Beaumaris Pier squid guide (2026)", u: "https://www.squidfishing.com.au/guides/beaumaris-pier-squid-fishing/" },
+  fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
 const Y = (note?: string): Fac => ({ has: "yes", note });
@@ -47,7 +89,7 @@ export const FACILITIES: Record<string, Facilities> = {
   "altona-pier": f(Y("Weaver Reserve, about 250 m – daylight hours"), Y("Parking at Weaver Reserve"), ["pvAltona", "hobsons"], { lights: Y("Lights along the new pier"), rails: Y("Handrails along the new pier"), cleaning: { has: "unknown", note: "None listed for the pier. The Altona boat ramp in Seaholme has a cleaning area" } }),
   "gem-pier": f(Y("Commonwealth Reserve, about 150 m – daylight hours"), Y("Ticketed parking nearby"), ["gem"], { lights: Y("Lamp posts along the pier") }),
   "kerferd-pier": f(Y("Foreshore reserve at Kerferd Road, about 100 m – daylight hours"), Y("Street parking"), ["kerferd"], { lights: Y("LED lights on the pier"), rails: Y("Handrails (2019 upgrade)") }),
-  "hampton-pier": f(Y("Hampton Surf Life Saving Club, about 200 m – open 24 hours"), Y("Willis Street car park – tight on weekends"), []),
+  "hampton-pier": f(Y("Near the harbour beach, by Jetty Road (OpenStreetMap map; Bite Compass)"), Y("Paid car park at Sandringham Harbour – pay by app or card (GetFished)"), ["pvHampton", "baysideHampton"], { rails: U }),
   "seaford-pier": f(Y("Next to the life saving club, about 100 m"), Y("Paid car park"), ["pvSeaford"]),
   "dromana-pier": f(Y("Bishops Reserve, about 100 m – open 24 hours"), Y("Beside the pier and along Point Nepean Road"), ["dromana"]),
   "rosebud-pier": f(Y("Rosebud foreshore at Jetty Road, about 250 m – hours vary by season"), Y("Foreshore parking"), []),
@@ -69,6 +111,14 @@ export const FACILITIES: Record<string, Facilities> = {
   "san-remo-pier": f(Y("Marine Parade foreshore reserve, about 150 m – daylight hours"), Y("Plenty of parking close by (VFA)"), ["vfaWP"]),
   "cowes-jetty": f(Y("Cowes Beach, about 150 m – daylight hours"), Y("Parking at the Cowes Beach toilets"), ["vfaWP"]),
   "corinella-pier": f(Y("In the caravan park next to the pier (VFA) – check they're open to the public"), U, ["vfaWP"]),
+  "webb-dock-rocks": f({ has: "unknown", note: "Not confirmed near the trail" }, Y("Free parking at Sandridge Yacht Club and along The Boulevard, reported by anglers – a 10-minute walk to the first spots"), ["fmWebb", "fvWebb23", "pomVisit"], { lights: { has: "unknown", note: "Not confirmed. Take a headlamp" }, rails: { has: "no", note: "Open rock wall – no railings" }, cleaning: { has: "unknown", note: "Port of Melbourne line-recycling bins on the trail" } }),
+  "hampton-groynes": f(U, Y("Limited street parking along Beach Road – busy in summer (Bite Compass)"), ["bcGroynes"], { lights: U, rails: { has: "no", note: "Rough rock groynes – no deck or railings" } }),
+  "williamstown-rocks": f(U, Y("Car parks by the Timeball Tower and the Quarry Picnic Area (Bite Compass)"), ["bcGellibrand", "fvWillPiers"], { lights: U, rails: { has: "no", note: "Seawall and rocks – no railings" } }),
+  "sandringham-breakwater": f(Y("Near the harbour beach, by Jetty Road (OpenStreetMap map; Bite Compass)"), Y("Public car park at the harbour – paid (by app or card) (GetFished). The yacht club car park is members and guests only"), ["fmSandy", "bcSandy"], { lights: U, rails: { has: "no", note: "Rock wall – steep and uneven, no railings" } }),
+  "princes-pier": f(U, Y("Time-limited street parking – busy on warm days (Bite Compass)"), ["bcPrinces", "mpPrinces"], { lights: { has: "unknown", note: "Illuminated signage only; no confirmed pier lighting" } }),
+  "lagoon-pier": f(Y("Public toilets, cafes and kiosks a very short walk away (Parks Victoria)"), Y("Metered or time-limited street parking on Beach Street – busy in summer (Bite Compass)"), ["pvLagoon", "bcLagoon"], { lights: U }),
+  "black-rock-jetty": f(Y("Public toilets a short distance from the jetty (Parks Victoria)"), Y("Car park at the ramp – often scarce in busy months (Parks Victoria)"), ["pvBlackRock", "bcBlackRock"], { lights: U }),
+  "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
   "albert-park-lake": f(Y("At the Swan, Coot and Cormorant/Grebe picnic grounds around the lake"), Y("Paid parking in several areas – watch the time limits"), ["pvAlbert"]),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),
   "st-helens": f(Y("St Helens Coast Guard, about 60 m – open 24 hours"), Y("Car park beside the boat ramp"), ["geelong"], { lights: Y("Solar lights on the harbour rock walls"), cleaning: Y("Fish cleaning table at the rock walls") }),

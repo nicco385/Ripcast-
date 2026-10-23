@@ -6,6 +6,7 @@ import { PROFILES, planSpecies, dayOutlook, spotsFor, spanTxt, nearSpots, NEAR_K
 import { fmt } from "./astro";
 import { seasonVal } from "./where";
 import { SpThumb, load, save } from "./ui";
+import { FACILITIES } from "./data/facilities";
 import type { Place } from "./lib";
 
 type Wx = Awaited<ReturnType<typeof getSpotWeather>>;
@@ -34,6 +35,9 @@ export function TargetPicker({ onPick }: { onPick: (slug: string) => void }) {
 }
 
 const fmtDist = (d: number | null) => d == null ? "" : `${d < 10 ? d.toFixed(1) : Math.round(d)} km away`;
+/** Rock grounds are unlit and slippery: if the best time is after dark and we can't confirm lights, say so. */
+const nightNote = (s?: SpotPlan) => s && s.spot.type === "rocks" && s.factors.some((f) => f.kind === "light" && /after dark/i.test(f.txt)) && FACILITIES[s.spot.id]?.lights.has !== "yes"
+  ? "🔦 Best time is after dark, and this is rock with no confirmed lights – take a headlamp and a mate, and stay well back from the edge." : null;
 function SpotCard({ s, i, onSpot, label }: { s: SpotPlan; i: number; onSpot: (id: string) => void; label?: string }) {
   const pos = s.factors.filter((f) => f.pts > 0 && f.kind !== "season").sort((a, b) => b.pts - a.pts).slice(0, 3);
   const neg = s.factors.filter((f) => f.pts < 0).sort((a, b) => a.pts - b.pts).slice(0, 2);
@@ -42,6 +46,7 @@ function SpotCard({ s, i, onSpot, label }: { s: SpotPlan; i: number; onSpot: (id
     <p className="muted small">{s.spot.info ? AREAS[s.spot.info.area].name : ""}{s.dist != null ? ` · ${fmtDist(s.dist)}` : ""}</p>
     <p className="big-txt">⏰ <b>Best {spanTxt(s.from, s.to)}</b></p>
     <p className="small muted">{[s.windTxt && `Wind then: ${s.windTxt}`, s.tideTxt && `Tide: ${s.tideTxt}`].filter(Boolean).join(" · ")}</p>
+    {nightNote(s) && <p className="small neg">{nightNote(s)}</p>}
     <ul className="why">{pos.map((f) => <li key={f.txt} className="pos">✅ {f.txt}</li>)}{neg.map((f) => <li key={f.txt} className="neg">⚠️ {f.txt}</li>)}</ul>
     <div className="row btns"><button className="btn alt" onClick={() => onSpot(s.spot.id)}>Spot guide ›</button>
       <a className="btn" href={`https://www.google.com/maps/dir/?api=1&destination=${s.spot.lat},${s.spot.lon}`} target="_blank" rel="noreferrer">🚗 Directions</a></div>
@@ -147,6 +152,7 @@ function SpotToday({ here, place, out, area, rain, noWind, foot, onPick }: { her
         <p className="headline">{good ? "Best here" : "Best chance here"}: {fishName(top.profile.name)}{occ(top.profile.slug)}, {spanTxt(s.from, s.to)}.</p>
         {reasons(top) && <p className="small">Why: {reasons(top)}.</p>}
         <p className="small">🪝 {top.profile.tip}</p>
+        {nightNote(s) && <p className="small">{nightNote(s)}</p>}
         {!good && <p className="small"><b>Not a great day here.</b>{better.length ? " There's a better option nearby (below)." : " Nothing nearby is clearly better today either."}</p>}
       </> : <p><b>Nothing much is in season or biting here today.</b>{better.length ? " Try a nearby option below." : " Check the 7-day forecast for a better day."}</p>}
       {rain}{noWind}

@@ -60,12 +60,14 @@ export function FishTab({ onOpen, onCal, onTarget }: { onOpen: (slug: string) =>
   </>;
 }
 
+/** Same weighting as the engine: VFA hot spot +6, plus the angler-report adjustment (data/spotinfo.ts "local") */
+const spotRank = (s: { info?: { hot?: string[]; local?: Record<string, number> } }, slug: string) => (s.info?.hot?.includes(slug) ? 6 : 0) + (s.info?.local?.[slug] ?? 0);
 const Sec = ({ title, items }: { title: string; items: string[] }) => items.length ? <><h3>{title}</h3><ul className="plain">{items.map((t) => <li key={t}>{t}</li>)}</ul></> : null;
 
 export function SpeciesView({ slug, onSpot, onTarget }: { slug: string; onSpot: (id: string) => void; onTarget?: (slug: string) => void }) {
   const sp = speciesBySlug(slug), g = guideBySlug(slug);
   const spots = useMemo(() => ALL_LAND.filter((s) => !s.info?.status?.closed && s.species.includes(slug))
-    .sort((a, b) => Number(isOcc(a, slug)) - Number(isOcc(b, slug)) || Number(b.info?.hot?.includes(slug) ?? false) - Number(a.info?.hot?.includes(slug) ?? false) || Number(b.info?.src === "vfa") - Number(a.info?.src === "vfa")), [slug]);
+    .sort((a, b) => Number(isOcc(a, slug)) - Number(isOcc(b, slug)) || spotRank(b, slug) - spotRank(a, slug) || Number(b.info?.src === "vfa") - Number(a.info?.src === "vfa")), [slug]);
   if (!sp || !g) return <div className="card">That fish was not found.</div>;
   const sl = seasonLabel(slug);
   return <>
@@ -87,7 +89,7 @@ export function SpeciesView({ slug, onSpot, onTarget }: { slug: string; onSpot: 
       <h2>📅 When</h2><p><b>{sl.t}</b></p><MonthStrip slug={slug} /><SeasonKey /><p className="small">{g.seasonText}</p>
     </section>
     <section className="card"><h2>📍 Where from the shore</h2><Sec title="" items={g.where} />
-      {spots.length > 0 && <><h3>Spots in this app</h3>{spots.slice(0, 8).map((s) => <button key={s.id} className="item" onClick={() => onSpot(s.id)}>{s.name}{s.info?.hot?.includes(slug) ? " ⭐ VFA hot spot" : ""}{isOcc(s, slug) ? " (occasional)" : ""}<small className="block muted">{AREAS[s.info?.area ?? "east"].name}</small></button>)}</>}
+      {spots.length > 0 && <><h3>Spots in this app</h3>{spots.slice(0, 8).map((s) => <button key={s.id} className="item" onClick={() => onSpot(s.id)}>{s.name}{s.info?.hot?.includes(slug) ? " ⭐ VFA hot spot" : ""}{(s.info?.local?.[slug] ?? 0) > 0 ? " ⭐ Local favourite" : ""}{isOcc(s, slug) ? " (occasional)" : ""}<small className="block muted">{AREAS[s.info?.area ?? "east"].name}</small></button>)}</>}
     </section>
     <section className="card"><h2>🕒 Best time & tide</h2><Sec title="" items={g.when} /><p className="muted small">See today's tide times on the Today tab.</p></section>
     <section className="card"><h2>🎣 Rig & tackle</h2><Sec title="Rig" items={g.rig} /><h3>Rod, reel and line</h3><p>{g.gear}</p><h3>Hook</h3><p>{g.hook}</p>
@@ -127,6 +129,7 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
       {i?.photo && <figure className="spotphoto"><img src={BASE + i.photo.src} alt={i.photo.cap} width={280} height={350} loading="lazy" /><figcaption>{i.photo.cap}</figcaption></figure>}
       <p className="muted small">{i ? AREAS[i.area].name : ""} · {spot.type} · {Math.round(km(place, spot))} km from {place.name}</p>
       {i?.status?.closed && <div className="banner danger">⛔ Closed. {i.status.note}<br /><Ext href={i.status.url}>Official update ↗</Ext> <small>(as of {i.status.asOf})</small> <StaleNote checked={i.status.asOf} what="closure" /></div>}
+      {i?.notice && <div className="banner warn">⚠️ {i.notice}</div>}
       {i?.fresh ? <p className="small">Fish list from VFA stocking records, Parks Victoria and FishingMad. A freshwater spot – <b>no tides here</b>.</p> : i?.src === "vfa" ? <p className="small">✅ Fish list and tips from the Victorian Fisheries Authority.</p> : <p className="muted small">Fish list checked against VFA regional guides, FishingMad and local reports (Oct 2026) – not an official VFA list.</p>}
       {!i?.status?.closed && <div className="row btns">
         <a className="btn" href={`https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lon}`} target="_blank" rel="noreferrer">🚗 Directions</a>
@@ -135,7 +138,7 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
       {!i?.status?.closed && <button className="big" onClick={onUse}>Show conditions here</button>}
     </section>
     {fish.length > 0 && <section className="card"><h2>🐟 Fish here</h2>
-      {fish.map(({ x, o }) => <button key={x} className="item fish-chip" onClick={() => onSpecies(x)}><SpThumb name={x} size={64} /><span><b>{speciesBySlug(x)?.name ?? short(x)}</b>{i?.hot?.includes(x) ? " ⭐" : ""}{o ? <span className="muted"> (occasional)</span> : null}<small className="block muted">{o ? AUDIT[spot.id]?.why?.[x] ?? "Only caught now and then here." : seasonLabel(x).t || ""}</small></span><span className="chev">›</span></button>)}
+      {fish.map(({ x, o }) => <button key={x} className="item fish-chip" onClick={() => onSpecies(x)}><SpThumb name={x} size={64} /><span><b>{speciesBySlug(x)?.name ?? short(x)}</b>{i?.hot?.includes(x) ? " ⭐" : ""}{o ? <span className="muted"> (occasional)</span> : null}<small className="block muted">{o ? AUDIT[spot.id]?.why?.[x] ?? "Only caught now and then here." : seasonLabel(x).t || ""}</small>{!o && AUDIT[spot.id]?.why?.[x] && <small className="block muted">{AUDIT[spot.id]!.why![x]}</small>}</span><span className="chev">›</span></button>)}
       {i?.other?.length ? <p className="muted small">Also caught here{i.fresh ? "" : " (VFA)"}: {i.other.join(", ")}.</p> : null}
       {i?.hot?.length ? <p className="muted small">⭐ = the VFA names this spot as a hot spot for that fish.</p> : null}
     </section>}
@@ -146,7 +149,11 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
       {spot.windNote && <p><b>Wind:</b> {spot.windNote}</p>}
       {i?.noWind && <p className="muted small">We have not mapped which winds this spot is sheltered from – check the wind direction when you arrive.</p>}
     </section>
+    {i?.hazards?.length ? <section className="card"><h2>⚠️ Hazards here</h2><ul className="plain">{i.hazards.map((h) => <li key={h}>{h}</li>)}</ul></section> : null}
     <FacilitiesCard id={spot.id} />
+    {i?.sources?.length ? <section className="card"><h2>📚 Where this comes from</h2>
+      <p className="muted small">Angler forum posts and tackle-shop guides are one person's or one shop's account, so we mark fish as occasional unless several reports agree. Official pages are listed first where we found them.</p>
+      <ul className="plain">{i.sources.filter((k) => SRC[k]).map((k) => <li key={k}><Ext href={SRC[k].u}>{SRC[k].t} ↗</Ext></li>)}</ul></section> : null}
     {i?.report && <section className="card"><h2>🎣 Angler report</h2>{i.report.items.map((r) => <div key={r.t}><p className="small">{r.t}</p>{r.photo && <figure className="spotphoto" style={{ marginTop: 8 }}><img src={BASE + r.photo.src} alt={r.photo.cap} width={240} height={r.photo.src.includes("bream") ? 300 : 150} loading="lazy" style={r.photo.src.includes("snapper") ? { aspectRatio: "16/10" } : undefined} /><figcaption>{r.photo.cap}</figcaption></figure>}</div>)}
       <p className="small">{i.report.note}</p>
       <p className="small"><b>Snapper rules (VFA):</b> minimum 28 cm, bag 10, and no more than 3 may be 40 cm or longer. Keep whole until you are away from the water.</p>{i.report.items.some((r) => /bream/i.test(r.t)) && <p className="small"><b>Black bream rules (VFA):</b> minimum 28 cm, bag 10 (combined with other bream and tarwhine), no maximum size here (the 38 cm maximum is only for the Gippsland Lakes). Keep whole until you are away from the water.</p>}</section>}

@@ -13,9 +13,10 @@ export const AUDIT: Record<string, Audit> = {
     garfish: "Bite Compass and FishingMad (Brighton breakwall) list garfish.", "king-george-whiting": "Bite Compass and FishingMad (Brighton breakwall).",
     "silver-trevally": "Only FishingMad's breakwall guide mentions them." } },
   "kerferd-pier": { add: ["sand-flathead", "snapper", "garfish"], occ: ["calamari"], why: {
-    "sand-flathead": "VFA hot spot; FishingMad lists flathead.", snapper: "FishingMad: pinkies and snapper are the main summer target.", garfish: "FishingMad list.",
+    "sand-flathead": "VFA hot spot; FishingMad lists flathead.", snapper: "FishingMad: pinkies and snapper are the main summer target; forum anglers (2019) have caught many snapper here, halfway along the left side on an incoming tide with a southerly. Local favourite.", garfish: "FishingMad list.",
     calamari: "Not in FishingMad's Kerferd list; only old forum posts of the odd squid. Murky inner-bay water." } },
-  "hampton-pier": { occ: ["calamari"], why: { calamari: "No recent Hampton squid reports found, and FishingMad's Sandringham breakwater guide next door doesn't list squid." } },
+  "ferguson-street-pier": { why: { snapper: "VFA hot spot, but recent angler reports are thin: in Oct 2023 a forum angler blanked on bait and plastics here, and another says the current is strong and snaggy. We trimmed its snapper rating a little." } },
+  "hampton-pier": { occ: ["calamari"], why: { calamari: "No recent Hampton squid reports found, and FishingMad's Sandringham breakwater guide next door doesn't list squid. The pier was rebuilt in Jan 2026 and we found no catch reports for it yet." } },
   "seaford-pier": { add: ["australian-salmon"], occ: ["calamari", "snapper"], why: {
     "australian-salmon": "VFA: casting for salmon is 'more reliable' here.", calamari: "VFA: calamari 'occasionally'.", snapper: "VFA: 'occasionally, a good snapper'." } },
   "altona-pier": { add: ["king-george-whiting", "garfish", "australian-salmon", "black-bream"], occ: ["calamari"], why: {
@@ -38,4 +39,60 @@ export const AUDIT: Record<string, Audit> = {
   "maribyrnong-footscray": { occ: ["snapper"], why: { snapper: "Bite Compass: 'pinkies wander in'." } },
   "maribyrnong-anglers": { occ: ["snapper"], why: { snapper: "Pinkies wander in now and then." } },
   "yarra-herring": { occ: ["silver-trevally"], why: { "silver-trevally": "Trevally are a lower-river fish; only odd ones this far up." } },
+
+  // ---- 23 Oct 2026: local favourites the VFA list leaves out. "why" = the evidence; "occ" = only now and then. ----
+  "webb-dock-rocks": { occ: ["black-bream", "gummy-shark", "mulloway"], why: {
+    snapper: "FishingMad calls it 'arguably one of the best land-based snapper spots' near Melbourne; Reedy's Rigs names Webb Dock for land-based snapper; forum reports of pinkies and 40 cm fish (2012–2023). Local favourite.",
+    "sand-flathead": "FishingMad: flathead on the outgoing low tide; forum.",
+    "silver-trevally": "FishingMad species list; a forum angler caught a 22 cm trevally here in Oct 2023.",
+    "australian-salmon": "FishingMad species list; a 23 cm salmon was caught here in Oct 2023 (forum).",
+    "black-bream": "FishingMad lists bream, but a 2012 forum angler said the bream had been fished out. Only occasional.",
+    "gummy-shark": "Listed by FishingMad, with no recent catch reports found. Only occasional.",
+    mulloway: "FishingMad mentions mulloway, but no catch reports found. Only occasional." } },
+  "hampton-groynes": { occ: ["calamari", "sand-flathead", "australian-salmon", "king-george-whiting"], why: {
+    snapper: "Forum anglers (2018–2019) catch pinkies and the odd snapper off the groynes, best in light south-westerlies or north-westerlies, at dawn and dusk. Reedy's Rigs names Hampton for shallow land-based snapper. Snaggy and toadies are a pest.",
+    calamari: "A forum angler saw 'a few squid' in 2019; others lose jigs in the snags. Occasional.",
+    "sand-flathead": "Only a Bite Compass guide lists flathead on the sand between the groynes. Occasional.",
+    "australian-salmon": "Only a Bite Compass guide lists salmon schools here. Occasional.",
+    "king-george-whiting": "Only a Bite Compass guide lists whiting on the sand gaps. Occasional." } },
+  "williamstown-rocks": { occ: ["calamari", "sand-flathead", "silver-trevally"], why: {
+    snapper: "Forum anglers (2016, 2019) catch pinkies off the seawall and rocks; the VFA says pinkies are caught year-round on the reef just off here, with bigger snapper in warmer months.",
+    "australian-salmon": "Forum anglers and Bite Compass: salmon are caught here, and schools can show up at any time (VFA).",
+    calamari: "A forum angler targets squid here from a boat or kayak; land-based squid reports are thin. Occasional.",
+    "sand-flathead": "Only Bite Compass lists flathead on the sand edges between reef patches. Occasional.",
+    "silver-trevally": "Only Bite Compass lists trevally under berley. Occasional." } },
+  "sandringham-breakwater": { occ: ["calamari"], why: {
+    snapper: "FishingMad: many snapper caught here over the years, best October to March; a forum angler has seen 60–70 cm snapper off the wall (2023). Reedy's Rigs names Sandringham-side shallow ground. Another angler blanked, so it is not a sure thing. Local favourite.",
+    "king-george-whiting": "FishingMad: a very common catch in the warmer months and at night, in clearings in the weed.",
+    garfish: "FishingMad (float rig with small baits) and Bite Compass.",
+    "sand-flathead": "FishingMad: flathead on plastics along the wall.",
+    "australian-salmon": "FishingMad: salmon caught casting plastics.",
+    "silver-trevally": "FishingMad: trevally caught on plastics near the moored yachts.",
+    calamari: "Bite Compass calls it an occasional bonus, and a forum angler has never caught one here. Occasional." } },
+  "princes-pier": { occ: ["mulloway", "garfish"], why: {
+    snapper: "The old timber stumps beyond the deck act as a reef: Bite Compass, FishingMad and forum anglers all name Princes Pier for snapper and pinkies, best on a high tide at first and last light.",
+    "black-bream": "Bream live in the timber (Bite Compass; forum).",
+    "sand-flathead": "Flathead on the sand edges (Bite Compass; a forum angler caught them on plastics).",
+    "australian-salmon": "Salmon on metal lures (forum), and Bite Compass lists them from March to September.",
+    mulloway: "A forum angler mentions a chance of mulloway, and Bite Compass says they turn up now and then. Occasional.",
+    garfish: "Bite Compass says garfish pass by in season. Occasional." } },
+  "lagoon-pier": { occ: ["gummy-shark", "silver-trevally", "garfish", "calamari"], why: {
+    snapper: "Forum anglers say they have caught many snapper off Lagoon Pier (2019); Bite Compass lists pinkies all year and bigger snapper in spring, especially after rain flushes the Yarra.",
+    "sand-flathead": "Flathead are the steadiest fish over the sand in the warmer months (Bite Compass; forum).",
+    "australian-salmon": "Small salmon caught on bait in front of the pier (forum, 2021); Bite Compass.",
+    "gummy-shark": "One forum angler caught a gummy here. Occasional.",
+    "silver-trevally": "Visit under berley (Bite Compass); one forum report. Occasional.",
+    garfish: "Visit under berley (Bite Compass); one forum report. Occasional.",
+    calamari: "'Now and then in clear water' (Bite Compass); one forum report. Occasional." } },
+  "black-rock-jetty": { occ: ["garfish", "sand-flathead", "australian-salmon"], why: {
+    snapper: "Bite Compass and FishingMad: a cast from the end reaches snapper water; Parks Victoria says the jetty gives year-round access to a good variety of fish. A forum angler lost a big red off the rocks at Black Rock in 2023.",
+    calamari: "Forum anglers caught squid off Black Rock pier (2018); FishingMad and Bite Compass say calamari fire when the water is clear.",
+    "king-george-whiting": "Bite Compass and FishingMad: whiting on the sand with light gear.",
+    garfish: "Only Bite Compass lists garfish on a float. Occasional.",
+    "sand-flathead": "Only Bite Compass lists flathead. Occasional.",
+    "australian-salmon": "Pinkies and salmon are a year-round fishery on the inshore reef (Bite Compass), but few reports from the jetty itself. Occasional." } },
+  "beaumaris-pier": { occ: ["snapper"], why: {
+    calamari: "Forum anglers caught squid off Beaumaris pier (2018); a 2026 local squid guide calls it a sheltered night squid spot; FishingMad says squid are good in seasonal parts of the year.",
+    garfish: "FishingMad: good numbers of garfish and squid in seasonal parts of the year.",
+    snapper: "Only Bite Compass-style summaries mention snapper at dawn and dusk. Occasional." } },
 };

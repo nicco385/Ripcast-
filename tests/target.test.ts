@@ -5,6 +5,9 @@ import { spotAt, spotLabel } from "../src/where";
 import { LAND, type Raw } from "../src/where";
 import { dayStart, fmt } from "../src/astro";
 import { TIDE_START, TIDE_END } from "../src/tides";
+import { SRC, FACILITIES } from "../src/data/facilities";
+import { AUDIT } from "../src/data/audit";
+import { isOcc } from "../src/data/spots";
 
 const TZ = "Australia/Melbourne", H = 3600000;
 const at = (s: string) => new Date(s).getTime(); // ISO with offset
@@ -113,6 +116,60 @@ const kd = dayOutlook(W12, "2026-10-21", { now: oct, origin: ker, only: ker, n: 
 ok("Today at Kerferd Road Pier: every pick is at Kerferd Road Pier and is one of its fish", () => { assert.ok(kd.plans.length > 0); for (const pl of kd.plans) { assert.equal(pl.spots[0].spot.id, ker.id); assert.ok(ker.species.includes(pl.profile.slug)); } });
 ok("Nearby alternatives are other spots and at least BETTER_BY points better", () => { for (const b of betterNearby(ker, kd.score, ka)) { assert.notEqual(b.s.spot.id, ker.id); assert.ok(b.s.score >= kd.score + BETTER_BY); } });
 ok("spotLabel: no double brackets", () => assert.equal(spotLabel("Ferguson Street Pier (Williamstown)"), "Ferguson Street Pier, Williamstown"));
+
+// 18. Local-angler spots (v1.4.8): Webb Dock, Hampton, Williamstown, Sandringham rocks, Princes/Lagoon piers, Black Rock, Beaumaris
+const NEWIDS = ["webb-dock-rocks", "hampton-groynes", "williamstown-rocks", "sandringham-breakwater", "princes-pier", "lagoon-pier", "black-rock-jetty", "beaumaris-pier"];
+const L = (id: string) => LAND.find((x) => x.id === id)!;
+ok("8 new spots exist, sit on the bay (not inland) and have fish, access and an evidence note for every fish", () => {
+  for (const id of NEWIDS) { const x = L(id); assert.ok(x, id); assert.ok(x.lat < -37.8 && x.lat > -38.05 && x.lon > 144.9 && x.lon < 145.06, id); assert.ok(x.species.length >= 3 && x.access.length > 30, id);
+    for (const sp of x.species) assert.ok(AUDIT[id]?.why?.[sp], `${id}/${sp} has no evidence note`); assert.ok((x.info?.sources?.length ?? 0) >= 2, id + " sources"); }
+});
+ok("every source key used by a spot or its facilities exists in the source list", () => {
+  for (const id of NEWIDS.concat("hampton-pier")) { for (const k of L(id).info?.sources ?? []) assert.ok(SRC[k]?.u.startsWith("https://"), `${id}: ${k}`); for (const k of FACILITIES[id]?.src ?? []) assert.ok(SRC[k], `${id} facilities: ${k}`); }
+});
+ok("rock grounds are typed rocks; every new spot's exposed and sheltered winds don't overlap", () => {
+  for (const id of ["webb-dock-rocks", "hampton-groynes", "williamstown-rocks", "sandringham-breakwater"]) assert.equal(L(id).type, "rocks", id);
+  for (const id of NEWIDS) assert.ok(!L(id).exposedTo.some((d) => L(id).shelteredFrom.includes(d)), id);
+});
+ok("Hampton Pier pin is at the rebuilt pier inside Sandringham Harbour, not inland in Hampton village", () => { const h = L("hampton-pier"); assert.ok(Math.abs(h.lat + 37.9448) < 0.003 && h.lon < 144.998 && h.lon > 144.99, `${h.lat},${h.lon}`); assert.ok(!/Willis/.test(JSON.stringify(FACILITIES["hampton-pier"])), "old Willis St note gone"); });
+ok("Webb Dock tells the truth about port access: working port, public trail only, no crossing barriers", () => {
+  const x = L("webb-dock-rocks"); assert.match(x.info!.notice!, /working port/i); assert.match(x.info!.notice!, /barrier|fence|gate/i); assert.match(x.info!.notice!, /trail/i); assert.ok((x.info!.hazards ?? []).length >= 3);
+  assert.ok(x.info!.sources!.includes("pomVisit") && x.info!.sources!.includes("pomMap"));
+});
+ok("unknown facts are marked Not known, not guessed (Webb Dock toilets and lights, Hampton groynes lights)", () => { assert.equal(FACILITIES["webb-dock-rocks"].toilets.has, "unknown"); assert.equal(FACILITIES["webb-dock-rocks"].lights.has, "unknown"); assert.equal(FACILITIES["hampton-groynes"].lights.has, "unknown"); assert.equal(FACILITIES["beaumaris-pier"].lights.has, "unknown"); });
+ok("occasional fish are marked occasional (and only fish the spot lists)", () => {
+  assert.ok(isOcc(L("webb-dock-rocks"), "mulloway") && isOcc(L("hampton-groynes"), "calamari") && isOcc(L("beaumaris-pier"), "snapper") && !isOcc(L("webb-dock-rocks"), "snapper"));
+  for (const id of NEWIDS) for (const o of L(id).occ ?? []) assert.ok(L(id).species.includes(o), `${id}: ${o}`);
+});
+// engine: calm spring night, snapper
+const calmN = wx("2026-10-24", 4, 315), calmNow = at("2026-10-24T12:00:00+11:00");
+const sn = planSpecies("snapper", calmN, { now: calmNow, within: new Set(LAND.filter((x) => Math.hypot(x.lat + 37.87, x.lon - 144.92) < 0.08).map((x) => x.id)) })!;
+const rank = (id: string) => sn.spots.findIndex((x) => x.spot.id === id);
+ok("calm night snapper: Webb Dock rock wall is offered, and ranks above Ferguson Street Pier", () => { assert.ok(rank("webb-dock-rocks") >= 0 && rank("webb-dock-rocks") < 3, `rank ${rank("webb-dock-rocks")}`); assert.ok(rank("ferguson-street-pier") < 0 || rank("webb-dock-rocks") < rank("ferguson-street-pier")); });
+ok("local adjustment shows as a reason: Webb Dock +6 'Local favourite', Ferguson Street Pier snapper marked quieter than its listing", () => {
+  assert.ok(sn.spots[rank("webb-dock-rocks")].factors.some((f) => f.pts === 6 && /Local favourite/.test(f.txt)));
+  const fs = planSpecies("snapper", calmN, { now: calmNow })!.spots.find((x) => x.spot.id === "ferguson-street-pier"); assert.ok(fs && fs.factors.some((f) => f.pts === -4 && /Quieter than its VFA listing/.test(f.txt)));
+  assert.ok(fs!.factors.some((f) => f.txt.includes("VFA hot spot")), "still VFA hot");
+});
+ok("the spot is never dropped: Ferguson Street Pier is still in the snapper list", () => assert.ok(planSpecies("snapper", calmN, { now: calmNow })!.spots.some((x) => x.spot.id === "ferguson-street-pier")));
+// engine: wind exposure matters per spot
+const west = wx("2026-10-24", 22, 270), wp = planSpecies("snapper", west, { now: calmNow })!;
+ok("22 kn westerly: Webb Dock (sheltered from the west) beats Hampton groynes and Sandringham rock wall (open to the west)", () => {
+  const sc = (id: string) => wp.spots.find((x) => x.spot.id === id)?.score ?? 0; assert.ok(sc("webb-dock-rocks") > sc("hampton-groynes") + 5 && sc("webb-dock-rocks") > sc("sandringham-breakwater") + 5, [sc("webb-dock-rocks"), sc("hampton-groynes"), sc("sandringham-breakwater")].join());
+});
+const bigSea = wx("2026-10-24", 25, 180, 2.0);
+ok("2 m waves on a southerly: exposed rock grounds are flagged as stay-off (Williamstown rocks face south-east)", () => {
+  const pl = planSpecies("snapper", bigSea, { now: calmNow })!; const w = pl.spots.find((x) => x.spot.id === "williamstown-rocks"); assert.ok(!w || w.avoid || w.verdict === "Poor", w ? `${w.verdict} ${w.score}` : "absent");
+});
+ok("squid on a calm night: a pier with no confirmed lights (Beaumaris) is not ranked above Middle Brighton on a lights claim", () => {
+  const sq = planSpecies("calamari", wx("2026-10-24", 4, 0), { now: calmNow })!; const b = sq.spots.find((x) => x.spot.id === "beaumaris-pier"), m = sq.spots.find((x) => x.spot.id === "middle-brighton"); assert.ok(b && m && b.score <= m.score, `${b?.score} vs ${m?.score}`);
+});
+ok("squid on rock groynes (Hampton) is occasional and never outranks a regular squid pier", () => {
+  const sq = planSpecies("calamari", wx("2026-10-24", 4, 0), { now: calmNow })!; const i = sq.spots.findIndex((x) => x.spot.id === "hampton-groynes"), j = sq.spots.findIndex((x) => !isOcc(x.spot, "calamari") && x.verdict !== "Poor"); assert.ok(i < 0 || sq.spots.slice(0, i).some((x) => !isOcc(x.spot, "calamari")) || j < 0);
+});
+ok("Today at Webb Dock rates Webb Dock itself, with its own fish only", () => {
+  const w = L("webb-dock-rocks"), o = dayOutlook(wx("2026-10-24", 5, 315), "2026-10-24", { now: calmNow, origin: w, only: w, n: 5 }); assert.ok(o.plans.length > 0); for (const pl of o.plans) { assert.equal(pl.spots[0].spot.id, w.id); assert.ok(w.species.includes(pl.profile.slug)); }
+});
 
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);
