@@ -303,6 +303,22 @@ export const EXTRA: [Spot, Info][] = [
       rules: ["Estuary perch (VFA): minimum 27 cm, bag 5 combined with Australian bass (no more than 2 bass). The VFA lists no closed season. Keep them whole until you're away from the water.", "Parks Victoria: two lines per person on the river. Reel in when boats pass. No jumping or diving from the bridge or structures."],
       hazards: ["Strong tidal flow, especially after rain (FishingMad).", "Shallow areas and submerged objects (Parks Victoria). The bottom is very snaggy.", "Water quality: there are drains from the racecourse, and Lower Maribyrnong eating advice applies (see below).", "We could not confirm any lights. Take a headlamp and go with a mate at night.", "Cyclists on the river trail. Dogs must be on a lead (Parks Victoria)."] }],
 
+  // Choc's seventh spot (24 Oct 2026): his pin -37.761998, 144.885389 – the south bank of the Maribyrnong at the end of Chifley Drive / Dale Street,
+  // Maribyrnong: a small public park and car park (OpenStreetMap), at the Dale Street end of Parks Victoria's "Chicago St to Dale St fishing platforms".
+  // The fenced Defence Site Maribyrnong is about 75 m west. Afton Street Conservation Reserve is across the river.
+  [{ id: "chifley-drive-choc", name: "Chifley Drive fishing platforms, Maribyrnong – Choc's spot", kind: "shore", lat: -37.7620, lon: 144.8854, shore: "north",
+    depth: "Not verified.",
+    species: ["black-bream", "estuary-perch"], tideNote: "The VFA says the incoming tide fishes best on the lower Maribyrnong.",
+    windNote: "A sheltered, winding stretch of river. This bank faces north across the water, so a southerly is behind you and a northerly blows into your face. Still, warm evenings suit estuary perch.",
+    access: "End of Chifley Drive (off Dale Street), Maribyrnong, where there's a small car park beside the river. Parks Victoria lists fishing platforms along this bank from Chicago Street to Dale Street. The fenced Defence site starts about 75 m west – don't go past the fence.",
+    tips: "Choc's own spot for bream and estuary perch. Bream: fish close to the bank, snags and platform edges with sandworms, bass yabbies, prawns or small soft plastics – the VFA says berley and lightly weighted baits work on this river. Estuary perch: small surface lures, cicada lures or shallow minnows cast to the far bank and snags at dusk on still, warm evenings. Snaggy, so use a leader and bring spares. The VFA says the incoming tide is best.",
+    exposedTo: ["N", "NW", "NE"], shelteredFrom: ["S", "SE", "SW"], tideLagHours: 0 },
+    { area: "rivers", src: "choc", eat: true, local: { "black-bream": 3, "estuary-perch": 3 },
+      sources: ["pvChicagoDale", "vfaMaribyrnong", "vfaEP", "pvYarraGuide", "osmChifley"],
+      notice: "Public river bank and Parks Victoria fishing platforms only. The old Defence site next door (west) is fenced – never enter it. Not in a marine park.",
+      rules: ["Estuary perch (VFA): minimum 27 cm, bag 5 combined with Australian bass (no more than 2 bass). The VFA lists no closed season. Keep them whole until you're away from the water.", "Parks Victoria: two lines per person on the river, reel in when boats pass, and dogs on a lead."],
+      hazards: ["Parks Victoria warns of slippery surfaces, deep water, submerged obstacles, strong currents and flash flooding here.", "The river rises fast after heavy rain – leave if the water comes up or turns brown and fast.", "We could not confirm any lights. Take a headlamp and go with a mate at night.", "Eating advice applies to the Lower Maribyrnong (see below)."] }],
+
   [{ id: "beaumaris-pier", name: "Beaumaris Pier (Pelican Quays)", kind: "pier", lat: -37.9912, lon: 145.0445, shore: "east", depth: "Not verified",
     species: ["calamari", "garfish", "snapper"], tideNote: "",
     windNote: "A small pier tucked into Keefers Cove, protected on three sides. A southerly blows straight into the pocket and chops it up; most other winds are fine if the water is clean.",

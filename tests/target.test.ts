@@ -264,5 +264,14 @@ ok("the engine offers estuary perch, bream and pinkies at Lynchs Bridge on a cal
   for (const sl of ["estuary-perch", "black-bream", "snapper"]) { const pl = planSpecies(sl, W2, { now: feb, origin: o, within: w }); assert.ok(pl && pl.spots.some((x) => x.spot.id === lb.id), sl); }
 });
 
+// 24. Choc's Chifley Drive spot (v1.5.5): bream and estuary perch proven, public PV platforms, Defence site warned
+const cd = L("chifley-drive-choc");
+ok("Chifley Drive: on Choc's pin, river type, bream and estuary perch proven, Defence-site warning, distinct from the boat ramp and Anglers spots", () => {
+  assert.equal(cd.info?.src, "choc"); assert.equal(cd.type, "river"); assert.ok(mDist(cd, -37.761998, 144.885389) < 30);
+  for (const f of ["black-bream", "estuary-perch"]) { assert.ok(cd.species.includes(f) && !isOcc(cd, f)); assert.match(AUDIT[cd.id]!.why![f], /Choc's spot/); }
+  assert.match(cd.info!.notice!, /Defence/); assert.ok(mDist(cd, L("maribyrnong-anglers").lat, L("maribyrnong-anglers").lon) > 800);
+  const o = { lat: -37.765, lon: 144.89 }, w = new Set(nearSpots(o).map((x) => x.id)); const pl = planSpecies("estuary-perch", wx("2027-02-10", 3, 180), { now: feb, origin: o, within: w }); assert.ok(pl && pl.spots.some((x) => x.spot.id === cd.id));
+});
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);
