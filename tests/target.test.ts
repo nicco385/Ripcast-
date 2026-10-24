@@ -213,5 +213,19 @@ ok("calm night, squid, from Brighton: North Road rocks is in the top 5; a 20 kn 
   const i = c.spots.findIndex((x) => x.spot.id === nr.id); assert.ok(i >= 0 && i < 5, `rank ${i}`); assert.ok(c.spots[i].score > (r.spots.find((x) => x.spot.id === nr.id)?.score ?? 0) + 10);
 });
 
+// 21. Choc's third spot (v1.5.2): Williamstown Beach east rock wall – squid only, distinct from Point Gellibrand, outside Jawbone
+const wb = L("williamstown-beach-rocks-choc");
+ok("Williamstown Beach rock wall: on Choc's pin, squid proven, rocks, its own spot (>1 km from Point Gellibrand), outside Jawbone with water in front clear", () => {
+  assert.equal(wb.info?.src, "choc"); assert.equal(wb.type, "rocks"); assert.ok(mDist(wb, -37.869102, 144.893670) < 30); assert.deepEqual(wb.species, ["calamari"]); assert.ok(!isOcc(wb, "calamari"));
+  assert.ok(mDist(wb, L("williamstown-rocks").lat, L("williamstown-rocks").lon) > 1000);
+  const jb = MPAS.find((m) => /Jawbone/.test(m.name))!; const k = 111195 * Math.cos(37.87 * Math.PI / 180);
+  for (const brg of [135, 180, 225, 270]) for (const d of [0, 100, 200, 400]) { const la = wb.lat - d * Math.cos(brg * Math.PI / 180) / 111195, lo = wb.lon + d * Math.sin(brg * Math.PI / 180) / k; for (const r of jb.rings) assert.ok(!inRing(la, lo, r), `${brg}/${d}`); }
+  assert.ok(Math.min(...jb.rings.flat().map(([la, lo]) => mDist(wb, la, lo))) > 700); assert.match(wb.info!.notice!, /swim/i); assert.match(wb.info!.notice!, /Jawbone/);
+});
+ok("calm night, squid, from Williamstown: the beach rock wall is in the top 5; a 20 kn southerly drops it a lot", () => {
+  const o = { lat: -37.862, lon: 144.9 }, w = new Set(nearSpots(o).map((x) => x.id)); const c = planSpecies("calamari", wx("2026-10-24", 4, 0), { now: calmNow, origin: o, within: w })!, r = planSpecies("calamari", wx("2026-10-24", 20, 180), { now: calmNow, origin: o, within: w })!;
+  const i = c.spots.findIndex((x) => x.spot.id === wb.id); assert.ok(i >= 0 && i < 5, `rank ${i}`); assert.ok(c.spots[i].score > (r.spots.find((x) => x.spot.id === wb.id)?.score ?? 0) + 10);
+});
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);

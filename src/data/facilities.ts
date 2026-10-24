@@ -77,6 +77,13 @@ export const SRC: Record<string, { t: string; u: string }> = {
   bvBrightonRamp: { t: "Better Boating Victoria – Brighton (North Road) boat ramp", u: "https://www.boating.vic.gov.au/ramps/a157F000001P6UOQA0" },
   rbycMarina: { t: "Royal Brighton Yacht Club – marina rules (no fishing from the marina)", u: "https://rbyc.org.au/marina-2/" },
   sqPPB: { t: "SquidFishing.com.au – Port Phillip Bay squid locations (lists North Road Boat Ramp)", u: "https://www.squidfishing.com.au/guides/port-phillip-bay-squid-fishing/" },
+  // Choc's third spot, Williamstown Beach east rock wall (24 Oct 2026)
+  hbBeach: { t: "Hobsons Bay City Council – Williamstown Beach (fishing from the rocky outcrops, toilets, parking)", u: "https://www.hobsonsbay.vic.gov.au/visit/Experience/Things-to-do/Williamstown-Beach" },
+  hbFishing: { t: "Hobsons Bay City Council – Fishing (Williamstown Beach rock wall, marine sanctuaries)", u: "https://www.hobsonsbay.vic.gov.au/visit/Experience/Things-to-do/Fishing" },
+  fvWillySquid: { t: "Fishing Victoria forum – Squid grounds (squid at the rock wall near Williamstown Beach, 2020)", u: "https://www.fishing-victoria.com/viewtopic.php?start=10&t=23304" },
+  pvJawbone: { t: "Parks Victoria – Jawbone Marine Sanctuary", u: "https://www.parks.vic.gov.au/places-to-see/parks/jawbone-marine-sanctuary" },
+  osmJawbone: { t: "OpenStreetMap – Jawbone Marine Sanctuary boundary", u: "https://www.openstreetmap.org/relation/610864" },
+  swSwimmers: { t: "Star Weekly – Swimmers caught in fishing lines at Williamstown Beach", u: "https://maribyrnonghobsonsbay.starweekly.com.au/news/swimmers-caught-in-fishing-lines/" },
   fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
@@ -132,6 +139,7 @@ export const FACILITIES: Record<string, Facilities> = {
   "black-rock-jetty": f(Y("Public toilets a short distance from the jetty (Parks Victoria)"), Y("Car park at the ramp – often scarce in busy months (Parks Victoria)"), ["pvBlackRock", "bcBlackRock"], { lights: U }),
   "black-rock-beach-choc": f(Y("OpenStreetMap shows public toilets on the foreshore by Black Rock Life Saving Club, about 250–300 m north – not checked in person"), Y("Foreshore car park on the bluff just south of the life saving club, about 100 m north (Beachsafe; OpenStreetMap). Whether it's paid or time-limited: not known"), ["bsBlackRock", "baysideBeaches"], { lights: U, rails: { has: "no", note: "Open beach and reef – no railings" } }),
   "north-road-rocks-choc": f(Y("Public toilets next to North Point Café, about 250 m north (Bayside)"), Y("North Road (B1) foreshore car park, about 250 m north – Bayside found it nearly full on weekends. Whether it's paid or time-limited: not known"), ["baysideNorthRoad"], { lights: U, rails: { has: "no", note: "Rock wall – no railings" }, cleaning: { has: "yes", note: "Fish-cleaning table at the North Road boat ramp (Bayside)" } }),
+  "williamstown-beach-rocks-choc": f(Y("Toilets and showers at Williamstown Beach (Hobsons Bay City Council)"), Y("Metered street parking near the beach (Hobsons Bay City Council). There's also a car park behind the wall (aerial photo) – check the signs"), ["hbBeach"], { lights: U, rails: { has: "no", note: "Rock groyne – no railings" } }),
   "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
   "albert-park-lake": f(Y("At the Swan, Coot and Cormorant/Grebe picnic grounds around the lake"), Y("Paid parking in several areas – watch the time limits"), ["pvAlbert"]),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),

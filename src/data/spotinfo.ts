@@ -244,6 +244,22 @@ export const EXTRA: [Spot, Info][] = [
       notice: "Fish from the rocks only. Keep well clear of the North Road boat ramp and jetty while boats are launching, and of any moored boats. Middle Brighton Pier and the Royal Brighton Yacht Club marina are about 900 m south; there's no fishing from the marina (yacht club rules). This spot is not in a marine park or sanctuary – the nearest are more than 9 km away.",
       hazards: ["Loose, uneven boulders that are slippery when wet. Wear grippy shoes and keep three points of contact.", "In westerly or south-westerly blows, waves wash over the rocks and sometimes over the path (Bayside).", "Cyclists move fast on the Bay Trail behind you – keep rods and gear off the path.", "We could not confirm any lights on the rocks. Take a headlamp and go with a mate at night.", "Native rakali (water rats) live in these rocks – take all line, hooks and bait scraps home."] }],
 
+  // Choc's third spot (24 Oct 2026): his pin -37.869102, 144.893670 – the rock groyne at the east end of Williamstown Beach.
+  // About 1.1 km west of the Point Gellibrand spot. Jawbone Marine Sanctuary's most easterly shore point (Parks Victoria:
+  // 37°52'03"S 144°53'01"E) is about 900 m west; the swimming-only zone is off the beach on the west side.
+  [{ id: "williamstown-beach-rocks-choc", name: "Williamstown Beach east rock wall – Choc's spot", kind: "shore", lat: -37.8691, lon: 144.8937, shore: "north",
+    depth: "Not verified. A local boat angler says squid are caught in about 2–4 m right beside the wall.",
+    species: ["calamari"], tideNote: "Best tide here: not known yet.",
+    windNote: "The wall points out into the bay and faces south to south-west. Northerly to easterly winds blow off the land and keep the water calm and clean, which squid like. A southerly or south-westerly blows straight on and muddies the water – give it a day or two to clear.",
+    access: "At the east end of Williamstown Beach, off the Esplanade, Williamstown, next to the life saving club. Walk out along the rock groyne from the car park behind it. Hobsons Bay City Council says fishing is available from the rocky outcrops at either end of the beach. Williamstown Beach station is about a 10-minute walk.",
+    tips: "Choc's own spot for squid. A local boat angler (2020) says the wall almost never fails for squid, at any time of day, in 2–4 m of water close to the rocks – an easy cast from the wall. It's snaggy reef, so use slow-sinking size 2.5–3.0 jigs, a heavier leader (about 20 lb, so a snagged jig can be pulled free) and plenty of spare jigs. Clean water is best. We don't know the best tide or time here yet.",
+    exposedTo: ["S", "SW", "W"], shelteredFrom: ["N", "NE", "E"], tideLagHours: 0 },
+    { area: "northwest", src: "choc", local: { calamari: 3 },
+      sources: ["hbBeach", "hbFishing", "fvWillySquid", "pvJawbone", "osmJawbone", "swSwimmers"],
+      notice: "Swimmers: there's a swimming-only zone off the beach (yellow poles), and swimmers have been tangled in lines cast from these rocks. Cast south, out into the bay, never towards the beach or the swimmers. Jawbone Marine Sanctuary (no fishing) starts about 900 m west, past the far end of the beach – don't fish there.",
+      rules: ["Jawbone Marine Sanctuary (Parks Victoria): no fishing or collecting of any kind. It starts about 900 m west of this spot, past the west end of Williamstown Beach."],
+      hazards: ["Wet, uneven rock – slippery. Wear grippy shoes.", "Snaggy reef – expect to lose jigs. Never climb down the rocks to free one.", "Waves wash on to the wall in a strong southerly or south-westerly.", "We could not confirm any lights. Take a headlamp and go with a mate at night.", "Busy beach in summer – watch your back-cast for people on the rocks."] }],
+
   [{ id: "beaumaris-pier", name: "Beaumaris Pier (Pelican Quays)", kind: "pier", lat: -37.9912, lon: 145.0445, shore: "east", depth: "Not verified",
     species: ["calamari", "garfish", "snapper"], tideNote: "",
     windNote: "A small pier tucked into Keefers Cove, protected on three sides. A southerly blows straight into the pocket and chops it up; most other winds are fine if the water is clean.",
