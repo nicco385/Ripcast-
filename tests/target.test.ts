@@ -7,6 +7,7 @@ import { dayStart, fmt } from "../src/astro";
 import { TIDE_START, TIDE_END } from "../src/tides";
 import { SRC, FACILITIES } from "../src/data/facilities";
 import { AUDIT } from "../src/data/audit";
+import { MPAS } from "../src/data/mpa";
 import { isOcc } from "../src/data/spots";
 
 const TZ = "Australia/Melbourne", H = 3600000;
@@ -169,6 +170,34 @@ ok("squid on rock groynes (Hampton) is occasional and never outranks a regular s
 });
 ok("Today at Webb Dock rates Webb Dock itself, with its own fish only", () => {
   const w = L("webb-dock-rocks"), o = dayOutlook(wx("2026-10-24", 5, 315), "2026-10-24", { now: calmNow, origin: w, only: w, n: 5 }); assert.ok(o.plans.length > 0); for (const pl of o.plans) { assert.equal(pl.spots[0].spot.id, w.id); assert.ok(w.species.includes(pl.profile.slug)); }
+});
+
+// 19. Choc's own spot (v1.4.9): Black Rock Beach, his pin -37.977575, 145.016218 – squid and garfish, proven, and outside Ricketts Point Marine Sanctuary
+const choc = L("black-rock-beach-choc");
+const inRing = (la: number, lo: number, r: [number, number][]) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [ay, ax] = r[i], [by, bx] = r[j]; if ((ay > la) !== (by > la) && lo < (bx - ax) * (la - ay) / (by - ay) + ax) c = !c; } return c; };
+const mDist = (a: { lat: number; lon: number }, la: number, lo: number) => Math.hypot((a.lat - la) * 111195, (a.lon - lo) * 111195 * Math.cos(a.lat * Math.PI / 180));
+ok("Choc's spot is labelled as Choc's, sits on his pin, and has squid and garfish as proven fish (not occasional)", () => {
+  assert.equal(choc.info?.src, "choc"); assert.match(choc.name, /Choc/); assert.ok(mDist(choc, -37.977575, 145.016218) < 30);
+  for (const f of ["calamari", "garfish"]) { assert.ok(choc.species.includes(f) && !isOcc(choc, f), f); assert.match(AUDIT[choc.id]!.why![f], /Choc's spot – local knowledge/); assert.ok((choc.info!.local![f] ?? 0) > 0); }
+});
+ok("Choc's spot is outside every marine park/sanctuary, and at least 300 m clear of Ricketts Point", () => {
+  for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(choc.lat, choc.lon, r), m.name);
+  const rp = MPAS.find((m) => /Ricketts/.test(m.name))!; const d = Math.min(...rp.rings.flat().map(([la, lo]) => mDist(choc, la, lo))); assert.ok(d > 300, `${Math.round(d)} m`);
+  assert.match(choc.info!.notice!, /Ricketts Point Marine Sanctuary/); assert.match(choc.info!.notice!, /Fourth Street/);
+});
+ok("no fishing spot in the app sits inside a marine park or sanctuary", () => { for (const x of LAND) for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(x.lat, x.lon, r), `${x.id} in ${m.name}`); });
+const bro = { lat: -37.9735, lon: 145.0170 }; // Black Rock village
+const sqC = planSpecies("calamari", wx("2026-10-24", 4, 0), { now: calmNow, origin: bro, within: new Set(nearSpots(bro).map((x) => x.id)) })!;
+ok("calm night, squid, from Black Rock: Choc's spot is in the top 5 with a 'Choc's spot' reason", () => {
+  const i = sqC.spots.findIndex((x) => x.spot.id === choc.id); assert.ok(i >= 0 && i < 5, `rank ${i}`);
+  assert.ok(sqC.spots[i].factors.some((f) => f.pts > 0 && /Choc's spot/.test(f.txt)));
+});
+ok("a 22 kn south-westerly (onshore) knocks Choc's squid spot well down from a calm night", () => {
+  const sw = planSpecies("calamari", wx("2026-10-24", 22, 225), { now: calmNow, origin: bro, within: new Set(nearSpots(bro).map((x) => x.id)) })!;
+  const a = sqC.spots.find((x) => x.spot.id === choc.id)!.score, b = sw.spots.find((x) => x.spot.id === choc.id)?.score ?? 0; assert.ok(a > b + 10, `${a} vs ${b}`);
+});
+ok("calm summer day, garfish: Choc's spot is offered as a regular garfish spot", () => {
+  const g = planSpecies("garfish", wx("2027-02-10", 4, 45), { now: feb, origin: bro, within: new Set(nearSpots(bro).map((x) => x.id)) })!; const x = g.spots.find((y) => y.spot.id === choc.id); assert.ok(x && /Great|Good/.test(x.verdict), x ? `${x.verdict} ${x.score}` : "absent");
 });
 
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);

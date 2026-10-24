@@ -65,6 +65,13 @@ export const SRC: Record<string, { t: string; u: string }> = {
   bcBlackRock: { t: "Bite Compass – Black Rock Jetty", u: "https://bitecompass.com/vic/locations/black-rock-jetty" },
   fvSquidHelp: { t: "Fishing Victoria forum – Squid help (Black Rock and Beaumaris piers, 2018)", u: "https://fishing-victoria.com/viewtopic.php?t=19769" },
   sqBeaumaris: { t: "SquidFishing.com.au – Beaumaris Pier squid guide (2026)", u: "https://www.squidfishing.com.au/guides/beaumaris-pier-squid-fishing/" },
+  // Choc's spot, Black Rock Beach (24 Oct 2026)
+  pvRicketts: { t: "Parks Victoria – Ricketts Point Marine Sanctuary visitor guide and boundary map", u: "https://www.parks.vic.gov.au/-/media/project/pv/main/parks/documents/visitor-guides-and-publications/ricketts-point-marine-sanctuary/ricketts-point-marine-sanctuary-visitor-guide.pdf" },
+  osmRicketts: { t: "OpenStreetMap – Ricketts Point Marine Sanctuary boundary", u: "https://www.openstreetmap.org/way/234541383" },
+  bsBlackRock: { t: "Surf Life Saving Beachsafe – Black Rock beach", u: "https://beachsafe.org.au/beach/vic/bayside/black-rock/black-rock" },
+  bsQuietCorner: { t: "Surf Life Saving Beachsafe – Quiet Corner", u: "https://www.beachsafe.org.au/beach/vic/bayside/black-rock/quiet-corner" },
+  baysideBeaches: { t: "Bayside City Council – Beaches in Bayside (Black Rock Beach)", u: "https://www.bayside.vic.gov.au/explore/beaches-bayside" },
+  fvBlackRockMordy: { t: "Fishing Victoria forum – Black Rock / Mordialloc (squid off the rocks near the Black Rock jetty car park)", u: "https://www.fishing-victoria.com/viewtopic.php?t=19869" },
   fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
@@ -118,6 +125,7 @@ export const FACILITIES: Record<string, Facilities> = {
   "princes-pier": f(U, Y("Time-limited street parking – busy on warm days (Bite Compass)"), ["bcPrinces", "mpPrinces"], { lights: { has: "unknown", note: "Illuminated signage only; no confirmed pier lighting" } }),
   "lagoon-pier": f(Y("Public toilets, cafes and kiosks a very short walk away (Parks Victoria)"), Y("Metered or time-limited street parking on Beach Street – busy in summer (Bite Compass)"), ["pvLagoon", "bcLagoon"], { lights: U }),
   "black-rock-jetty": f(Y("Public toilets a short distance from the jetty (Parks Victoria)"), Y("Car park at the ramp – often scarce in busy months (Parks Victoria)"), ["pvBlackRock", "bcBlackRock"], { lights: U }),
+  "black-rock-beach-choc": f(Y("OpenStreetMap shows public toilets on the foreshore by Black Rock Life Saving Club, about 250–300 m north – not checked in person"), Y("Foreshore car park on the bluff just south of the life saving club, about 100 m north (Beachsafe; OpenStreetMap). Whether it's paid or time-limited: not known"), ["bsBlackRock", "baysideBeaches"], { lights: U, rails: { has: "no", note: "Open beach and reef – no railings" } }),
   "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
   "albert-park-lake": f(Y("At the Swan, Coot and Cormorant/Grebe picnic grounds around the lake"), Y("Paid parking in several areas – watch the time limits"), ["pvAlbert"]),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),

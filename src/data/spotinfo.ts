@@ -14,8 +14,8 @@ export const AREAS: Record<Area, { name: string; blurb: string }> = {
 export type Status = { closed: true; note: string; url: string; asOf: string };
 export type Info = Partial<Omit<Spot, "id">> & {
   area: Area;
-  /** "vfa" = species/tips taken from the VFA Go Fishing pages; "local" = general local knowledge, not an official list. */
-  src: "vfa" | "local";
+  /** "vfa" = species/tips taken from the VFA Go Fishing pages; "local" = general local knowledge, not an official list; "choc" = a spot from Choc's own fishing (first-hand local knowledge). */
+  src: "vfa" | "local" | "choc";
   hot?: string[];
   other?: string[];
   status?: Status;
@@ -213,6 +213,21 @@ export const EXTRA: [Spot, Info][] = [
     exposedTo: ["S", "SW", "W"], shelteredFrom: ["N", "NE", "E"], tideLagHours: 0 },
     { area: "east", src: "local", sources: ["pvBlackRock", "fmBlackRock", "bcBlackRock", "fvSquidHelp"],
       hazards: ["One of the busiest ramps in the bay – watch for trailers and reversing cars.", "The rock wall and wet decking are slippery.", "Stay out of the Cerberus protected zone (permit needed) and Ricketts Point Marine Sanctuary."] }],
+
+  // Choc's own spot (24 Oct 2026): his Google Maps pin -37.977575, 145.016218. Checked against Parks Victoria's Ricketts Point
+  // Marine Sanctuary map: the sanctuary's shore boundary marker (end of Fourth Street, 37°58'51"S 145°01'04"E) is about 390 m south-east.
+  [{ id: "black-rock-beach-choc", name: "Black Rock Beach – Choc's spot", kind: "shore", lat: -37.9776, lon: 145.0162, shore: "east",
+    depth: "Not verified. Surf Life Saving's Beachsafe says the beach is steep, with deep water close in.",
+    species: ["calamari", "garfish"], tideNote: "Best tide here: not known yet.",
+    windNote: "The beach faces south-west (Beachsafe). Light north to east winds blow off the land and leave the water calm and clear, which squid and garfish like. A south-westerly or westerly blows straight in, waves break on the reef and the water goes dirty – give it a day or two to clear.",
+    access: "South end of Black Rock Beach, at the foot of the bluff below Beach Road, near Second Street. Walk down from the foreshore car park just south of Black Rock Life Saving Club (about 100 m north), then along the beach or the Bay Trail. Ricketts Point Marine Sanctuary starts about 390 m further south – stay north of Fourth Street.",
+    tips: "Choc's own spot: he rates it for squid and garfish. Surf Life Saving says there are sandstone reefs just off this beach. For squid, cast a size 2.5–3.0 jig over the reef and weed edges in clear water, around dusk and into the night. For garfish, use a light float rig with a fine-wire size 10–12 long-shank hook, a small bait (maggot, silverfish or pipi) and a fine berley trail. A slow tide is usually easier with a float. We don't know the best tide or time here yet.",
+    exposedTo: ["W", "SW", "S"], shelteredFrom: ["N", "NE", "E"], tideLagHours: 0 },
+    { area: "east", src: "choc", local: { calamari: 3, garfish: 3 },
+      sources: ["pvRicketts", "osmRicketts", "bsBlackRock", "bsQuietCorner", "baysideBeaches", "fvBlackRockMordy", "fmBlackRock"],
+      notice: "No fishing south of here: Ricketts Point Marine Sanctuary starts about 390 m south-east, at the end of Fourth Street. The shore boundary marker is near emergency marker BCC 149, just north of Quiet Corner. Inside the sanctuary, all fishing and collecting are banned, with heavy penalties. Fish here or further north, and cast straight out, not towards Quiet Corner.",
+      rules: ["Ricketts Point Marine Sanctuary (Parks Victoria): no fishing of any kind and no taking bait, shells or animals. It runs from Quiet Corner to Table Rock and about 500 m offshore, marked by yellow piles and buoys. To report a fishing offence, call 13 FISH (13 3474)."],
+      hazards: ["Sandstone reef and wet rock are very slippery. Wear grippy shoes.", "Waves break over the reef, especially at low tide or in a south-westerly (Beachsafe). Deep water lies close to the beach.", "The beach narrows to a seawall walkway at high tide – check you can walk back.", "We could not confirm any lights. Take a headlamp and go with a mate at night.", "Stay off the bluff and cliff faces."] }],
 
   [{ id: "beaumaris-pier", name: "Beaumaris Pier (Pelican Quays)", kind: "pier", lat: -37.9912, lon: 145.0445, shore: "east", depth: "Not verified",
     species: ["calamari", "garfish", "snapper"], tideNote: "",

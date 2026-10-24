@@ -25,7 +25,7 @@ export default function MapTab({ place, focus, onPick, onOpen }: { place: Place;
       div.innerHTML = `<b>${esc(s.name)}</b><br/>${closed ? "⛔ Closed – see the spot page" : `<small>${esc(s.tips)}</small>`}<br/>`;
       const b1 = document.createElement("button"); b1.className = "btn"; b1.textContent = "Spot guide"; b1.onclick = () => open.current(s.id); div.appendChild(b1);
       if (!closed) { const b = document.createElement("button"); b.className = "btn alt"; b.textContent = "Show conditions here"; b.style.marginLeft = "6px"; b.onclick = () => pick.current({ name: s.name, lat: s.lat, lon: s.lon }); div.appendChild(b); }
-      const mk = L.circleMarker([s.lat, s.lon], { radius: 8, color: closed ? "#9ca3af" : s.info?.src === "vfa" ? "#22c55e" : "#86efac", fillOpacity: 0.8 }).addTo(map).bindPopup(div);
+      const mk = L.circleMarker([s.lat, s.lon], { radius: 8, color: closed ? "#9ca3af" : s.info?.src === "choc" ? "#f59e0b" : s.info?.src === "vfa" ? "#22c55e" : "#86efac", fillOpacity: 0.8 }).addTo(map).bindPopup(div);
       if (s.id === focus) mk.openPopup();
     });
     map.on("click", (e: L.LeafletMouseEvent) => {
@@ -35,5 +35,5 @@ export default function MapTab({ place, focus, onPick, onOpen }: { place: Place;
     });
     return () => { map.remove(); };
   }, [place.lat, place.lon, place.name, focus]);
-  return <><div ref={ref} className="map" /><p className="muted small">🟢 fishing spot (bright green = listed by the VFA) · ⚪ closed · 🔴 marine park or sanctuary – no fishing · Tap anywhere on the map to check conditions there.</p></>;
+  return <><div ref={ref} className="map" /><p className="muted small">🟢 fishing spot (bright green = listed by the VFA) · 🟠 Choc's spot · ⚪ closed · 🔴 marine park or sanctuary – no fishing · Tap anywhere on the map to check conditions there.</p></>;
 }

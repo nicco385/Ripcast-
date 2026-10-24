@@ -143,7 +143,7 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
   if (s.info?.hot?.includes(p.slug)) fs.push({ pts: 6, txt: "VFA hot spot", kind: "spot" });
   // angler reports (data/audit.ts has the evidence): local favourites go up a little, spots that report weaker than their VFA listing go down a little
   const lc = s.info?.local?.[p.slug];
-  if (lc) fs.push({ pts: lc, txt: lc > 0 ? "Local favourite (angler reports)" : "Quieter than its VFA listing suggests (angler reports)", kind: "spot" });
+  if (lc) fs.push({ pts: lc, txt: lc > 0 ? (s.info?.src === "choc" ? "Choc's spot – local knowledge" : "Local favourite (angler reports)") : "Quieter than its VFA listing suggests (angler reports)", kind: "spot" });
   // only an occasional catch here (data/audit.ts): shown, but never a top pick
   if (isOcc(s, p.slug)) { fs.push({ pts: -12, txt: "Only an occasional catch at this spot", kind: "spot" }); ceil = 64; }
   // wind and waves
