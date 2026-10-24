@@ -56,6 +56,9 @@ export const AUDIT: Record<string, Audit> = {
     garfish: "Choc's spot – local knowledge: Choc catches garfish here (24 Oct 2026).",
     "australian-salmon": "Only a Bite Compass guide lists salmon schools here. Occasional.",
     "king-george-whiting": "Choc's spot – local knowledge: Choc catches whiting here (24 Oct 2026). A Bite Compass guide also lists whiting on the sand gaps." } },
+  "orlando-st-groyne": { occ: ["calamari"], why: {
+    snapper: "Forum anglers catch pinkies off the Hampton groynes (New St, Orlando St and Small St): one kept 5 legal pinkies out of 14 in an evening (2013), and others report pinkies and the odd snapper (2019). Bayside Council says the groynes reach relatively deep water.",
+    calamari: "A forum angler saw 'a few squid' around the Hampton groynes in 2019. Occasional." } },
   "williamstown-rocks": { occ: ["calamari", "sand-flathead", "silver-trevally"], why: {
     snapper: "Forum anglers (2016, 2019) catch pinkies off the seawall and rocks; the VFA says pinkies are caught year-round on the reef just off here, with bigger snapper in warmer months.",
     "australian-salmon": "Forum anglers and Bite Compass: salmon are caught here, and schools can show up at any time (VFA).",

@@ -333,5 +333,14 @@ ok("Bolte and River Esplanade access follow Choc: Docklands Drive end (north ban
   assert.match(re.access, /Lorimer Street side/); assert.match(re.access, /never cross fences or gates/);
 });
 
+// 30. Orlando Street groyne (v1.5.12): normal researched spot on the real groyne, separate from Choc's southern groyne
+const og = L("orlando-st-groyne");
+ok("Orlando Street groyne: on OSM groyne 659623064, rocks, not a Choc's spot (no boost), separate from Choc's groyne (pin unchanged), outside MPAs", () => {
+  assert.equal(og.type, "rocks"); assert.notEqual(og.info?.src, "choc"); assert.ok(!og.info?.local); assert.ok(mDist(og, -37.93558, 144.99400) < 30);
+  assert.ok(mDist(og, hg.lat, hg.lon) > 600); assert.equal(hg.lat, -37.9415); assert.equal(hg.lon, 144.9980); assert.equal(hg.info?.src, "choc");
+  assert.ok(!isOcc(og, "snapper") && isOcc(og, "calamari"));
+  for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(og.lat, og.lon, r), m.name);
+});
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);

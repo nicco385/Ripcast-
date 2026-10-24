@@ -70,7 +70,7 @@ export const SRC: Record<string, { t: string; u: string }> = {
   osmRicketts: { t: "OpenStreetMap – Ricketts Point Marine Sanctuary boundary", u: "https://www.openstreetmap.org/way/234541383" },
   bsBlackRock: { t: "Surf Life Saving Beachsafe – Black Rock beach", u: "https://beachsafe.org.au/beach/vic/bayside/black-rock/black-rock" },
   bsQuietCorner: { t: "Surf Life Saving Beachsafe – Quiet Corner", u: "https://www.beachsafe.org.au/beach/vic/bayside/black-rock/quiet-corner" },
-  baysideBeaches: { t: "Bayside City Council – Beaches in Bayside (Black Rock Beach)", u: "https://www.bayside.vic.gov.au/explore/beaches-bayside" },
+  baysideBeaches: { t: "Bayside City Council – Beaches in Bayside (Black Rock and Hampton beaches)", u: "https://www.bayside.vic.gov.au/explore/beaches-bayside" },
   fvBlackRockMordy: { t: "Fishing Victoria forum – Black Rock / Mordialloc (squid off the rocks near the Black Rock jetty car park)", u: "https://www.fishing-victoria.com/viewtopic.php?t=19869" },
   // Choc's second spot, North Road rocks, Brighton (24 Oct 2026)
   baysideNorthRoad: { t: "Bayside City Council – North Road Foreshore Masterplan (rockwork, boat ramp, toilets, car park)", u: "https://www.bayside.vic.gov.au/sites/default/files/2021-08/north_road_foreshore_masterplan_2019_0.pdf" },
@@ -118,6 +118,8 @@ export const SRC: Record<string, { t: string; u: string }> = {
   vfaGP: { t: "VFA – Golden perch rules", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/freshwater-scale-fish/golden-perch" },
   vfaSP: { t: "VFA – Silver perch rules", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/freshwater-scale-fish/silver-perch" },
   osmHamptonSouth: { t: "OpenStreetMap – southern Hampton rock groyne near Linacre Road (Choc's groyne – not the Orlando Street groyne)", u: "https://www.openstreetmap.org/way/770960686" },
+  fvHampton2013: { t: "Fishing Victoria forum – Hampton rock groynes (New St, Orlando St and Small St groynes; pinkies, 2013)", u: "https://www.fishing-victoria.com/viewtopic.php?t=3002" },
+  osmOrlando: { t: "OpenStreetMap – Orlando Street rock groyne, Hampton", u: "https://www.openstreetmap.org/way/659623064" },
   fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
@@ -181,6 +183,7 @@ export const FACILITIES: Record<string, Facilities> = {
   "bolte-bridge-creek-mouth-choc": f(Y("Ron Barassi Senior Park, about 180 m – free, wheelchair accessible (OpenStreetMap, not checked)"), Y("Car park off the west end of Docklands Drive, about 100 m (OpenStreetMap, not checked)"), ["osmBolte"], { lights: U, rails: U }),
   "river-esplanade-pier-choc": f(U, U, ["osmRiverEsp"], { lights: U, rails: U }),
   "punt-road-landing-choc": f(U, U, ["osmPunt", "pvYarraGuide"], { lights: U, rails: U }),
+  "orlando-st-groyne": f(U, Y("Limited street parking along Beach Road – busy in summer"), ["osmOrlando"], { lights: U, rails: { has: "no", note: "Rough rock groyne – no deck or railings" } }),
   "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
   "albert-park-lake": f(Y("Public toilet block by the Carousel, about 70 m (OpenStreetMap, not checked); more at the picnic grounds around the lake"), Y("Car park about 90 m from Choc's spot (OpenStreetMap) – check signs for fees and time limits"), ["osmCarousel", "pvAlbert"], { lights: U, rails: U }),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),
