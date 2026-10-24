@@ -109,6 +109,15 @@ export const SRC: Record<string, { t: string; u: string }> = {
   vfaYarraWaters: { t: "VFA – Yarra angling waters (below Dights Falls: bream, pinky snapper, mulloway to 20 kg; fishing permitted along the banks)", u: "https://vfa.vic.gov.au/recreational-fishing/fishing-locations/inland-angling-guide/areas/yarra/yarra-angling-waters" },
   wnPuntRoad: { t: "WeekendNotes – Best fishing spots in Melbourne (mulloway at Punt Road on the Yarra)", u: "https://www.weekendnotes.com/fishing-spots-melbourne/" },
   osmPunt: { t: "OpenStreetMap – Punt Road Landing, Main Yarra Trail", u: "https://www.openstreetmap.org/?mlat=-37.830558&mlon=144.988390#map=18/-37.830558/144.988390" },
+  osmCarousel: { t: "OpenStreetMap – Albert Park Lake by the Carousel, Aughtie Drive (path, toilets, car park)", u: "https://www.openstreetmap.org/?mlat=-37.845837&mlon=144.968276#map=18/-37.845837/144.968276" },
+  parksAP: { t: "Parks Victoria – Albert Park water activities (fishing: licence, catch and release, carp must be removed, fish not suitable to eat)", u: "https://www.parks.vic.gov.au/places-to-see/parks/albert-park/things-to-do/water-activities-in-albert-park" },
+  vfaTroutLakes: { t: "VFA – Trout and salmon family fishing lakes", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/trout-and-salmon-regulations/trout-and-salmon-family-fishing-lakes" },
+  vfaHoliday: { t: "VFA – School holiday trout stocking (Albert Park Lake 1,500 in July and 1,500 in September 2026)", u: "https://vfa.vic.gov.au/recreational-fishing/fish-stocking/holidaystocking" },
+  vfaStonker: { t: "VFA – Metro stonker stocking (120 large rainbow trout in Albert Park Lake)", u: "https://vfa.vic.gov.au/recreational-fishing/fish-stocking/metro-stonker-stocking" },
+  vfaCarp: { t: "VFA – European carp (noxious; must not be returned alive)", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/freshwater-scale-fish/european-carp" },
+  vfaGP: { t: "VFA – Golden perch rules", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/freshwater-scale-fish/golden-perch" },
+  vfaSP: { t: "VFA – Silver perch rules", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/freshwater-scale-fish/silver-perch" },
+  osmHamptonSouth: { t: "OpenStreetMap – southern Hampton rock groyne, opposite the end of Orlando Street", u: "https://www.openstreetmap.org/way/770960686" },
   fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
@@ -173,7 +182,7 @@ export const FACILITIES: Record<string, Facilities> = {
   "river-esplanade-pier-choc": f(U, U, ["osmRiverEsp"], { lights: U, rails: U }),
   "punt-road-landing-choc": f(U, U, ["osmPunt", "pvYarraGuide"], { lights: U, rails: U }),
   "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
-  "albert-park-lake": f(Y("At the Swan, Coot and Cormorant/Grebe picnic grounds around the lake"), Y("Paid parking in several areas – watch the time limits"), ["pvAlbert"]),
+  "albert-park-lake": f(Y("Public toilet block by the Carousel, about 70 m (OpenStreetMap, not checked); more at the picnic grounds around the lake"), Y("Car park about 90 m from Choc's spot (OpenStreetMap) – check signs for fees and time limits"), ["osmCarousel", "pvAlbert"], { lights: U, rails: U }),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),
   "st-helens": f(Y("St Helens Coast Guard, about 60 m – open 24 hours"), Y("Car park beside the boat ramp"), ["geelong"], { lights: Y("Solar lights on the harbour rock walls"), cleaning: Y("Fish cleaning table at the rock walls") }),
 };

@@ -1,3 +1,4 @@
+import { SPECIES, bagText } from "../src/data/species";
 // Scenario checks for "Target a fish". Run: npm run test:target
 import assert from "node:assert/strict";
 import { planSpecies, dayOutlook, rateSpot, scoreHour, profile, nearSpots, betterNearby, BETTER_BY } from "../src/target";
@@ -303,6 +304,28 @@ ok("Punt Road Landing: on Choc's pin, river type with eating advice, bream and m
   for (const f of ["black-bream", "mulloway"]) { assert.ok(pr.species.includes(f) && !isOcc(pr, f)); assert.match(AUDIT[pr.id]!.why![f], /Choc's spot/); }
   assert.match(pr.info!.notice!, /rowing/); assert.ok(mDist(pr, L("yarra-herring").lat, L("yarra-herring").lon) > 800);
   for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(pr.lat, pr.lon, r), m.name);
+});
+
+// 28. Albert Park Lake becomes Choc's spot (v1.5.9): freshwater lake, no tide factors, new trout/carp species with VFA rules
+const ap = L("albert-park-lake");
+ok("Albert Park Lake: Choc's Carousel pin, lake type, fresh (no tides), five fish proven, trout and carp rules, engine rates lake fish without tides", () => {
+  assert.equal(ap.info?.src, "choc"); assert.equal(ap.type, "lake"); assert.ok(ap.info?.fresh); assert.ok(mDist(ap, -37.845837, 144.968276) < 30);
+  for (const f of ["rainbow-trout", "golden-perch", "estuary-perch", "carp", "silver-perch"]) { assert.ok(ap.species.includes(f) && !isOcc(ap, f), f); assert.match(AUDIT[ap.id]!.why![f], /Choc's spot/); }
+  const tr = SPECIES.find((x) => x.slug === "rainbow-trout")!, cp = SPECIES.find((x) => x.slug === "carp")!;
+  assert.equal(tr.bag, 5); assert.ok(!tr.minCm); assert.match(tr.bagNote!, /2 over 35 cm/); assert.match(cp.bagNote!, /must NOT be returned/); assert.equal(bagText(cp), "No limit");
+  const o = { lat: -37.846, lon: 144.969 }, w = new Set(nearSpots(o).map((x) => x.id));
+  for (const f of ["rainbow-trout", "golden-perch", "silver-perch", "carp"]) {
+    const pl = planSpecies(f, wx("2027-02-10", 3, 180), { now: feb, origin: o, within: w }); const hit = pl?.spots.find((x) => x.spot.id === ap.id);
+    assert.ok(hit, f); assert.ok(!hit!.factors.some((x) => x.kind === "tide"), f); }
+});
+
+// 29. Hampton groynes become Choc's spot (v1.5.9): pin on the southern groyne, no duplicate, his fish proven, forum evidence kept
+const hg = L("hampton-groynes");
+ok("Hampton groynes: one spot only, Choc's southern-groyne pin, flathead/snapper/garfish/whiting proven, squid and salmon still occasional, forum sources kept", () => {
+  assert.equal(LAND.filter((x) => /Hampton rock groyne/.test(x.name)).length, 1); assert.equal(hg.info?.src, "choc"); assert.ok(mDist(hg, -37.941505, 144.998025) < 30);
+  for (const f of ["snapper", "sand-flathead", "garfish", "king-george-whiting"]) { assert.ok(hg.species.includes(f) && !isOcc(hg, f), f); assert.match(AUDIT[hg.id]!.why![f], /Choc's spot/); }
+  assert.ok(isOcc(hg, "calamari") && isOcc(hg, "australian-salmon")); assert.ok(hg.info!.sources!.includes("fvHamptonGroynes")); assert.match(AUDIT[hg.id]!.why!.snapper, /Forum anglers/);
+  for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(hg.lat, hg.lon, r), m.name);
 });
 
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);

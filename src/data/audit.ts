@@ -49,12 +49,13 @@ export const AUDIT: Record<string, Audit> = {
     "black-bream": "FishingMad lists bream, but a 2012 forum angler said the bream had been fished out. Only occasional.",
     "gummy-shark": "Listed by FishingMad, with no recent catch reports found. Only occasional.",
     mulloway: "FishingMad mentions mulloway, but no catch reports found. Only occasional." } },
-  "hampton-groynes": { occ: ["calamari", "sand-flathead", "australian-salmon", "king-george-whiting"], why: {
-    snapper: "Forum anglers (2018–2019) catch pinkies and the odd snapper off the groynes, best in light south-westerlies or north-westerlies, at dawn and dusk. Reedy's Rigs names Hampton for shallow land-based snapper. Snaggy and toadies are a pest.",
+  "hampton-groynes": { occ: ["calamari", "australian-salmon"], why: {
+    snapper: "Choc's spot – local knowledge: Choc, an experienced local angler, catches snapper and pinkies (small snapper) off the southern groyne (24 Oct 2026). Forum anglers (2018–2019) catch pinkies and the odd snapper off the groynes, best in light south-westerlies or north-westerlies, at dawn and dusk. Reedy's Rigs names Hampton for shallow land-based snapper. Snaggy and toadies are a pest.",
     calamari: "A forum angler saw 'a few squid' in 2019; others lose jigs in the snags. Occasional.",
-    "sand-flathead": "Only a Bite Compass guide lists flathead on the sand between the groynes. Occasional.",
+    "sand-flathead": "Choc's spot – local knowledge: Choc catches flathead here (24 Oct 2026). A Bite Compass guide also lists flathead on the sand between the groynes.",
+    garfish: "Choc's spot – local knowledge: Choc catches garfish here (24 Oct 2026).",
     "australian-salmon": "Only a Bite Compass guide lists salmon schools here. Occasional.",
-    "king-george-whiting": "Only a Bite Compass guide lists whiting on the sand gaps. Occasional." } },
+    "king-george-whiting": "Choc's spot – local knowledge: Choc catches whiting here (24 Oct 2026). A Bite Compass guide also lists whiting on the sand gaps." } },
   "williamstown-rocks": { occ: ["calamari", "sand-flathead", "silver-trevally"], why: {
     snapper: "Forum anglers (2016, 2019) catch pinkies off the seawall and rocks; the VFA says pinkies are caught year-round on the reef just off here, with bigger snapper in warmer months.",
     "australian-salmon": "Forum anglers and Bite Compass: salmon are caught here, and schools can show up at any time (VFA).",
@@ -117,6 +118,12 @@ export const AUDIT: Record<string, Audit> = {
   "punt-road-landing-choc": { why: {
     "black-bream": "Choc's spot – local knowledge: Choc, an experienced local angler, catches bream here (24 Oct 2026). The VFA lists black bream in the Yarra below Dights Falls.",
     mulloway: "Choc's spot – local knowledge: Choc catches mulloway here (24 Oct 2026). The VFA records mulloway to 20 kg below Dights Falls, and WeekendNotes names Punt Road as a Yarra mulloway spot. The normal mulloway season scoring still applies." } },
+  "albert-park-lake": { why: {
+    "rainbow-trout": "Choc's spot – local knowledge: Choc, an experienced local angler, catches trout here (24 Oct 2026). The VFA stocks rainbow trout in the July and September school holidays (1,500 each in 2026) plus 120 stonkers.",
+    "golden-perch": "Choc's spot – local knowledge: Choc catches yellowbelly (golden perch) here (24 Oct 2026). Parks Victoria lists golden perch and the VFA has stocked them.",
+    "estuary-perch": "Choc's spot – local knowledge: Choc catches estuary perch here (24 Oct 2026). FishingMad also reports them in the lake.",
+    carp: "Choc's spot – local knowledge: Choc catches carp here (24 Oct 2026). The VFA lists European carp in the lake. Noxious – never put one back alive.",
+    "silver-perch": "Choc's spot – local knowledge: Choc catches silver perch here (24 Oct 2026). The VFA stocked 20,000 in 2023–24." } },
   "black-rock-jetty": { occ: ["garfish", "sand-flathead", "australian-salmon"], why: {
     snapper: "Bite Compass and FishingMad: a cast from the end reaches snapper water; Parks Victoria says the jetty gives year-round access to a good variety of fish. A forum angler lost a big red off the rocks at Black Rock in 2023.",
     calamari: "Forum anglers caught squid off Black Rock pier (2018); FishingMad and Bite Compass say calamari fire when the water is clear.",

@@ -292,6 +292,36 @@ export const SPECIES: Species[] = [
     notes: "Keep whole until away from the water.",
   },
   {
+    slug: "rainbow-trout",
+    name: "Rainbow trout",
+    aka: "Trout",
+    scientific: "Oncorhynchus mykiss",
+    bag: 5,
+    bagNote: "Lakes (incl. Albert Park Lake): no minimum size, 5 trout/salmon a day, no more than 2 over 35 cm, no closed season. Rivers and streams have different rules.",
+    filletOnWater: false,
+    season: [0, 0, 0, 0, 1, 2, 3, 2, 3, 2, 1, 0],
+    peak: "Soon after the VFA's July and September school-holiday stockings",
+    baits: ["PowerBait dough", "Scrub worm"],
+    methods: ["Running sinker with PowerBait or worms", "Small spinners, Tassie devils and hard bodies"],
+    habitat: "Albert Park Lake (stocked by the VFA in school holidays).",
+    notes: "Stocked 'ready-to-catch' fish. Warm summer water doesn't suit them.",
+  },
+  {
+    slug: "carp",
+    name: "European carp",
+    aka: "Carp",
+    scientific: "Cyprinus carpio",
+    bag: 0,
+    bagNote: "No limit. Noxious pest – must NOT be returned to the water alive (VFA).",
+    filletOnWater: true,
+    season: [2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2],
+    peak: "All year; more active in warm weather (rough guide)",
+    baits: ["Corn", "Bread", "Scrub worm"],
+    methods: ["Light running sinker or float with corn or bread"],
+    habitat: "Albert Park Lake, freshwater Yarra and Maribyrnong.",
+    notes: "Noxious pest. Kill it straight away. Don't leave it on the bank – take it away, or cut it so it sinks. Never keep or move live carp, or use them as bait.",
+  },
+  {
     slug: "redfin",
     name: "Redfin",
     aka: "English perch",
@@ -324,7 +354,7 @@ export const SPECIES: Species[] = [
   },
 ];
 
-export const bagText = (s: Species) => (s.slug === "redfin" ? "No limit" : String(s.bag));
+export const bagText = (s: Species) => (s.slug === "redfin" || s.slug === "carp" ? "No limit" : String(s.bag));
 export const sizeText = (s: Species) => (s.minCm && s.maxCm ? `${s.minCm}–${s.maxCm} cm only` : s.minCm ? `${s.minCm} cm` : "None");
 
 export function speciesBySlug(slug: string) {
