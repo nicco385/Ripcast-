@@ -84,6 +84,13 @@ export const SRC: Record<string, { t: string; u: string }> = {
   pvJawbone: { t: "Parks Victoria – Jawbone Marine Sanctuary", u: "https://www.parks.vic.gov.au/places-to-see/parks/jawbone-marine-sanctuary" },
   osmJawbone: { t: "OpenStreetMap – Jawbone Marine Sanctuary boundary", u: "https://www.openstreetmap.org/relation/610864" },
   swSwimmers: { t: "Star Weekly – Swimmers caught in fishing lines at Williamstown Beach", u: "https://maribyrnonghobsonsbay.starweekly.com.au/news/swimmers-caught-in-fishing-lines/" },
+  // Choc's fourth and fifth spots, lower Yarra (24 Oct 2026)
+  pvYarraGuide: { t: "Parks Victoria – Recreational boating guide, Yarra and Maribyrnong (fishing allowed from land, two lines, reel in for boats)", u: "https://www.parks.vic.gov.au/-/media/project/pv/main/parks/documents/get-into-nature/events-and-filming-permits/recreational-boating-guide-yarra-and-maribyrnong.pdf" },
+  fmWarmies: { t: "FishingMad – The Warmies fishing guide (snapper, gummy shark)", u: "https://fishingmad.com.au/location/the-warmies/" },
+  fmYarra: { t: "FishingMad – Yarra River fishing guide (bream, snapper, mulloway)", u: "https://fishingmad.com.au/location/yarra-river/" },
+  osmSpotswood: { t: "OpenStreetMap – Spotswood river bank, Hobsons Bay Coastal Trail", u: "https://www.openstreetmap.org/?mlat=-37.836366&mlon=144.895719#map=18/-37.836366/144.895719" },
+  osmFrancis: { t: "OpenStreetMap – lookout at the end of Francis Street, Yarraville", u: "https://www.openstreetmap.org/way/479194939" },
+  francisPier: { t: "Map listing – 'Francis Pier' scenic lookout, Francis Street (reviews)", u: "https://exa.ai/library/place/ysjx54r8n42" },
   fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
@@ -140,6 +147,8 @@ export const FACILITIES: Record<string, Facilities> = {
   "black-rock-beach-choc": f(Y("OpenStreetMap shows public toilets on the foreshore by Black Rock Life Saving Club, about 250–300 m north – not checked in person"), Y("Foreshore car park on the bluff just south of the life saving club, about 100 m north (Beachsafe; OpenStreetMap). Whether it's paid or time-limited: not known"), ["bsBlackRock", "baysideBeaches"], { lights: U, rails: { has: "no", note: "Open beach and reef – no railings" } }),
   "north-road-rocks-choc": f(Y("Public toilets next to North Point Café, about 250 m north (Bayside)"), Y("North Road (B1) foreshore car park, about 250 m north – Bayside found it nearly full on weekends. Whether it's paid or time-limited: not known"), ["baysideNorthRoad"], { lights: U, rails: { has: "no", note: "Rock wall – no railings" }, cleaning: { has: "yes", note: "Fish-cleaning table at the North Road boat ramp (Bayside)" } }),
   "williamstown-beach-rocks-choc": f(Y("Toilets and showers at Williamstown Beach (Hobsons Bay City Council)"), Y("Metered street parking near the beach (Hobsons Bay City Council). There's also a car park behind the wall (aerial photo) – check the signs"), ["hbBeach"], { lights: U, rails: { has: "no", note: "Rock groyne – no railings" } }),
+  "spotswood-bank-choc": f({ has: "unknown", note: "Not known nearby. The Warmies has daylight-hours toilets about 1 km south" }, Y("OpenStreetMap shows a small street-side parking strip by the trail, about 90 m away – not checked"), ["osmSpotswood"], { lights: U, rails: { has: "no", note: "Open river bank – no railings" } }),
+  "francis-st-lookout-choc": f(U, { has: "unknown", note: "OpenStreetMap shows a car park beside the lookout, but we couldn't confirm it's public" }, ["osmFrancis", "francisPier"], { lights: U, rails: U }),
   "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
   "albert-park-lake": f(Y("At the Swan, Coot and Cormorant/Grebe picnic grounds around the lake"), Y("Paid parking in several areas – watch the time limits"), ["pvAlbert"]),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),

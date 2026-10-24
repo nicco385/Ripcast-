@@ -92,6 +92,13 @@ export const AUDIT: Record<string, Audit> = {
     garfish: "Choc's spot – local knowledge: Choc catches garfish here (24 Oct 2026)." } },
   "williamstown-beach-rocks-choc": { why: {
     calamari: "Choc's spot – local knowledge: Choc, an experienced local angler, catches squid here (24 Oct 2026). A boat angler on the Fishing Victoria forum (2020) says the rock wall near Williamstown Beach almost never fails for squid, in 2–4 m close to the wall." } },
+  "spotswood-bank-choc": { why: {
+    snapper: "Choc's spot – local knowledge: Choc, an experienced local angler, catches snapper here (24 Oct 2026). The VFA and FishingMad list snapper at the Warmies, 1 km downstream (best January to March).",
+    "gummy-shark": "Choc's spot – local knowledge: Choc catches gummy sharks here (24 Oct 2026). FishingMad lists gummy sharks at the Warmies and in the lower Yarra." } },
+  "francis-st-lookout-choc": { why: {
+    snapper: "Choc's spot – local knowledge: Choc, an experienced local angler, catches snapper here (24 Oct 2026). FishingMad lists snapper (pinkies) in the lower Yarra from October to April.",
+    mulloway: "Choc's spot – local knowledge: Choc catches mulloway here (24 Oct 2026). FishingMad and Bite Compass name mulloway as the lower Yarra's trophy fish, best after dark on a tide change.",
+    "black-bream": "Choc's spot – local knowledge: Choc catches bream here (24 Oct 2026). Bream are the lower Yarra's steadiest fish (FishingMad; Bite Compass)." } },
   "black-rock-jetty": { occ: ["garfish", "sand-flathead", "australian-salmon"], why: {
     snapper: "Bite Compass and FishingMad: a cast from the end reaches snapper water; Parks Victoria says the jetty gives year-round access to a good variety of fish. A forum angler lost a big red off the rocks at Black Rock in 2023.",
     calamari: "Forum anglers caught squid off Black Rock pier (2018); FishingMad and Bite Compass say calamari fire when the water is clear.",

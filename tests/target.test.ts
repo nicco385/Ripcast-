@@ -227,5 +227,29 @@ ok("calm night, squid, from Williamstown: the beach rock wall is in the top 5; a
   const i = c.spots.findIndex((x) => x.spot.id === wb.id); assert.ok(i >= 0 && i < 5, `rank ${i}`); assert.ok(c.spots[i].score > (r.spots.find((x) => x.spot.id === wb.id)?.score ?? 0) + 10);
 });
 
+// 22. Choc's lower-Yarra spots (v1.5.3): Spotswood bank (snapper, gummy) and Francis Street lookout (snapper, mulloway, bream)
+const spw = L("spotswood-bank-choc"), fr = L("francis-st-lookout-choc");
+ok("Spotswood and Francis St: on Choc's pins, river type, Lower Yarra health advice, every listed fish proven, distinct from the Warmies", () => {
+  assert.ok(mDist(spw, -37.836366, 144.895719) < 30 && mDist(fr, -37.822857, 144.903641) < 30);
+  for (const [x, fs] of [[spw, ["snapper", "gummy-shark"]], [fr, ["snapper", "mulloway", "black-bream"]]] as const) {
+    assert.equal(x.info?.src, "choc"); assert.equal(x.type, "river"); assert.ok(x.info?.eat); assert.deepEqual([...x.species].sort(), [...fs].sort());
+    for (const f of fs) { assert.ok(!isOcc(x, f), f); assert.match(AUDIT[x.id]!.why![f], /Choc's spot/); }
+    for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(x.lat, x.lon, r)); assert.match(x.info!.notice!, /ship|port/i);
+  }
+  assert.ok(mDist(spw, L("warmies-wall").lat, L("warmies-wall").lon) > 800); assert.ok(mDist(spw, fr.lat, fr.lon) > 1000);
+  assert.ok(spw.info!.hazards!.some((h) => /power lines/.test(h))); assert.match(fr.access, /could not confirm/);
+});
+ok("the engine accepts river snapper/gummy/mulloway at Choc's Yarra spots (they appear in each species plan)", () => {
+  const o = { lat: -37.83, lon: 144.9 }, w = new Set(nearSpots(o).map((x) => x.id)), W2 = wx("2026-10-24", 6, 315);
+  for (const [sl, id] of [["snapper", spw.id], ["gummy-shark", spw.id], ["snapper", fr.id], ["mulloway", fr.id], ["black-bream", fr.id]]) { const pl = planSpecies(sl, W2, { now: calmNow, origin: o, within: w }); assert.ok(pl && pl.spots.some((x) => x.spot.id === id), `${sl} @ ${id}`); }
+});
+ok("mulloway season logic still applies at Choc's spot (season factor present; proven, so no occasional cap)", () => {
+  const o = { lat: -37.83, lon: 144.9 }, w = new Set(nearSpots(o).map((x) => x.id));
+  const sp = (day: string, now: string) => planSpecies("mulloway", wx(day, 5, 315), { now: at(now), origin: o, within: w })!.spots.find((x) => x.spot.id === fr.id)!;
+  const a = sp("2026-11-05", "2026-11-05T12:00:00+11:00"), b = sp("2027-05-05", "2027-05-05T12:00:00+10:00");
+  const sa = a.factors.find((f) => f.kind === "season"), sb = b.factors.find((f) => f.kind === "season"); console.log(`   mulloway @ Francis St: Nov ${a.score} (${sa?.txt ?? "no season factor"} ${sa?.pts ?? 0}), May ${b.score} (${sb?.txt ?? "no season factor"} ${sb?.pts ?? 0})`);
+  assert.ok(sa || sb, "season factor"); assert.ok(!a.factors.some((f) => /occasional/i.test(f.txt)));
+});
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);

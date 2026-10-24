@@ -260,6 +260,34 @@ export const EXTRA: [Spot, Info][] = [
       rules: ["Jawbone Marine Sanctuary (Parks Victoria): no fishing or collecting of any kind. It starts about 900 m west of this spot, past the west end of Williamstown Beach."],
       hazards: ["Wet, uneven rock – slippery. Wear grippy shoes.", "Snaggy reef – expect to lose jigs. Never climb down the rocks to free one.", "Waves wash on to the wall in a strong southerly or south-westerly.", "We could not confirm any lights. Take a headlamp and go with a mate at night.", "Busy beach in summer – watch your back-cast for people on the rocks."] }],
 
+  // Choc's fourth spot (24 Oct 2026): his pin -37.836366, 144.895719 – the west bank of the lower Yarra at Spotswood, at the foot of the
+  // 220 kV power-line tower, just off the Hobsons Bay Coastal Trail (OpenStreetMap). About 1 km north of the Warmies walls. Not in a marine park.
+  [{ id: "spotswood-bank-choc", name: "Yarra bank by the power tower, Spotswood – Choc's spot", kind: "shore", lat: -37.8364, lon: 144.8957, shore: "north",
+    depth: "Not verified. This is the lower Yarra shipping channel, so it's deep a short cast out.",
+    species: ["snapper", "gummy-shark"], tideNote: "Best tide here: not known yet.",
+    windNote: "The bank faces east across the river. West and north-west winds blow from behind you and are easiest. An easterly blows into your face, and a strong southerly pushes chop up the river from the bay.",
+    access: "West bank of the Yarra at Spotswood, just off the Hobsons Bay Coastal Trail, south of Scienceworks and about 1 km north of the Warmies. Walk or ride in along the trail. Fish from the public bank only – the tower base, the substation and the fuel terminals behind the trail are fenced, private land.",
+    tips: "Choc's own spot for snapper and gummy sharks. The deep channel is a short cast out. FishingMad's notes for the Warmies, 1 km downstream, suit this bank too. For snapper (October to March), fish a running sinker or paternoster with pilchard, squid or silver whiting at dawn, dusk or on a tide change. For gummies, use a heavier outfit (8–15 kg, 40–60 lb leader, 5/0–7/0 hooks) with fresh oily bait such as salmon, squid or mullet, after dark. The bottom is snaggy – bring spares. Parks Victoria allows two lines per person on the river. We don't know the best tide here yet.",
+    exposedTo: ["E", "NE", "SE"], shelteredFrom: ["W", "NW", "SW"], tideLagHours: 0 },
+    { area: "rivers", src: "choc", eat: true, local: { snapper: 3, "gummy-shark": 3 },
+      sources: ["pvYarraGuide", "hbFishing", "fmWarmies", "vfaWest", "osmSpotswood"],
+      notice: "Working river: ships, tugs and ferries pass close by. Parks Victoria says to reel in your lines when boats pass or berth near you. Stay on the public bank – the tower, substation and fuel terminal land behind the trail is fenced and private. Not in a marine park.",
+      hazards: ["High-voltage (220 kV) power lines overhead – never cast, swing a rod or fly anything near them. Stay off the tower and away from its base.", "Ship and ferry wash can surge up the bank without warning.", "Strong tidal current, deep water and a snaggy bottom. No railings.", "We could not confirm any lights. Take a headlamp and go with a mate at night.", "Cyclists on the Coastal Trail – keep rods and gear off the path."] }],
+
+  // Choc's fifth spot (24 Oct 2026): his pin -37.822857, 144.903641 – the small riverside lookout at the end of Francis Street, Yarraville
+  // (OpenStreetMap: a small park, footpath and platform beside a car park; map listings call it "Francis Pier"). The Mobil terminal and Holden Dock are next door.
+  [{ id: "francis-st-lookout-choc", name: "Francis Street lookout, Yarraville – Choc's spot", kind: "shore", lat: -37.8229, lon: 144.9036, shore: "north",
+    depth: "Not verified. The shipping channel is a short cast out.",
+    species: ["snapper", "mulloway", "black-bream"], tideNote: "Best tide here: not known yet.",
+    windNote: "The lookout faces south-east across the river. North and north-west winds are behind you. A southerly or south-easterly blows up the river into your face.",
+    access: "At the very end of Francis Street, Yarraville, east of the Mobil terminal. Map listings show a small public lookout with a short path and platform beside a car park. We could not confirm it is open – one review mentions access problems because of the industrial site. If it's fenced or signed closed, don't go in. Nearby places where Parks Victoria confirms fishing is allowed: Westgate Park Landing (Lorimer Street Jetty) across the river, and the Scienceworks Jetty at Spotswood.",
+    tips: "Choc's own spot for snapper, mulloway and bream. For bream, fish light near the bank and any structure with bass yabbies, prawns or soft plastics. For snapper (October to March), use a running sinker with pilchard or squid at dusk or on a tide change. For mulloway, fish a big fresh or live bait (mullet, squid) after dark around the tide change – patience is the key. Mulloway must be at least 60 cm (VFA – check current rules). Parks Victoria allows two lines per person on the river. We don't know the best tide here yet.",
+    exposedTo: ["SE", "S", "E"], shelteredFrom: ["NW", "N", "W"], tideLagHours: 0 },
+    { area: "rivers", src: "choc", eat: true, local: { snapper: 3, mulloway: 3, "black-bream": 3 },
+      sources: ["pvYarraGuide", "fmYarra", "francisPier", "osmFrancis"],
+      notice: "Industrial port area: the Mobil fuel terminal and Holden Dock tanker berth are right next door, and Yarraville wharves are just upstream. Stay in the small public lookout only – never enter terminal or wharf land, cross a fence or gate, or cast towards a berthed ship. We could not confirm the lookout is open; if it's closed, use Westgate Park Landing or the Scienceworks Jetty instead (Parks Victoria allows fishing at both). Not in a marine park.",
+      hazards: ["Big ships berth and turn close by – their wash and propellers are dangerous. Reel in when ships move (Parks Victoria).", "Deep water and a strong current right at the edge.", "We could not confirm any lights, railings or toilets. Take a headlamp and go with a mate at night.", "A lonely industrial area at night – park in a lit place and let someone know where you are."] }],
+
   [{ id: "beaumaris-pier", name: "Beaumaris Pier (Pelican Quays)", kind: "pier", lat: -37.9912, lon: 145.0445, shore: "east", depth: "Not verified",
     species: ["calamari", "garfish", "snapper"], tideNote: "",
     windNote: "A small pier tucked into Keefers Cove, protected on three sides. A southerly blows straight into the pocket and chops it up; most other winds are fine if the water is clean.",
