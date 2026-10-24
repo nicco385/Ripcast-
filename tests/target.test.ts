@@ -326,6 +326,11 @@ ok("Hampton groynes: one spot only, Choc's southern-groyne pin, flathead/snapper
   for (const f of ["snapper", "sand-flathead", "garfish", "king-george-whiting"]) { assert.ok(hg.species.includes(f) && !isOcc(hg, f), f); assert.match(AUDIT[hg.id]!.why![f], /Choc's spot/); }
   assert.ok(isOcc(hg, "calamari") && isOcc(hg, "australian-salmon")); assert.ok(hg.info!.sources!.includes("fvHamptonGroynes")); assert.match(AUDIT[hg.id]!.why!.snapper, /Forum anglers/);
   for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(hg.lat, hg.lon, r), m.name);
+  assert.ok(mDist(hg, -37.9355, 144.9940) > 600, "Choc's groyne is not the Orlando Street groyne"); assert.match(hg.access, /NOT the 'Orlando Street groyne'/);
+});
+ok("Bolte and River Esplanade access follow Choc: Docklands Drive end (north bank, not confirmed public) and Lorimer St side (south bank, public)", () => {
+  assert.match(bb.access, /very end of Docklands Drive/); assert.match(bb.access, /could NOT confirm/); assert.match(bb.access, /fenced, gated or signed/);
+  assert.match(re.access, /Lorimer Street side/); assert.match(re.access, /never cross fences or gates/);
 });
 
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);

@@ -117,7 +117,7 @@ export const SRC: Record<string, { t: string; u: string }> = {
   vfaCarp: { t: "VFA – European carp (noxious; must not be returned alive)", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/freshwater-scale-fish/european-carp" },
   vfaGP: { t: "VFA – Golden perch rules", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/freshwater-scale-fish/golden-perch" },
   vfaSP: { t: "VFA – Silver perch rules", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/freshwater-scale-fish/silver-perch" },
-  osmHamptonSouth: { t: "OpenStreetMap – southern Hampton rock groyne, opposite the end of Orlando Street", u: "https://www.openstreetmap.org/way/770960686" },
+  osmHamptonSouth: { t: "OpenStreetMap – southern Hampton rock groyne near Linacre Road (Choc's groyne – not the Orlando Street groyne)", u: "https://www.openstreetmap.org/way/770960686" },
   fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
