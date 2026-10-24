@@ -103,6 +103,9 @@ export const SRC: Record<string, { t: string; u: string }> = {
   fmDocklands: { t: "FishingMad – Docklands fishing guide (bream, snapper, pinkies, mulloway; casting towards the Bolte Bridge)", u: "https://fishingmad.com.au/location/docklands/" },
   fmMoonee: { t: "FishingMad – Moonee Ponds Creek (bream at the mouth; poor water quality)", u: "https://fishingmad.com.au/location/moonee-ponds-creek-trial/" },
   osmBolte: { t: "OpenStreetMap – Moonee Ponds Creek mouth under the Bolte Bridge (track, toilets and car park nearby)", u: "https://www.openstreetmap.org/?mlat=-37.818049&mlon=144.932366#map=18/-37.818049/144.932366" },
+  comFishing: { t: "City of Melbourne – Fishing in the city (code of conduct: fishing welcome, keep clear of boats and private berths)", u: "https://www.melbourne.vic.gov.au/fishing-in-the-city" },
+  comDocklands: { t: "City of Melbourne – Fishing at Docklands (lists under the Bolte Bridge on both banks and the Moonee Ponds Creek mouth; no swimming in Docklands)", u: "https://www.environmental-expert.com/services/community-information-services-820639" },
+  osmRiverEsp: { t: "OpenStreetMap – River Esplanade pier, Yarra's Edge (ladder, life ring, bubbler)", u: "https://www.openstreetmap.org/?mlat=-37.821295&mlon=144.935194#map=18/-37.821295/144.935194" },
   fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
@@ -164,6 +167,7 @@ export const FACILITIES: Record<string, Facilities> = {
   "lynchs-bridge-choc": f({ has: "unknown", note: "Not known. OpenStreetMap shows a drinking fountain and shelter in Riverside Reserve, about 170 m east" }, Y("FishingMad: plenty of parking – cross the bridge and turn left towards the racecourse"), ["fmLynch", "pvLynchs"], { lights: U, rails: U }),
   "chifley-drive-choc": f(U, Y("Small car park at the end of Chifley Drive, beside the river (OpenStreetMap) – not checked"), ["osmChifley", "pvChicagoDale"], { lights: U, rails: U }),
   "bolte-bridge-creek-mouth-choc": f(Y("Ron Barassi Senior Park, about 180 m – free, wheelchair accessible (OpenStreetMap, not checked)"), Y("Car park off the west end of Docklands Drive, about 100 m (OpenStreetMap, not checked)"), ["osmBolte"], { lights: U, rails: U }),
+  "river-esplanade-pier-choc": f(U, U, ["osmRiverEsp"], { lights: U, rails: U }),
   "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
   "albert-park-lake": f(Y("At the Swan, Coot and Cormorant/Grebe picnic grounds around the lake"), Y("Paid parking in several areas – watch the time limits"), ["pvAlbert"]),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),

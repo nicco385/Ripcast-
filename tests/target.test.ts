@@ -286,5 +286,15 @@ ok("Bolte Bridge: on Choc's pin, river type, three fish proven, access-not-confi
   const hit = may?.spots.find((x) => x.spot.id === bb.id); assert.ok(hit);
 });
 
+// 26. Choc's River Esplanade pier (v1.5.7): south bank, separate from the Bolte spot across the channel, public, fish proven
+const re = L("river-esplanade-pier-choc");
+ok("River Esplanade pier: on Choc's pin, separate from the Bolte spot (other bank, >350 m), fish proven, marina-berth notice, outside MPAs", () => {
+  assert.equal(re.info?.src, "choc"); assert.equal(re.type, "river"); assert.ok(mDist(re, -37.821295, 144.935194) < 30);
+  assert.ok(mDist(re, bb.lat, bb.lon) > 350 && re.lat < bb.lat);
+  for (const f of ["black-bream", "snapper", "mulloway"]) { assert.ok(re.species.includes(f) && !isOcc(re, f)); assert.match(AUDIT[re.id]!.why![f], /Choc's spot/); }
+  assert.match(re.info!.notice!, /marina berths/); assert.ok(!/undersize/i.test(re.tips ?? ""));
+  for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(re.lat, re.lon, r), m.name);
+});
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);
