@@ -60,3 +60,4 @@ To rename the app, edit `APP_NAME` in `src/config.ts`. The cover, title and mani
 - v1.5.5: Choc's Chifley Drive spot (Maribyrnong): bream and estuary perch proven, at the Dale Street end of Parks Victoria's Chicago St–Dale St fishing platforms; Defence-site fence warning. (v1.5.4 and v1.5.5 deployed together.)
 - v1.5.6: Choc's Bolte Bridge spot (Moonee Ponds Creek mouth, Docklands bank): bream, snapper/pinkies and mulloway proven; public access not confirmed (trail closed since 2020), power-line and shipping warnings.
 - v1.5.7: Choc's River Esplanade pier spot (Yarra's Edge, south bank): bream, snapper/pinkies and mulloway proven; kept separate from the Bolte Bridge spot across the river. City of Melbourne Docklands fishing source added to both.
+- v1.5.8: Choc's Punt Road Landing spot (Yarra, South Yarra): bream and mulloway proven; Parks Victoria lists fishing permitted; rowing/boat-traffic notice and Lower Yarra eating advice.

@@ -351,6 +351,22 @@ export const EXTRA: [Spot, Info][] = [
       rules: ["City of Melbourne code: keep walkways clear, keep away from berthed boats, give way to vessels and take your rubbish home.", "Parks Victoria: two lines per person on the river, and reel in when boats berth or pass.", "Swimming is not allowed anywhere in Docklands (City of Melbourne)."],
       hazards: ["Shipping channel: ships, tugs and ferries pass close by – their wash can surge over low edges. Reel in when vessels pass.", "Deep water right at the edge. OpenStreetMap shows a ladder and a life ring about 80 m away – we could not confirm railings.", "Busy shared path – watch your backcast for walkers and bikes.", "We could not confirm lights on the pier. Take a headlamp at night.", "Eating advice applies to the Lower Yarra (see below)."] }],
 
+  // Choc's tenth spot (24 Oct 2026): his pin -37.830558, 144.988390 = Punt Road Landing (OSM way 1455394094), south bank of the Yarra just upstream of
+  // Hoddle Bridge (Punt Road), on the Main Yarra Trail, South Yarra. Parks Victoria's Yarra guide lists "Punt Road Floating Landing": fishing permitted (pick-up/drop-off berth).
+  // VFA: below Dights Falls the Yarra is saline-affected, with black bream and mulloway to 20 kg. The app already treats Herring Island (further upstream) as tidal river.
+  [{ id: "punt-road-landing-choc", name: "Punt Road Landing, South Yarra – Choc's spot", kind: "shore", lat: -37.8306, lon: 144.9884, shore: "north",
+    depth: "Not verified.",
+    species: ["black-bream", "mulloway"], tideNote: "Still tidal here – river tides arrive later than at the bay. Choc hasn't said which tide is best.",
+    windNote: "A sheltered city reach of the river. This bank faces north, so a southerly is behind you and northerlies blow into your face.",
+    access: "South bank, on the Main Yarra Trail (Capital City Trail) beside Alexandra Avenue, just upstream of the Punt Road (Hoddle) Bridge, South Yarra. Public landing – Parks Victoria lists fishing as permitted at the Punt Road Landing. Bus 246 stops at Alexandra Avenue/Punt Road, about 70 m away.",
+    tips: "Choc's own spot for bream and mulloway. Bream: bass yabbies, sandworms or prawns unweighted or on a small running sinker close to the bank, bridge pylons and snags, or small soft plastics and crab lures. Mulloway: big fresh or live bait (mullet, squid) or 80–100 mm soft plastics after dark around the tide change – heavy gear, as fish to 20 kg are recorded in this part of the river (VFA). Mulloway must be at least 60 cm (VFA – check current rules). Parks Victoria allows two lines per person on the river.",
+    exposedTo: ["N", "NE", "NW"], shelteredFrom: ["S", "SE", "SW"], tideLagHours: 0 },
+    { area: "rivers", src: "choc", eat: true, local: { "black-bream": 3, mulloway: 3 },
+      sources: ["pvYarraGuide", "vfaYarraWaters", "fmYarra", "wnPuntRoad", "osmPunt"],
+      notice: "Fishing is permitted from this landing (Parks Victoria). It is also a pick-up/drop-off berth and busy rowing water: give way to any boat berthing, keep lines clear of rowing crews and reel in when boats pass. Not in a marine park.",
+      rules: ["Parks Victoria: two lines per person on the river, and reel in when boats berth or pass.", "Murray cod closed season 1 Sep–30 Nov applies in the Yarra River (VFA)."],
+      hazards: ["Rowing shells, coaching boats and cruise boats use this reach all the time – watch for them and never cast across their path.", "Deep water and current right at the edge. We could not confirm railings.", "The river floods and runs hard after heavy rain – don't fish then.", "Busy shared bike path behind you – keep gear off the trail and check behind before you cast.", "We could not confirm lights on the landing. Take a headlamp at night.", "Eating advice applies to the Lower Yarra (see below)."] }],
+
   [{ id: "beaumaris-pier", name: "Beaumaris Pier (Pelican Quays)", kind: "pier", lat: -37.9912, lon: 145.0445, shore: "east", depth: "Not verified",
     species: ["calamari", "garfish", "snapper"], tideNote: "",
     windNote: "A small pier tucked into Keefers Cove, protected on three sides. A southerly blows straight into the pocket and chops it up; most other winds are fine if the water is clean.",

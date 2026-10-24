@@ -296,5 +296,14 @@ ok("River Esplanade pier: on Choc's pin, separate from the Bolte spot (other ban
   for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(re.lat, re.lon, r), m.name);
 });
 
+// 27. Choc's Punt Road Landing (v1.5.8): tidal river, bream and mulloway proven, PV fishing-permitted landing, eating advice on
+const pr = L("punt-road-landing-choc");
+ok("Punt Road Landing: on Choc's pin, river type with eating advice, bream and mulloway proven, rowing notice, outside MPAs, distinct from Herring Island", () => {
+  assert.equal(pr.info?.src, "choc"); assert.equal(pr.type, "river"); assert.equal(pr.info?.eat, true); assert.ok(mDist(pr, -37.830558, 144.988390) < 30);
+  for (const f of ["black-bream", "mulloway"]) { assert.ok(pr.species.includes(f) && !isOcc(pr, f)); assert.match(AUDIT[pr.id]!.why![f], /Choc's spot/); }
+  assert.match(pr.info!.notice!, /rowing/); assert.ok(mDist(pr, L("yarra-herring").lat, L("yarra-herring").lon) > 800);
+  for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(pr.lat, pr.lon, r), m.name);
+});
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);

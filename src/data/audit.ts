@@ -114,6 +114,9 @@ export const AUDIT: Record<string, Audit> = {
     "black-bream": "Choc's spot – local knowledge: Choc, an experienced local angler, catches bream here (24 Oct 2026). The City of Melbourne says bream are the most common of 19 fish species recorded in Docklands.",
     snapper: "Choc's spot – local knowledge: Choc catches snapper and pinkies (small snapper) here (24 Oct 2026). The City of Melbourne lists snapper as common in Docklands.",
     mulloway: "Choc's spot – local knowledge: Choc catches mulloway here (24 Oct 2026). The City of Melbourne lists mulloway in Docklands. The normal mulloway season scoring still applies." } },
+  "punt-road-landing-choc": { why: {
+    "black-bream": "Choc's spot – local knowledge: Choc, an experienced local angler, catches bream here (24 Oct 2026). The VFA lists black bream in the Yarra below Dights Falls.",
+    mulloway: "Choc's spot – local knowledge: Choc catches mulloway here (24 Oct 2026). The VFA records mulloway to 20 kg below Dights Falls, and WeekendNotes names Punt Road as a Yarra mulloway spot. The normal mulloway season scoring still applies." } },
   "black-rock-jetty": { occ: ["garfish", "sand-flathead", "australian-salmon"], why: {
     snapper: "Bite Compass and FishingMad: a cast from the end reaches snapper water; Parks Victoria says the jetty gives year-round access to a good variety of fish. A forum angler lost a big red off the rocks at Black Rock in 2023.",
     calamari: "Forum anglers caught squid off Black Rock pier (2018); FishingMad and Bite Compass say calamari fire when the water is clear.",
