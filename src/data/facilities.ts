@@ -91,6 +91,11 @@ export const SRC: Record<string, { t: string; u: string }> = {
   osmSpotswood: { t: "OpenStreetMap – Spotswood river bank, Hobsons Bay Coastal Trail", u: "https://www.openstreetmap.org/?mlat=-37.836366&mlon=144.895719#map=18/-37.836366/144.895719" },
   osmFrancis: { t: "OpenStreetMap – lookout at the end of Francis Street, Yarraville", u: "https://www.openstreetmap.org/way/479194939" },
   francisPier: { t: "Map listing – 'Francis Pier' scenic lookout, Francis Street (reviews)", u: "https://exa.ai/library/place/ysjx54r8n42" },
+  // Choc's sixth spot, Lynchs Bridge (24 Oct 2026)
+  pvLynchs: { t: "Parks Victoria – Maribyrnong River: Lynchs Bridge to Footscray Park landings", u: "https://www.parks.vic.gov.au/places-to-see/sites/maribyrnong-river---lynchs-bridge-to-footscray-park-landings" },
+  fmLynch: { t: "FishingMad – Lynch Bridge, Flemington fishing guide", u: "https://fishingmad.com.au/location/lynch-bridge/" },
+  vfaMaribyrnong: { t: "VFA – Maribyrnong angling waters (Solomons Ford to the Yarra)", u: "https://vfa.vic.gov.au/recreational-fishing/fishing-locations/inland-angling-guide/areas/maribyrnong/maribyrnong-angling-waters" },
+  vfaEP: { t: "VFA – Estuary perch size and bag limits", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/marine-and-estuarine-scale-fish/estuary-perch" },
   fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
@@ -149,6 +154,7 @@ export const FACILITIES: Record<string, Facilities> = {
   "williamstown-beach-rocks-choc": f(Y("Toilets and showers at Williamstown Beach (Hobsons Bay City Council)"), Y("Metered street parking near the beach (Hobsons Bay City Council). There's also a car park behind the wall (aerial photo) – check the signs"), ["hbBeach"], { lights: U, rails: { has: "no", note: "Rock groyne – no railings" } }),
   "spotswood-bank-choc": f({ has: "unknown", note: "Not known nearby. The Warmies has daylight-hours toilets about 1 km south" }, Y("OpenStreetMap shows a small street-side parking strip by the trail, about 90 m away – not checked"), ["osmSpotswood"], { lights: U, rails: { has: "no", note: "Open river bank – no railings" } }),
   "francis-st-lookout-choc": f(U, { has: "unknown", note: "OpenStreetMap shows a car park beside the lookout, but we couldn't confirm it's public" }, ["osmFrancis", "francisPier"], { lights: U, rails: U }),
+  "lynchs-bridge-choc": f({ has: "unknown", note: "Not known. OpenStreetMap shows a drinking fountain and shelter in Riverside Reserve, about 170 m east" }, Y("FishingMad: plenty of parking – cross the bridge and turn left towards the racecourse"), ["fmLynch", "pvLynchs"], { lights: U, rails: U }),
   "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
   "albert-park-lake": f(Y("At the Swan, Coot and Cormorant/Grebe picnic grounds around the lake"), Y("Paid parking in several areas – watch the time limits"), ["pvAlbert"]),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),

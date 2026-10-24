@@ -288,6 +288,21 @@ export const EXTRA: [Spot, Info][] = [
       notice: "Industrial port area: the Mobil fuel terminal and Holden Dock tanker berth are right next door, and Yarraville wharves are just upstream. Stay in the small public lookout only – never enter terminal or wharf land, cross a fence or gate, or cast towards a berthed ship. We could not confirm the lookout is open; if it's closed, use Westgate Park Landing or the Scienceworks Jetty instead (Parks Victoria allows fishing at both). Not in a marine park.",
       hazards: ["Big ships berth and turn close by – their wash and propellers are dangerous. Reel in when ships move (Parks Victoria).", "Deep water and a strong current right at the edge.", "We could not confirm any lights, railings or toilets. Take a headlamp and go with a mate at night.", "A lonely industrial area at night – park in a lit place and let someone know where you are."] }],
 
+  // Choc's sixth spot (24 Oct 2026): "Lynchs Bridge" (a named place, no pin). We use the riverside platform on the Flemington
+  // (racecourse) bank about 150 m downstream of the bridge (OpenStreetMap way 1090146358). Parks Victoria lists a Lynch's Bridge jetty
+  // and a Lynch's Bridge fishing platform, both with fishing allowed. About 1.2 km upstream of the Footscray spot.
+  [{ id: "lynchs-bridge-choc", name: "Lynchs Bridge, Maribyrnong River – Choc's spot", kind: "shore", lat: -37.7955, lon: 144.9143, shore: "north",
+    depth: "Not verified.",
+    species: ["black-bream", "snapper", "estuary-perch"], tideNote: "The VFA says the incoming tide fishes best on this part of the river.",
+    windNote: "A narrow, winding river, so wind matters less than on the bay. This bank faces south-west. A north-east wind is behind you; a strong south-westerly blows into your face. Low wind on warm evenings suits estuary perch (FishingMad).",
+    access: "On the Flemington (racecourse) bank of the Maribyrnong, beside the Maribyrnong River Trail, about 150 m downstream of Lynchs Bridge (Smithfield Road). FishingMad says there's plenty of parking: cross the bridge, turn left towards the racecourse and park. Parks Victoria lists a Lynch's Bridge jetty and a Lynch's Bridge fishing platform here, both with fishing allowed.",
+    tips: "Choc's own spot for bream, pinkies (small snapper), mullet and estuary perch. Bream: fish light near the bridge pylons and snags with sandworms, bass yabbies, maggots, chicken or small soft plastics – overcast days are often better (FishingMad). Mullet: a float with dough or maggots and a little berley. Pinkies: a small running sinker with pilchard or squid strips in the warmer months. Estuary perch: small surface poppers, cicada lures or shallow minnows on warm, still evenings – listen for fish splashing. Very snaggy, so bring spare rigs. The VFA says the incoming tide is best.",
+    exposedTo: ["SW", "S", "W"], shelteredFrom: ["NE", "N", "E"], tideLagHours: 0 },
+    { area: "rivers", src: "choc", eat: true, other: ["mullet"], local: { "black-bream": 3, snapper: 3, "estuary-perch": 3 },
+      sources: ["pvLynchs", "pvYarraGuide", "fmLynch", "vfaMaribyrnong", "vfaEP"],
+      rules: ["Estuary perch (VFA): minimum 27 cm, bag 5 combined with Australian bass (no more than 2 bass). The VFA lists no closed season. Keep them whole until you're away from the water.", "Parks Victoria: two lines per person on the river. Reel in when boats pass. No jumping or diving from the bridge or structures."],
+      hazards: ["Strong tidal flow, especially after rain (FishingMad).", "Shallow areas and submerged objects (Parks Victoria). The bottom is very snaggy.", "Water quality: there are drains from the racecourse, and Lower Maribyrnong eating advice applies (see below).", "We could not confirm any lights. Take a headlamp and go with a mate at night.", "Cyclists on the river trail. Dogs must be on a lead (Parks Victoria)."] }],
+
   [{ id: "beaumaris-pier", name: "Beaumaris Pier (Pelican Quays)", kind: "pier", lat: -37.9912, lon: 145.0445, shore: "east", depth: "Not verified",
     species: ["calamari", "garfish", "snapper"], tideNote: "",
     windNote: "A small pier tucked into Keefers Cove, protected on three sides. A southerly blows straight into the pocket and chops it up; most other winds are fine if the water is clean.",

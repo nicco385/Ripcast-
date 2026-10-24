@@ -139,7 +139,7 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
     </section>
     {fish.length > 0 && <section className="card"><h2>🐟 Fish here</h2>
       {fish.map(({ x, o }) => <button key={x} className="item fish-chip" onClick={() => onSpecies(x)}><SpThumb name={x} size={64} /><span><b>{speciesBySlug(x)?.name ?? short(x)}</b>{i?.hot?.includes(x) ? " ⭐" : ""}{o ? <span className="muted"> (occasional)</span> : null}<small className="block muted">{o ? AUDIT[spot.id]?.why?.[x] ?? "Only caught now and then here." : seasonLabel(x).t || ""}</small>{!o && AUDIT[spot.id]?.why?.[x] && <small className="block muted">{AUDIT[spot.id]!.why![x]}</small>}</span><span className="chev">›</span></button>)}
-      {i?.other?.length ? <p className="muted small">Also caught here{i.fresh ? "" : " (VFA)"}: {i.other.join(", ")}.</p> : null}
+      {i?.other?.length ? <p className="muted small">Also caught here{i.fresh ? "" : i.src === "choc" ? " (Choc)" : " (VFA)"}: {i.other.join(", ")}.</p> : null}
       {i?.hot?.length ? <p className="muted small">⭐ = the VFA names this spot as a hot spot for that fish.</p> : null}
     </section>}
     <section className="card"><h2>ℹ️ Know before you go</h2>

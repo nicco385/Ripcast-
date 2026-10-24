@@ -251,5 +251,18 @@ ok("mulloway season logic still applies at Choc's spot (season factor present; p
   assert.ok(sa || sb, "season factor"); assert.ok(!a.factors.some((f) => /occasional/i.test(f.txt)));
 });
 
+// 23. Choc's Lynchs Bridge spot (v1.5.4): bream, pinkies, estuary perch proven (mullet shown as text – no mullet forecast in the app)
+const lb = L("lynchs-bridge-choc");
+ok("Lynchs Bridge: river type, within 300 m of the bridge on the public bank, all of Choc's fish proven, estuary perch rules shown", () => {
+  assert.equal(lb.info?.src, "choc"); assert.equal(lb.type, "river"); assert.ok(lb.info?.eat); assert.ok(mDist(lb, -37.795, 144.91278) < 300);
+  for (const f of ["black-bream", "snapper", "estuary-perch"]) { assert.ok(lb.species.includes(f) && !isOcc(lb, f), f); assert.match(AUDIT[lb.id]!.why![f], /Choc's spot/); }
+  assert.ok(lb.info!.other!.includes("mullet")); assert.match(lb.tips, /pinkies/); assert.ok(lb.info!.rules!.some((r) => /Estuary perch.*27 cm.*bag 5/.test(r)));
+  assert.ok(mDist(lb, L("maribyrnong-footscray").lat, L("maribyrnong-footscray").lon) > 800); for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(lb.lat, lb.lon, r));
+});
+ok("the engine offers estuary perch, bream and pinkies at Lynchs Bridge on a calm evening", () => {
+  const o = { lat: -37.79, lon: 144.91 }, w = new Set(nearSpots(o).map((x) => x.id)), W2 = wx("2027-02-10", 3, 45);
+  for (const sl of ["estuary-perch", "black-bream", "snapper"]) { const pl = planSpecies(sl, W2, { now: feb, origin: o, within: w }); assert.ok(pl && pl.spots.some((x) => x.spot.id === lb.id), sl); }
+});
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);

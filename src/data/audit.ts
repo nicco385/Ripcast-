@@ -99,6 +99,10 @@ export const AUDIT: Record<string, Audit> = {
     snapper: "Choc's spot – local knowledge: Choc, an experienced local angler, catches snapper here (24 Oct 2026). FishingMad lists snapper (pinkies) in the lower Yarra from October to April.",
     mulloway: "Choc's spot – local knowledge: Choc catches mulloway here (24 Oct 2026). FishingMad and Bite Compass name mulloway as the lower Yarra's trophy fish, best after dark on a tide change.",
     "black-bream": "Choc's spot – local knowledge: Choc catches bream here (24 Oct 2026). Bream are the lower Yarra's steadiest fish (FishingMad; Bite Compass)." } },
+  "lynchs-bridge-choc": { why: {
+    "black-bream": "Choc's spot – local knowledge: Choc, an experienced local angler, catches bream here (24 Oct 2026). FishingMad says bream and mullet are the most likely catch at Lynch Bridge; the VFA says black bream are the most common fish in this part of the river.",
+    snapper: "Choc's spot – local knowledge: Choc catches pinkies here (24 Oct 2026). FishingMad says pinkies move into the channel in the warmer months; the VFA lists pinkie snapper in the lower Maribyrnong.",
+    "estuary-perch": "Choc's spot – local knowledge: Choc catches estuary perch here (24 Oct 2026). FishingMad says the estuary perch action can be frantic on warm, still evenings; the river has been heavily stocked with them." } },
   "black-rock-jetty": { occ: ["garfish", "sand-flathead", "australian-salmon"], why: {
     snapper: "Bite Compass and FishingMad: a cast from the end reaches snapper water; Parks Victoria says the jetty gives year-round access to a good variety of fish. A forum angler lost a big red off the rocks at Black Rock in 2023.",
     calamari: "Forum anglers caught squid off Black Rock pier (2018); FishingMad and Bite Compass say calamari fire when the water is clear.",
