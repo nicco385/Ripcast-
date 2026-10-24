@@ -273,5 +273,18 @@ ok("Chifley Drive: on Choc's pin, river type, bream and estuary perch proven, De
   const o = { lat: -37.765, lon: 144.89 }, w = new Set(nearSpots(o).map((x) => x.id)); const pl = planSpecies("estuary-perch", wx("2027-02-10", 3, 180), { now: feb, origin: o, within: w }); assert.ok(pl && pl.spots.some((x) => x.spot.id === cd.id));
 });
 
+// 25. Choc's Bolte Bridge spot (v1.5.6): north bank, bream/snapper/mulloway proven, access caveat, mulloway season still scored
+const bb = L("bolte-bridge-creek-mouth-choc");
+ok("Bolte Bridge: on Choc's pin, river type, three fish proven, access-not-confirmed notice, outside MPAs, distinct from Yarra Docklands, mulloway season kept", () => {
+  assert.equal(bb.info?.src, "choc"); assert.equal(bb.type, "river"); assert.ok(mDist(bb, -37.818049, 144.932366) < 30);
+  for (const f of ["black-bream", "snapper", "mulloway"]) { assert.ok(bb.species.includes(f) && !isOcc(bb, f)); assert.match(AUDIT[bb.id]!.why![f], /Choc's spot/); }
+  assert.match(bb.info!.notice!, /NOT confirmed/); assert.ok(!/undersize/i.test(bb.tips ?? ""));
+  for (const m of MPAS) for (const ring of m.rings) assert.ok(!inRing(bb.lat, bb.lon, ring), m.name);
+  assert.ok(mDist(bb, L("yarra-docklands").lat, L("yarra-docklands").lon) > 500);
+  const o = { lat: -37.82, lon: 144.935 }, w = new Set(nearSpots(o).map((x) => x.id));
+  const may = planSpecies("mulloway", wx("2027-05-12", 3, 180), { now: new Date("2027-05-12T08:00:00+10:00"), origin: o, within: w });
+  const hit = may?.spots.find((x) => x.spot.id === bb.id); assert.ok(hit);
+});
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);

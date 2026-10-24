@@ -98,6 +98,11 @@ export const SRC: Record<string, { t: string; u: string }> = {
   vfaEP: { t: "VFA – Estuary perch size and bag limits", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/marine-and-estuarine-scale-fish/estuary-perch" },
   pvChicagoDale: { t: "Parks Victoria – Maribyrnong River: Chicago St to Dale St fishing platforms", u: "https://www.parks.vic.gov.au/places-to-see/sites/maribyrnong-river---chicago-st-to-dale-st-fishing-platforms" },
   osmChifley: { t: "OpenStreetMap – riverside park and car park at the end of Chifley Drive", u: "https://www.openstreetmap.org/?mlat=-37.761998&mlon=144.885389#map=18/-37.761998/144.885389" },
+  dvStudios: { t: "Development Victoria – Docklands Studios Sound Stage 6 (Moonee Ponds Creek trail section closed since 23 Nov 2020)", u: "https://www.development.vic.gov.au/projects/docklands-studios-melbourne" },
+  mmhnMoonee: { t: "Melbourne Maritime Heritage Network – Moonee Ponds Creek trail under the Bolte Bridge, closed to the public in 2020", u: "https://mmhn.org.au/heritage-trails/victoria-harbour/stop14/" },
+  fmDocklands: { t: "FishingMad – Docklands fishing guide (bream, snapper, pinkies, mulloway; casting towards the Bolte Bridge)", u: "https://fishingmad.com.au/location/docklands/" },
+  fmMoonee: { t: "FishingMad – Moonee Ponds Creek (bream at the mouth; poor water quality)", u: "https://fishingmad.com.au/location/moonee-ponds-creek-trial/" },
+  osmBolte: { t: "OpenStreetMap – Moonee Ponds Creek mouth under the Bolte Bridge (track, toilets and car park nearby)", u: "https://www.openstreetmap.org/?mlat=-37.818049&mlon=144.932366#map=18/-37.818049/144.932366" },
   fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
@@ -158,6 +163,7 @@ export const FACILITIES: Record<string, Facilities> = {
   "francis-st-lookout-choc": f(U, { has: "unknown", note: "OpenStreetMap shows a car park beside the lookout, but we couldn't confirm it's public" }, ["osmFrancis", "francisPier"], { lights: U, rails: U }),
   "lynchs-bridge-choc": f({ has: "unknown", note: "Not known. OpenStreetMap shows a drinking fountain and shelter in Riverside Reserve, about 170 m east" }, Y("FishingMad: plenty of parking – cross the bridge and turn left towards the racecourse"), ["fmLynch", "pvLynchs"], { lights: U, rails: U }),
   "chifley-drive-choc": f(U, Y("Small car park at the end of Chifley Drive, beside the river (OpenStreetMap) – not checked"), ["osmChifley", "pvChicagoDale"], { lights: U, rails: U }),
+  "bolte-bridge-creek-mouth-choc": f(Y("Ron Barassi Senior Park, about 180 m – free, wheelchair accessible (OpenStreetMap, not checked)"), Y("Car park off the west end of Docklands Drive, about 100 m (OpenStreetMap, not checked)"), ["osmBolte"], { lights: U, rails: U }),
   "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
   "albert-park-lake": f(Y("At the Swan, Coot and Cormorant/Grebe picnic grounds around the lake"), Y("Paid parking in several areas – watch the time limits"), ["pvAlbert"]),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),

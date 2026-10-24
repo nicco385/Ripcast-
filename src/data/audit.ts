@@ -106,6 +106,10 @@ export const AUDIT: Record<string, Audit> = {
   "chifley-drive-choc": { why: {
     "black-bream": "Choc's spot – local knowledge: Choc, an experienced local angler, catches bream here (24 Oct 2026). The VFA says black bream are the most common fish in the Maribyrnong below Solomons Ford.",
     "estuary-perch": "Choc's spot – local knowledge: Choc catches estuary perch here (24 Oct 2026). The Maribyrnong has been heavily stocked with estuary perch (FishingMad)." } },
+  "bolte-bridge-creek-mouth-choc": { why: {
+    "black-bream": "Choc's spot – local knowledge: Choc, an experienced local angler, catches bream here (24 Oct 2026). FishingMad also reports bream around the Docklands structure and at the Moonee Ponds Creek mouth.",
+    snapper: "Choc's spot – local knowledge: Choc catches snapper and pinkies (small snapper) here (24 Oct 2026). FishingMad lists snapper and pinkies at Docklands.",
+    mulloway: "Choc's spot – local knowledge: Choc catches mulloway here (24 Oct 2026). FishingMad lists mulloway at Docklands, often near bridges and pylons. The normal mulloway season scoring still applies." } },
   "black-rock-jetty": { occ: ["garfish", "sand-flathead", "australian-salmon"], why: {
     snapper: "Bite Compass and FishingMad: a cast from the end reaches snapper water; Parks Victoria says the jetty gives year-round access to a good variety of fish. A forum angler lost a big red off the rocks at Black Rock in 2023.",
     calamari: "Forum anglers caught squid off Black Rock pier (2018); FishingMad and Bite Compass say calamari fire when the water is clear.",
