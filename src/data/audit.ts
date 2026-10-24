@@ -87,6 +87,9 @@ export const AUDIT: Record<string, Audit> = {
   "black-rock-beach-choc": { why: {
     calamari: "Choc's spot – local knowledge: Choc, an experienced local angler, catches squid here (24 Oct 2026). Background: Beachsafe describes sandstone reef off the beach, and in 2018 a forum angler saw squid caught off the rocks by the Black Rock jetty car park, about 1 km north-west.",
     garfish: "Choc's spot – local knowledge: Choc catches garfish here (24 Oct 2026). FishingMad says the weedy ground around Black Rock suits garfish, squid and whiting." } },
+  "north-road-rocks-choc": { why: {
+    calamari: "Choc's spot – local knowledge: Choc, an experienced local angler, catches squid here (24 Oct 2026). A squid-fishing guide also lists the North Road boat ramp among Melbourne squid spots.",
+    garfish: "Choc's spot – local knowledge: Choc catches garfish here (24 Oct 2026)." } },
   "black-rock-jetty": { occ: ["garfish", "sand-flathead", "australian-salmon"], why: {
     snapper: "Bite Compass and FishingMad: a cast from the end reaches snapper water; Parks Victoria says the jetty gives year-round access to a good variety of fish. A forum angler lost a big red off the rocks at Black Rock in 2023.",
     calamari: "Forum anglers caught squid off Black Rock pier (2018); FishingMad and Bite Compass say calamari fire when the water is clear.",

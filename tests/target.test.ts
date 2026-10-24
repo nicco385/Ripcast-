@@ -200,5 +200,18 @@ ok("calm summer day, garfish: Choc's spot is offered as a regular garfish spot",
   const g = planSpecies("garfish", wx("2027-02-10", 4, 45), { now: feb, origin: bro, within: new Set(nearSpots(bro).map((x) => x.id)) })!; const x = g.spots.find((y) => y.spot.id === choc.id); assert.ok(x && /Great|Good/.test(x.verdict), x ? `${x.verdict} ${x.score}` : "absent");
 });
 
+// 20. Choc's second spot (v1.5.0): North Road rocks, Brighton – a separate spot from Middle Brighton Pier, legal, squid and garfish proven
+const nr = L("north-road-rocks-choc");
+ok("North Road rocks: on Choc's pin, Choc's label, squid and garfish proven, not a duplicate of Middle Brighton Pier", () => {
+  assert.equal(nr.info?.src, "choc"); assert.ok(mDist(nr, -37.899259, 144.984025) < 30); for (const f of ["calamari", "garfish"]) { assert.ok(nr.species.includes(f) && !isOcc(nr, f)); assert.match(AUDIT[nr.id]!.why![f], /Choc's spot/); }
+  assert.ok(mDist(nr, L("middle-brighton").lat, L("middle-brighton").lon) > 600); assert.ok(!LAND.some((x) => x.id !== nr.id && mDist(nr, x.lat, x.lon) < 500));
+  for (const m of MPAS) for (const r of m.rings) assert.ok(!inRing(nr.lat, nr.lon, r), m.name); assert.match(nr.info!.notice!, /boat ramp/); assert.match(nr.info!.notice!, /marina/);
+});
+const bri = { lat: -37.905, lon: 144.99 };
+ok("calm night, squid, from Brighton: North Road rocks is in the top 5; a 20 kn westerly drops it a lot", () => {
+  const w = new Set(nearSpots(bri).map((x) => x.id)); const c = planSpecies("calamari", wx("2026-10-24", 4, 90), { now: calmNow, origin: bri, within: w })!, r = planSpecies("calamari", wx("2026-10-24", 20, 270), { now: calmNow, origin: bri, within: w })!;
+  const i = c.spots.findIndex((x) => x.spot.id === nr.id); assert.ok(i >= 0 && i < 5, `rank ${i}`); assert.ok(c.spots[i].score > (r.spots.find((x) => x.spot.id === nr.id)?.score ?? 0) + 10);
+});
+
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
 console.log(`\n${n} checks passed`);

@@ -72,6 +72,11 @@ export const SRC: Record<string, { t: string; u: string }> = {
   bsQuietCorner: { t: "Surf Life Saving Beachsafe – Quiet Corner", u: "https://www.beachsafe.org.au/beach/vic/bayside/black-rock/quiet-corner" },
   baysideBeaches: { t: "Bayside City Council – Beaches in Bayside (Black Rock Beach)", u: "https://www.bayside.vic.gov.au/explore/beaches-bayside" },
   fvBlackRockMordy: { t: "Fishing Victoria forum – Black Rock / Mordialloc (squid off the rocks near the Black Rock jetty car park)", u: "https://www.fishing-victoria.com/viewtopic.php?t=19869" },
+  // Choc's second spot, North Road rocks, Brighton (24 Oct 2026)
+  baysideNorthRoad: { t: "Bayside City Council – North Road Foreshore Masterplan (rockwork, boat ramp, toilets, car park)", u: "https://www.bayside.vic.gov.au/sites/default/files/2021-08/north_road_foreshore_masterplan_2019_0.pdf" },
+  bvBrightonRamp: { t: "Better Boating Victoria – Brighton (North Road) boat ramp", u: "https://www.boating.vic.gov.au/ramps/a157F000001P6UOQA0" },
+  rbycMarina: { t: "Royal Brighton Yacht Club – marina rules (no fishing from the marina)", u: "https://rbyc.org.au/marina-2/" },
+  sqPPB: { t: "SquidFishing.com.au – Port Phillip Bay squid locations (lists North Road Boat Ramp)", u: "https://www.squidfishing.com.au/guides/port-phillip-bay-squid-fishing/" },
   fmBeaumaris: { t: "FishingMad – Beaumaris Jetty fishing guide", u: "https://fishingmad.com.au/location/beaumaris-jetty/" },
 };
 
@@ -126,6 +131,7 @@ export const FACILITIES: Record<string, Facilities> = {
   "lagoon-pier": f(Y("Public toilets, cafes and kiosks a very short walk away (Parks Victoria)"), Y("Metered or time-limited street parking on Beach Street – busy in summer (Bite Compass)"), ["pvLagoon", "bcLagoon"], { lights: U }),
   "black-rock-jetty": f(Y("Public toilets a short distance from the jetty (Parks Victoria)"), Y("Car park at the ramp – often scarce in busy months (Parks Victoria)"), ["pvBlackRock", "bcBlackRock"], { lights: U }),
   "black-rock-beach-choc": f(Y("OpenStreetMap shows public toilets on the foreshore by Black Rock Life Saving Club, about 250–300 m north – not checked in person"), Y("Foreshore car park on the bluff just south of the life saving club, about 100 m north (Beachsafe; OpenStreetMap). Whether it's paid or time-limited: not known"), ["bsBlackRock", "baysideBeaches"], { lights: U, rails: { has: "no", note: "Open beach and reef – no railings" } }),
+  "north-road-rocks-choc": f(Y("Public toilets next to North Point Café, about 250 m north (Bayside)"), Y("North Road (B1) foreshore car park, about 250 m north – Bayside found it nearly full on weekends. Whether it's paid or time-limited: not known"), ["baysideNorthRoad"], { lights: U, rails: { has: "no", note: "Rock wall – no railings" }, cleaning: { has: "yes", note: "Fish-cleaning table at the North Road boat ramp (Bayside)" } }),
   "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
   "albert-park-lake": f(Y("At the Swan, Coot and Cormorant/Grebe picnic grounds around the lake"), Y("Paid parking in several areas – watch the time limits"), ["pvAlbert"]),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),

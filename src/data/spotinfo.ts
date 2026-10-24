@@ -229,6 +229,21 @@ export const EXTRA: [Spot, Info][] = [
       rules: ["Ricketts Point Marine Sanctuary (Parks Victoria): no fishing of any kind and no taking bait, shells or animals. It runs from Quiet Corner to Table Rock and about 500 m offshore, marked by yellow piles and buoys. To report a fishing offence, call 13 FISH (13 3474)."],
       hazards: ["Sandstone reef and wet rock are very slippery. Wear grippy shoes.", "Waves break over the reef, especially at low tide or in a south-westerly (Beachsafe). Deep water lies close to the beach.", "The beach narrows to a seawall walkway at high tide – check you can walk back.", "We could not confirm any lights. Take a headlamp and go with a mate at night.", "Stay off the bluff and cliff faces."] }],
 
+  // Choc's second spot (24 Oct 2026): his pin -37.899259, 144.984025 – the rock revetment just south of the North Road boat ramp,
+  // Brighton (Bayside's North Road Foreshore Masterplan: "existing rockwork" between the boat ramp and Dudley Street). About 920 m
+  // north of Middle Brighton Pier, so it's a separate spot, not the pier or its breakwall. No marine park within 9 km.
+  [{ id: "north-road-rocks-choc", name: "North Road rocks, Brighton – Choc's spot", kind: "shore", lat: -37.8993, lon: 144.9840, shore: "east",
+    depth: "Not verified.",
+    species: ["calamari", "garfish"], tideNote: "Best tide here: not known yet.",
+    windNote: "This shore faces west (Bayside). Light east or north-east winds blow off the land and leave the water calm and clear, which suits squid and garfish. Westerlies and north-westerlies (mostly winter) and southerlies and south-westerlies (mostly summer) push waves on to the rocks, sometimes over the path, and muddy the water (Bayside's North Road Foreshore Masterplan).",
+    access: "On the Bay Trail, about 120 m south of the North Road boat ramp and jetty, Brighton, opposite Chatsworth Avenue. Park in the North Road (B1) foreshore car park by North Point Café – it's busy on weekends. Then walk south along the path and step down carefully on to the rocks. Middle Brighton Pier and the Royal Brighton Yacht Club marina are about 900 m further south.",
+    tips: "Choc's own spot: he rates it for squid and garfish. The shore here is a rock wall with a small rocky point. For squid, cast a size 2.5–3.0 jig and work it slowly back over the weed and rock edges in clear water, around dusk and into the night. For garfish, use a light float rig, a fine-wire size 10–12 long-shank hook, a small bait (maggot, silverfish or pipi) and a fine berley trail. We don't know the best tide or time here yet.",
+    exposedTo: ["W", "SW", "NW"], shelteredFrom: ["E", "NE", "SE"], tideLagHours: 0 },
+    { area: "east", src: "choc", local: { calamari: 3, garfish: 3 },
+      sources: ["baysideNorthRoad", "bvBrightonRamp", "rbycMarina", "sqPPB"],
+      notice: "Fish from the rocks only. Keep well clear of the North Road boat ramp and jetty while boats are launching, and of any moored boats. Middle Brighton Pier and the Royal Brighton Yacht Club marina are about 900 m south; there's no fishing from the marina (yacht club rules). This spot is not in a marine park or sanctuary – the nearest are more than 9 km away.",
+      hazards: ["Loose, uneven boulders that are slippery when wet. Wear grippy shoes and keep three points of contact.", "In westerly or south-westerly blows, waves wash over the rocks and sometimes over the path (Bayside).", "Cyclists move fast on the Bay Trail behind you – keep rods and gear off the path.", "We could not confirm any lights on the rocks. Take a headlamp and go with a mate at night.", "Native rakali (water rats) live in these rocks – take all line, hooks and bait scraps home."] }],
+
   [{ id: "beaumaris-pier", name: "Beaumaris Pier (Pelican Quays)", kind: "pier", lat: -37.9912, lon: 145.0445, shore: "east", depth: "Not verified",
     species: ["calamari", "garfish", "snapper"], tideNote: "",
     windNote: "A small pier tucked into Keefers Cove, protected on three sides. A southerly blows straight into the pocket and chops it up; most other winds are fine if the water is clean.",
