@@ -1,3 +1,4 @@
+import { tipsFor } from "./data/roger";
 import { FACILITIES, FAC_CHECKED, SRC, type Facilities } from "./data/facilities";
 import { StaleNote } from "./stale";
 import { profile } from "./target";
@@ -37,7 +38,7 @@ export const SeasonKey = () => <p className="muted small"><i className="dot" sty
 
 /** Thin guides (little reliable shore info) live in a separate "More fish" section. */
 export const THIN = ["snook", "yellowtail-kingfish", "murray-cod"];
-export function FishTab({ onOpen, onCal, onTarget }: { onOpen: (slug: string) => void; onCal: () => void; onTarget: () => void }) {
+export function FishTab({ onOpen, onCal, onTarget, onTips }: { onOpen: (slug: string) => void; onCal: () => void; onTarget: () => void; onTips?: () => void }) {
   const m = curMonth();
   const list = useMemo(() => [...SPECIES].sort((a, b) => seasonVal(b.slug, m) - seasonVal(a.slug, m) || a.name.localeCompare(b.name)), [m]);
   return <>
@@ -45,6 +46,7 @@ export function FishTab({ onOpen, onCal, onTarget }: { onOpen: (slug: string) =>
       <p className="muted small">Tap a fish for where to find it from the shore, the right rig, bait, tackle, tips and the legal size. Sorted by what is in season in {MONTHS[m - 1]}.</p>
       <button className="big" onClick={onTarget}>🎯 Target a fish – where & when to go</button>
       <button className="big" onClick={onCal}>📅 What's biting – month by month</button>
+      {onTips && <button className="big" onClick={onTips}>🪝 Tips & rigs – Roger Osborne</button>}
       <SeasonKey />
     </section>
     {list.filter((s) => !THIN.includes(s.slug)).map((s) => { const sl = seasonLabel(s.slug); const g = guideBySlug(s.slug);
@@ -64,7 +66,7 @@ export function FishTab({ onOpen, onCal, onTarget }: { onOpen: (slug: string) =>
 const spotRank = (s: { info?: { hot?: string[]; local?: Record<string, number> } }, slug: string) => (s.info?.hot?.includes(slug) ? 6 : 0) + (s.info?.local?.[slug] ?? 0);
 const Sec = ({ title, items }: { title: string; items: string[] }) => items.length ? <><h3>{title}</h3><ul className="plain">{items.map((t) => <li key={t}>{t}</li>)}</ul></> : null;
 
-export function SpeciesView({ slug, onSpot, onTarget }: { slug: string; onSpot: (id: string) => void; onTarget?: (slug: string) => void }) {
+export function SpeciesView({ slug, onSpot, onTarget, onTips }: { slug: string; onSpot: (id: string) => void; onTarget?: (slug: string) => void; onTips?: () => void }) {
   const sp = speciesBySlug(slug), g = guideBySlug(slug);
   const spots = useMemo(() => ALL_LAND.filter((s) => !s.info?.status?.closed && s.species.includes(slug))
     .sort((a, b) => Number(isOcc(a, slug)) - Number(isOcc(b, slug)) || spotRank(b, slug) - spotRank(a, slug) || Number(b.info?.src === "vfa") - Number(a.info?.src === "vfa")), [slug]);
@@ -95,6 +97,8 @@ export function SpeciesView({ slug, onSpot, onTarget }: { slug: string; onSpot: 
     <section className="card"><h2>🎣 Rig & tackle</h2><Sec title="Rig" items={g.rig} /><h3>Rod, reel and line</h3><p>{g.gear}</p><h3>Hook</h3><p>{g.hook}</p>
       <Sec title="Baits" items={g.baits} /><Sec title="Lures" items={g.lures} /></section>
     <section className="card"><h2>💡 Tips</h2><Sec title="" items={g.tips} /></section>
+    {tipsFor(slug).length > 0 && <section className="card"><h2>🪝 Roger Osborne's tips</h2><ul className="plain">{tipsFor(slug).map((t) => <li key={t.t}>{t.t}<small className="block muted">Source: Roger Osborne Fishing – <Ext href={t.src}>{t.title} ↗</Ext></small></li>)}</ul>
+      {onTips && <button className="big" onClick={onTips}>🪝 All tips & rigs</button>}</section>}
     <section className="card"><h2>🤝 Rules & looking after the fish</h2><Sec title="" items={g.care} />
       <p className="small">Always release undersize fish quickly and gently. Wet your hands first, and use pliers.</p></section>
     <section className="card"><h3>Sources</h3>{g.sources.map((s) => <p key={s.u} className="small"><Ext href={s.u}>{s.t} ↗</Ext></p>)}

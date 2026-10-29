@@ -15,13 +15,13 @@ import { TargetPicker, TargetView, FishingToday, VB, useWx } from "./targetviews
 import { InstallPrompt } from "./install";
 import { rainLast24, dayOutlook, spanTxt, type DayOutlook } from "./target";
 import { FishTab, SpeciesView, CalendarView, SpotView } from "./fishviews";
-import { Where, ReportsTab, More, Rules, About } from "./views2";
+import { Where, ReportsTab, More, Rules, About, TipsView } from "./views2";
 import { Log } from "./catchlog";
 
 const DEFAULT: Place = { name: "Williamstown, VIC", lat: -37.8635, lon: 144.9056 };
 // older versions named map taps "Map spot -37.867, 144.913" – never show raw numbers
 const fixName = (p: Place): Place => /^Map spot -?\d/.test(p.name) ? { ...p, name: nearName(p), fromMap: true } : p;
-const TITLES: Record<string, string> = { spot: "Spot guide", species: "Fish guide", tides: "Tides", week: "7 days", map: "Map", picker: "Choose a spot", calendar: "What's biting", target: "Target a fish", log: "Catch log", rules: "Rules & safety", about: "About" };
+const TITLES: Record<string, string> = { spot: "Spot guide", species: "Fish guide", tides: "Tides", week: "7 days", map: "Map", picker: "Choose a spot", calendar: "What's biting", target: "Target a fish", log: "Catch log", rules: "Rules & safety", about: "About", tips: "Tips & rigs" };
 
 export default function App() {
   const { nav, push, back, go } = useNav();
@@ -85,14 +85,14 @@ export default function App() {
         {!v && nav.tab === "today" && shown && <Today f={shown} stale={shown.place.name !== place.name} place={place} onTides={() => push({ view: { k: "tides" } })} onSolunar={() => push({ view: { k: "solunar" } })} onWeek={() => push({ view: { k: "week" } })} rain24={rain24} onTarget={openTarget} />}
         {!v && nav.tab === "today" && !shown && err && <TodayOffline place={place} onTides={() => push({ view: { k: "tides" } })} onSolunar={() => push({ view: { k: "solunar" } })} />}
         {!v && nav.tab === "where" && <Where place={place} onSpot={openSpot} onMap={() => push({ view: { k: "map" } })} />}
-        {!v && nav.tab === "fish" && <FishTab onOpen={openSpecies} onCal={() => push({ view: { k: "calendar" } })} onTarget={() => openTarget()} />}
+        {!v && nav.tab === "fish" && <FishTab onOpen={openSpecies} onCal={() => push({ view: { k: "calendar" } })} onTarget={() => openTarget()} onTips={() => push({ view: { k: "tips" } })} />}
         {!v && nav.tab === "reports" && <ReportsTab />}
         {!v && nav.tab === "more" && <More go={(k) => push({ view: { k } as View })} />}
         {v?.k === "week" && shown && <Week f={shown} place={place} rain24={rain24} />}
         {v?.k === "tides" && <TidesView place={place} />}
         {v?.k === "solunar" && <SolunarView place={place} />}
         {v?.k === "spot" && (spot ? <SpotView spot={spot} place={place} onBack={back} onMap={() => push({ view: { k: "map", focus: spot.id } })} onUse={() => usePlace({ name: spot.name, lat: spot.lat, lon: spot.lon })} onSpecies={openSpecies} /> : <div className="card">That spot was not found.</div>)}
-        {v?.k === "species" && <SpeciesView slug={v.slug} onSpot={openSpot} onTarget={openTarget} />}
+        {v?.k === "species" && <SpeciesView slug={v.slug} onSpot={openSpot} onTarget={openTarget} onTips={() => push({ view: { k: "tips" } })} />}
         {v?.k === "target" && !v.slug && <TargetPicker onPick={openTarget} />}
         {v?.k === "target" && v.slug && <TargetView slug={v.slug} place={place} rain24={rain24} onSpot={openSpot} onSpecies={openSpecies} />}
         {v?.k === "calendar" && <CalendarView onOpen={openSpecies} />}
@@ -101,6 +101,7 @@ export default function App() {
         {v?.k === "log" && <Log place={place} />}
         {v?.k === "rules" && <Rules onSpecies={openSpecies} />}
         {v?.k === "about" && <About />}
+        {v?.k === "tips" && <TipsView onSpecies={openSpecies} />}
         {v && v.k !== "picker" && <button className="btn alt wide backbottom" onClick={back}>‹ Back</button>}
         <p className="muted small center foot">Tides: Bureau of Meteorology · Weather: <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo.com</a> (CC BY 4.0) · Map © OpenStreetMap</p>
       </main>

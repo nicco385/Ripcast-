@@ -65,3 +65,4 @@ To rename the app, edit `APP_NAME` in `src/config.ts`. The cover, title and mani
 - v1.5.10: Freshwater Choc spots show the 'Choc's spot – local knowledge' note (Albert Park Lake).
 - v1.5.11: Access notes from Choc – Bolte Bridge spot from the very end of Docklands Drive (track still not confirmed public), River Esplanade pier from the Lorimer St side. Hampton: Choc's southern groyne kept; notes say it is not the Orlando Street groyne (that one is about 700 m north).
 - v1.5.12: New spot – Orlando Street groyne, Hampton (normal researched spot, not a Choc's spot): pinkies proven from forum reports, squid occasional.
+- v1.6.0: New 'Tips & rigs' page (More tab and Fish tab): shore-fishing tips from Roger Osborne Fishing (planning, reading a beach, finding fish, rigs, baits, flathead), paraphrased, each linked to its video; matching tips shown on the whiting, bream, flathead, salmon, snapper and mulloway guides.

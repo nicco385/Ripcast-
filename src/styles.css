@@ -259,3 +259,5 @@ optgroup{font-weight:700}
 .place>small{flex:0 0 auto;margin-left:0}
 .nearalt{margin-top:10px;border-top:1px solid #ffffff22;padding-top:6px}.nearalt h3{font-size:1rem;margin:6px 0}
 .sechead{margin:14px 4px 6px;font-size:1rem}
+
+.linkish{background:none;border:0;padding:0;color:var(--aqua);text-decoration:underline;font:inherit;cursor:pointer}

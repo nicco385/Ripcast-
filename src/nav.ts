@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export type Tab = "today" | "where" | "fish" | "reports" | "more";
 export type View =
   | { k: "spot"; id: string } | { k: "species"; slug: string } | { k: "tides" } | { k: "solunar" } | { k: "target"; slug?: string } | { k: "week" } | { k: "map"; focus?: string }
-  | { k: "picker" } | { k: "calendar" } | { k: "log" } | { k: "rules" } | { k: "about" };
+  | { k: "picker" } | { k: "calendar" } | { k: "log" } | { k: "rules" } | { k: "about" } | { k: "tips"; g?: string };
 export type Nav = { tab: Tab; view: View | null; d: number };
 
 const ROOT: Nav = { tab: "today", view: null, d: 0 };
