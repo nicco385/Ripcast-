@@ -1,4 +1,4 @@
-import { ROGER, TIP_GROUPS, LEFT_OUT } from "./data/roger";
+import { PEOPLE, TIP_GROUPS, LEFT_OUT, personOf, type Cred } from "./data/tips";
 import { useEffect, useMemo, useState } from "react";
 import { SPECIES, bagText } from "./data/species";
 import { REGS, MONTHS } from "./data/regs";
@@ -88,7 +88,7 @@ export function ReportsTab() {
 }
 
 export function More({ go }: { go: (k: "log" | "rules" | "about" | "tips") => void }) {
-  const rows: [string, string, "log" | "rules" | "about" | "tips"][] = [["🧺", "Catch log – your own record", "log"], ["🪝", "Tips & rigs – Roger Osborne", "tips"], ["📏", "Rules, licence & safety", "rules"], ["ℹ️", `About ${APP_NAME}, credits & privacy`, "about"]];
+  const rows: [string, string, "log" | "rules" | "about" | "tips"][] = [["🧺", "Catch log – your own record", "log"], ["🪝", "Tips & rigs – the experts", "tips"], ["📏", "Rules, licence & safety", "rules"], ["ℹ️", `About ${APP_NAME}, credits & privacy`, "about"]];
   return <><section className="card"><h2>More</h2>{rows.map(([i, t, k]) => <button key={k} className="item moreitem" onClick={() => go(k)}><span>{i}</span><b>{t}</b><span className="chev">›</span></button>)}</section>
     <p className="muted small center">Version {APP_VERSION}</p></>;
 }
@@ -125,19 +125,22 @@ export function About() {
 }
 void seasonLabel;
 
+export const Credits = ({ by }: { by: Cred[] }) => <small className="block muted">Source: {by.map((c, i) => <span key={c.src}>{i > 0 ? "; " : ""}{personOf(c.p).name} – <Ext href={c.src}>{c.title} ↗</Ext></span>)}</small>;
+
 export function TipsView({ onSpecies }: { onSpecies: (slug: string) => void }) {
   return <>
     <section className="card"><h2>🪝 Tips & rigs</h2>
-      <p>Simple shore-fishing tips from <b>Roger Osborne</b>, who has fished NSW beaches, lakes and rivers for over 40 years. We kept only the tips that work around Melbourne and Victoria, in our own words.</p>
+      <p>Simple shore-fishing tips from four experts, grouped by topic and written in our own words. Each tip links to the video or article it came from.</p>
       <div className="chips">{TIP_GROUPS.map((g) => <button key={g.id} onClick={() => document.getElementById(`tip-${g.id}`)?.scrollIntoView({ behavior: "smooth" })}>{g.icon} {g.title}</button>)}</div>
-      <Ext href={ROGER.channel} cls="big link-btn">Roger Osborne Fishing on YouTube ↗</Ext>
-      <Ext href={ROGER.site} cls="big link-btn alt">rogersfishing.com ↗</Ext>
     </section>
     {TIP_GROUPS.map((g) => <section key={g.id} className="card" id={`tip-${g.id}`}><h2>{g.icon} {g.title}</h2>
       {g.note && <p className="muted small">{g.note}</p>}
-      <ul className="plain">{g.tips.map((t) => <li key={t.t}>{t.t}<small className="block muted">Source: Roger Osborne Fishing – <Ext href={t.src}>{t.title} ↗</Ext>
-        {t.species && t.species.map((sl) => { const sp = SPECIES.find((x) => x.slug === sl); return sp ? <span key={sl}> · <button className="linkish" onClick={() => onSpecies(sl)}>{sp.name} guide ›</button></span> : null; })}</small></li>)}</ul>
+      <ul className="plain">{g.tips.map((t) => <li key={t.t}>{t.t}<Credits by={t.by} />
+        {t.species && <small className="block">{t.species.map((sl, i) => { const sp = SPECIES.find((x) => x.slug === sl); return sp ? <span key={sl}>{i > 0 ? " · " : ""}<button className="linkish" onClick={() => onSpecies(sl)}>{sp.name} guide ›</button></span> : null; })}</small>}</li>)}</ul>
     </section>)}
+    <section className="card"><h2>👥 The experts</h2>
+      {PEOPLE.map((p) => <div key={p.id}><h3>{p.name}</h3><p className="muted small">{p.who}</p>{p.links.map((l, i) => <Ext key={l.u} href={l.u} cls={`big link-btn${i ? " alt" : ""}`}>{l.t} ↗</Ext>)}</div>)}
+    </section>
     <p className="muted small center">{LEFT_OUT}</p>
   </>;
 }

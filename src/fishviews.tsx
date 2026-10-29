@@ -1,4 +1,5 @@
-import { tipsFor } from "./data/roger";
+import { tipsFor } from "./data/tips";
+import { Credits } from "./views2";
 import { FACILITIES, FAC_CHECKED, SRC, type Facilities } from "./data/facilities";
 import { StaleNote } from "./stale";
 import { profile } from "./target";
@@ -46,7 +47,7 @@ export function FishTab({ onOpen, onCal, onTarget, onTips }: { onOpen: (slug: st
       <p className="muted small">Tap a fish for where to find it from the shore, the right rig, bait, tackle, tips and the legal size. Sorted by what is in season in {MONTHS[m - 1]}.</p>
       <button className="big" onClick={onTarget}>🎯 Target a fish – where & when to go</button>
       <button className="big" onClick={onCal}>📅 What's biting – month by month</button>
-      {onTips && <button className="big" onClick={onTips}>🪝 Tips & rigs – Roger Osborne</button>}
+      {onTips && <button className="big" onClick={onTips}>🪝 Tips & rigs – the experts</button>}
       <SeasonKey />
     </section>
     {list.filter((s) => !THIN.includes(s.slug)).map((s) => { const sl = seasonLabel(s.slug); const g = guideBySlug(s.slug);
@@ -97,7 +98,7 @@ export function SpeciesView({ slug, onSpot, onTarget, onTips }: { slug: string; 
     <section className="card"><h2>🎣 Rig & tackle</h2><Sec title="Rig" items={g.rig} /><h3>Rod, reel and line</h3><p>{g.gear}</p><h3>Hook</h3><p>{g.hook}</p>
       <Sec title="Baits" items={g.baits} /><Sec title="Lures" items={g.lures} /></section>
     <section className="card"><h2>💡 Tips</h2><Sec title="" items={g.tips} /></section>
-    {tipsFor(slug).length > 0 && <section className="card"><h2>🪝 Roger Osborne's tips</h2><ul className="plain">{tipsFor(slug).map((t) => <li key={t.t}>{t.t}<small className="block muted">Source: Roger Osborne Fishing – <Ext href={t.src}>{t.title} ↗</Ext></small></li>)}</ul>
+    {tipsFor(slug).length > 0 && <section className="card"><h2>🪝 More expert tips</h2><ul className="plain">{tipsFor(slug).map((t) => <li key={t.t}>{t.t}<Credits by={t.by} /></li>)}</ul>
       {onTips && <button className="big" onClick={onTips}>🪝 All tips & rigs</button>}</section>}
     <section className="card"><h2>🤝 Rules & looking after the fish</h2><Sec title="" items={g.care} />
       <p className="small">Always release undersize fish quickly and gently. Wet your hands first, and use pliers.</p></section>
