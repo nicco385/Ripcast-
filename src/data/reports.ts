@@ -12,15 +12,6 @@ export const REPORTS: ReportLink[] = [
   { t: "All Out Fishing – weekly video report", u: "https://www.facebook.com/alloutfishingau", by: "All Out Fishing (Geelong store, Manifold Heights)", how: "Geelong store – weekly video report with map (posts can be irregular). Latest seen: 23 Sep 2026", areas: ["bellarine"], note: "Facebook videos that use a map to show where fish are biting around Geelong and the Bellarine. Facebook may ask you to log in." },
   { t: "Geelong Times – fishing column", u: "https://timesnewsgroup.com.au/geelongtimes/sport/fishing/", by: "Geelong Times / Torquay Angling Club", how: "Regular (latest seen: 9 Oct 2026)", areas: ["bellarine"], note: "Short reports from Torquay, Point Lonsdale and Clifton Springs." },
   { t: "Fishing Victoria Forum – Geelong & Bellarine", u: "https://www.fishing-victoria.com/viewforum.php?f=150", by: "Fishing Victoria Forum (members)", how: "Quieter lately – last posts Jan 2026", areas: ["bellarine"], note: "Good for local spot knowledge. Older posts, so check dates." },
-  { t: "VFA – Where to fish Port Phillip", u: "https://vfa.vic.gov.au/recreational-fishing/victorias-top-fishing-destinations/port-phillip/where-to-fish-port-phillip", by: "Victorian Fisheries Authority", how: "Reference guide (checked 21 Oct 2026)", areas: ["northwest", "east", "peninsula", "bellarine"], note: "Pier-by-pier notes for the western, northern, eastern, Peninsula and Geelong–Bellarine shores: which fish, which side of the pier, which tide." },
-  { t: "Lee Rayner's Fishing Edge (YouTube)", u: "https://www.youtube.com/@leeraynerfishing", by: "Lee Rayner – ex-Rex Hunt co-host, Fishing Edge TV host, former Mordialloc tackle-shop owner", how: "Learn – how-to videos (checked 21 Oct 2026)", areas: ["all"], note: "Recommended by Choc. Snapper, whiting and mulloway how-tos, mostly Port Phillip and Western Port (mostly from a boat, but the tips carry over to piers)." },
-  { t: "YouFishTV – Brendan Wing (YouTube)", u: "https://www.youtube.com/@YouFishTV", by: "Brendan Wing (YouFishTV)", how: "Learn – videos (checked 21 Oct 2026)", areas: ["all"], note: "Recommended by Choc. Western Port mulloway ('ghosts of the estuary') and snapper. Try 'BIG MULLOWAY HEARTBREAK AND TRIUMPH FISHING' and 'OUR SNAPPER FISHING LOGIC - STEP BY STEP!'." },
-  { t: "Reedy's Rigs – snapper guide and blog", u: "https://reedysrigs.com/fishing/snapper-fishing-port-phillip-westernport/", by: "Brett Reed (Reedy's Rigs, Victorian rig maker)", how: "Learn – updated each season (checked 21 Oct 2026)", areas: ["all"], note: "Recommended by Choc. Rigs, hooks, baits and tides for both bays. It's a tackle shop, so some links sell products." },
-  { t: "Reedy's Rigs (YouTube)", u: "https://www.youtube.com/@ReedysRigs", by: "Brett Reed (Reedy's Rigs)", how: "Learn – videos (checked 21 Oct 2026)", areas: ["all"], note: "Recommended by Choc. Rig-tying, whiting, squid and gummy videos, including a land-based gummy set-up for Western Port." },
-  { t: "FishingMad – Yarra River guide", u: "https://fishingmad.com.au/location/yarra-river/", by: "FishingMad", how: "Reference guide", areas: ["rivers"], note: "Species by month, gear and where to fish along the Yarra." },
-  { t: "FishingMad – The Warmies guide", u: "https://fishingmad.com.au/location/the-warmies/", by: "FishingMad", how: "Reference guide", areas: ["rivers", "northwest"], note: "Newport Power Station warm-water outlet: when it runs, tackle and safety." },
-  { t: "Peninsula Insider – Tooradin Inlet", u: "https://peninsulainsider.com.au/fishing/locations/tooradin-inlet/", by: "Peninsula Insider", how: "Reference guide (checked 30 Apr 2026)", areas: ["westernport"] },
-  { t: "Peninsula Insider – Fishing the Mornington Peninsula", u: "https://peninsulainsider.com.au/fishing/", by: "Peninsula Insider", how: "Reference guide (checked 30 Apr 2026)", areas: ["peninsula", "westernport"], note: "Month-by-month overview and tide notes for the peninsula." },
   { t: "FlyStream local reports (The Flyfisher)", u: "https://theflyfisher.com.au/a/blog", by: "The Flyfisher (fly shop, South Melbourne)", how: "Every few weeks (latest seen: 15 Oct 2026)", areas: ["freshwater"], note: "Written trout reports with photos, for the Goulburn Valley streams and Bright. Those are a 1.5–3 hour drive from Melbourne. Look for posts marked 'Local reports'." },
 ];
 export const NO_REPORTS: Record<string, string> = {
@@ -28,3 +19,25 @@ export const NO_REPORTS: Record<string, string> = {
   westernport: "Lang Lang: check FishingMad's weekly Western Port report (the muddy banks near Lang Lang were a hot spot in Oct 2026) and the Pelican's Pick.",
 };
 export const REPORT_CHECKED = "19 Oct 2026";
+
+/** Guides and how-to places (moved out of Reports in v1.7.1). Shown on the Tips & rigs page. */
+export const GUIDES: ReportLink[] = [
+  { t: "VFA – Where to fish Port Phillip", u: "https://vfa.vic.gov.au/recreational-fishing/victorias-top-fishing-destinations/port-phillip/where-to-fish-port-phillip", by: "Victorian Fisheries Authority", how: "Reference guide (checked 21 Oct 2026)", areas: ["northwest", "east", "peninsula", "bellarine"], note: "Pier-by-pier notes for the western, northern, eastern, Peninsula and Geelong–Bellarine shores: which fish, which side of the pier, which tide." },
+  { t: "FishingMad – Yarra River guide", u: "https://fishingmad.com.au/location/yarra-river/", by: "FishingMad", how: "Reference guide", areas: ["rivers"], note: "Species by month, gear and where to fish along the Yarra." },
+  { t: "FishingMad – The Warmies guide", u: "https://fishingmad.com.au/location/the-warmies/", by: "FishingMad", how: "Reference guide", areas: ["rivers", "northwest"], note: "Newport Power Station warm-water outlet: when it runs, tackle and safety." },
+  { t: "Peninsula Insider – Tooradin Inlet", u: "https://peninsulainsider.com.au/fishing/locations/tooradin-inlet/", by: "Peninsula Insider", how: "Reference guide (checked 30 Apr 2026)", areas: ["westernport"] },
+  { t: "Peninsula Insider – Fishing the Mornington Peninsula", u: "https://peninsulainsider.com.au/fishing/", by: "Peninsula Insider", how: "Reference guide (checked 30 Apr 2026)", areas: ["peninsula", "westernport"], note: "Month-by-month overview and tide notes for the peninsula." },
+  { t: "VFA – Go Fishing: Port Phillip Bay", u: "https://vfa.vic.gov.au/recreational-fishing/fishing-locations/go-fishing-port-phillip-bay", by: "Victorian Fisheries Authority", how: "Official guide", areas: ["all"], note: "List of piers, what is caught there and amenities." },
+  { t: "VFA – Go Fishing: Western Port", u: "https://vfa.vic.gov.au/recreational-fishing/fishing-locations/go-fishing-western-port", by: "Victorian Fisheries Authority", how: "Official guide", areas: ["westernport"], note: "Flinders, Hastings, Stony Point, Tooradin, San Remo, Cowes and more." },
+];
+/** Notes from the old Reports entries for the experts' channels (kept, shown under The experts). */
+export const CHANNEL_NOTES: Record<string, string> = {
+  lee: "Snapper, whiting and mulloway how-tos, mostly Port Phillip and Western Port (mostly from a boat, but the tips work from land too). Recommended by Choc.",
+  brett: "Rig-tying, whiting, squid and gummy videos, including a land-based gummy set-up for Western Port. His website has a snapper guide for both bays (it's a tackle shop, so some links sell products). Recommended by Choc.",
+  brendan: "Western Port mulloway ('ghosts of the estuary') and snapper. Mostly from a boat. Recommended by Choc.",
+};
+export const PODCASTS = [
+  { t: "Australian Lure Fishing podcast – Melbourne snapper with Lee Rayner (ep. 276)", u: "https://doclures.com/melbourne-snapper-lee-rayner/" },
+  { t: "Australian Lure Fishing podcast – Melbourne estuary perch with Lee Rayner (ep. 435)", u: "https://doclures.com/melbourne-estuary-perch-lee-rayner/" },
+  { t: "Australian Lure Fishing podcast – Winter fishing around Melbourne with Lee Rayner (ep. 513)", u: "https://doclures.com/five-winter-fishing-options-melbourne-lee-rayner/" },
+];

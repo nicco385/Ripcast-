@@ -3,7 +3,7 @@
 export type Person = { id: string; name: string; who: string; links: { t: string; u: string }[] };
 export const PEOPLE: Person[] = [
   { id: "lee", name: "Lee Rayner", who: "Victorian – Lee Rayner's Fishing Edge TV, ex-Rex Hunt co-host", links: [{ t: "Lee Rayner's Fishing Edge on YouTube", u: "https://www.youtube.com/@leeraynerfishing" }] },
-  { id: "brett", name: "Brett Reed", who: "Victorian – Reedy's Rigs, Frankston rig maker", links: [{ t: "Reedy's Rigs on YouTube", u: "https://www.youtube.com/@ReedysRigs" }, { t: "reedysrigs.com", u: "https://reedysrigs.com" }] },
+  { id: "brett", name: "Brett Reed", who: "Victorian – Reedy's Rigs, Frankston rig maker", links: [{ t: "Reedy's Rigs on YouTube", u: "https://www.youtube.com/@ReedysRigs" }, { t: "reedysrigs.com", u: "https://reedysrigs.com" }, { t: "Reedy's Rigs snapper guide (both bays)", u: "https://reedysrigs.com/fishing/snapper-fishing-port-phillip-westernport/" }] },
   { id: "brendan", name: "Brendan Wing", who: "Victorian – YouFishTV, Western Port", links: [{ t: "YouFishTV on YouTube", u: "https://www.youtube.com/@YouFishTV" }] },
   { id: "roger", name: "Roger Osborne", who: "NSW – 40+ years beach, lake and river fishing", links: [{ t: "Roger Osborne Fishing on YouTube", u: "https://www.youtube.com/@RogerOsborneFishing" }, { t: "rogersfishing.com", u: "https://www.rogersfishing.com" }] },
 ];

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SPECIES, bagText } from "./data/species";
 import { REGS, MONTHS } from "./data/regs";
 import { AREAS, type Area } from "./data/spotinfo";
-import { REPORTS, NO_REPORTS, REPORT_CHECKED } from "./data/reports";
+import { REPORTS, NO_REPORTS, REPORT_CHECKED, GUIDES, CHANNEL_NOTES, PODCASTS } from "./data/reports";
 import { APP_NAME, APP_VERSION } from "./config";
 import { type Place } from "./lib";
 import { LAND, ALL_LAND, km, inSeasonHere, short, fromTxt } from "./where";
@@ -79,10 +79,9 @@ export function ReportsTab() {
         {items.map((r) => <Ext key={r.u} href={r.u} cls="rep"><b>{r.t} ↗</b><small>{r.by} · {r.how}</small>{r.note && <small>{r.note}</small>}</Ext>)}
         {a !== "all" && NO_REPORTS[a] && <p className="muted small">{NO_REPORTS[a]}</p>}</section>; })}
     <section className="card"><h3>Also useful</h3>
-      <Ext href="https://vfa.vic.gov.au/recreational-fishing/fishing-locations/go-fishing-port-phillip-bay" cls="rep"><b>VFA – Go Fishing: Port Phillip Bay ↗</b><small>Official list of piers, what is caught there and amenities</small></Ext>
-      <Ext href="https://vfa.vic.gov.au/recreational-fishing/fishing-locations/go-fishing-western-port" cls="rep"><b>VFA – Go Fishing: Western Port ↗</b><small>Flinders, Hastings, Stony Point, Tooradin, San Remo, Cowes and more</small></Ext>
       <Ext href="http://www.bom.gov.au/australia/tides/#!/vic" cls="rep"><b>BOM tide tables ↗</b><small>Official tide predictions</small></Ext>
       <p className="muted small">Tackle shops are a great source: ask what's biting when you buy bait. Please don't rely on social media groups for safety or rules – use the VFA.</p>
+      <p className="muted small">Fishing guides, YouTube channels and podcasts are now on the <b>Tips & rigs</b> page (More tab).</p>
     </section>
   </>;
 }
@@ -131,16 +130,19 @@ export function TipsView({ onSpecies }: { onSpecies: (slug: string) => void }) {
   return <>
     <section className="card"><h2>🪝 Tips & rigs</h2>
       <p>Simple shore-fishing tips from four experts, grouped by topic and written in our own words. Each tip links to the video or article it came from.</p>
-      <div className="chips">{TIP_GROUPS.map((g) => <button key={g.id} onClick={() => document.getElementById(`tip-${g.id}`)?.scrollIntoView({ behavior: "smooth" })}>{g.icon} {g.title}</button>)}</div>
+      <div className="chips">{[...TIP_GROUPS, { id: "learn", icon: "📺", title: "Videos, podcasts & guides" }].map((g) => <button key={g.id} onClick={() => document.getElementById(`tip-${g.id}`)?.scrollIntoView({ behavior: "smooth" })}>{g.icon} {g.title}</button>)}</div>
     </section>
     {TIP_GROUPS.map((g) => <section key={g.id} className="card" id={`tip-${g.id}`}><h2>{g.icon} {g.title}</h2>
       {g.note && <p className="muted small">{g.note}</p>}
       <ul className="plain">{g.tips.map((t) => <li key={t.t}>{t.t}<Credits by={t.by} />
         {t.species && <small className="block">{t.species.map((sl, i) => { const sp = SPECIES.find((x) => x.slug === sl); return sp ? <span key={sl}>{i > 0 ? " · " : ""}<button className="linkish" onClick={() => onSpecies(sl)}>{sp.name} guide ›</button></span> : null; })}</small>}</li>)}</ul>
     </section>)}
-    <section className="card"><h2>👥 The experts</h2>
-      {PEOPLE.map((p) => <div key={p.id}><h3>{p.name}</h3><p className="muted small">{p.who}</p>{p.links.map((l, i) => <Ext key={l.u} href={l.u} cls={`big link-btn${i ? " alt" : ""}`}>{l.t} ↗</Ext>)}</div>)}
+    <section className="card" id="tip-learn"><h2>📺 Watch & learn – YouTube</h2>
+      {PEOPLE.map((p) => <div key={p.id}><h3>{p.name}</h3><p className="muted small">{p.who}{CHANNEL_NOTES[p.id] ? `. ${CHANNEL_NOTES[p.id]}` : ""}</p>{p.links.map((l, i) => <Ext key={l.u} href={l.u} cls={`big link-btn${i ? " alt" : ""}`}>{l.t} ↗</Ext>)}</div>)}
     </section>
+    <section className="card"><h2>🎧 Podcasts</h2>{PODCASTS.map((x) => <Ext key={x.u} href={x.u} cls="rep"><b>{x.t} ↗</b></Ext>)}</section>
+    <section className="card"><h2>📚 Fishing guides</h2><p className="muted small">Where-to-fish guides for piers, rivers and bays.</p>
+      {GUIDES.map((r) => <Ext key={r.u} href={r.u} cls="rep"><b>{r.t} ↗</b><small>{r.by} · {r.how}</small>{r.note && <small>{r.note}</small>}</Ext>)}</section>
     <p className="muted small center">{LEFT_OUT}</p>
   </>;
 }
