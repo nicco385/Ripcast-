@@ -28,6 +28,11 @@ export default function App() {
   const [place, setPlace] = useState<Place>(() => fixName(load("rc-place", DEFAULT)));
   const [favs, setFavs] = useState<Place[]>(() => load<Place[]>("rc-favs", []).map(fixName));
   const [data, setData] = useState<Forecast | null>(() => load<Forecast | null>("rc-cache", null));
+  const [, setTick] = useState(0);
+  // Keep every "now" (tide chart marker, rising/falling, best times) current: redraw each 30 s and when the app comes back on screen.
+  useEffect(() => { const bump = () => setTick((n) => n + 1); const t = setInterval(bump, 30000); const v = () => { if (document.visibilityState === "visible") bump(); };
+    document.addEventListener("visibilitychange", v); window.addEventListener("focus", bump); window.addEventListener("pageshow", bump);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", v); window.removeEventListener("focus", bump); window.removeEventListener("pageshow", bump); }; }, []);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [cover, setCover] = useState(true);

@@ -52,7 +52,7 @@ const WHY: Record<Period["moonEvent"], string> = { overhead: "The moon is overhe
 
 export function SolunarView({ place }: { place: Place }) {
   const [i, setI] = useState(0); const now = Date.now();
-  const keys = useMemo(() => [0, 1, 2, 3, 4, 5, 6].map(dateKey), []);
+  const today = dateKey(0), keys = useMemo(() => [0, 1, 2, 3, 4, 5, 6].map(dateKey), [today]);
   const key = keys[i];
   const d = useMemo(() => dayData(place, key), [place.lat, place.lon, key]);
   return <>

@@ -18,6 +18,8 @@ const dayLabel = (key: string, todayKey: string) => {
   return diff === 0 ? `Today · ${base}` : diff === 1 ? `Tomorrow · ${base}` : base;
 };
 const short = (n: string) => n.replace(/ \(.*\)/, "");
+/** Real moment of a local clock hour on a day (so chart labels stay right on 23 h / 25 h daylight-saving days). */
+const tickAt = (key: string, hour: number) => { const g = dayStart(key, TZ) + hour * 3600000; const h = Number(new Intl.DateTimeFormat("en-AU", { timeZone: TZ, hour: "numeric", hourCycle: "h23" }).format(g)); return g - (h - hour) * 3600000; };
 
 /** Tide chart for the local day (midnight to midnight) with sunrise, sunset and a marker for now. */
 export function DayCurve({ st, now, place }: { st: Station; now: number; place: Place }) {
@@ -37,8 +39,8 @@ export function DayCurve({ st, now, place }: { st: Station; now: number; place: 
       <line x1={x(sr)} x2={x(sr)} y1="16" y2={H - 22} stroke="#f6c45366" /><line x1={x(ss)} x2={x(ss)} y1="16" y2={H - 22} stroke="#f6c45366" /></>}
     <path d={`${d}L${W} ${H - 22}L0 ${H - 22}Z`} fill="#86a39222" /><path d={d} fill="none" stroke="#b9c9c4" strokeWidth="2.5" />
     {ev.map((e) => <g key={e.t}><circle cx={x(e.t)} cy={y(e.m)} r="3.5" fill={e.type === "High" ? "#7fb2e5" : "#e57f7f"} /><text x={x(e.t)} y={e.type === "High" ? y(e.m) - 7 : y(e.m) + 15} textAnchor="middle" fontSize="10.5" fill="#cfe0da">{clock(e.t, TZ).replace(" ", "")}</text></g>)}
-    {now >= from && now < to && <><line x1={x(now)} x2={x(now)} y1="16" y2={H - 22} stroke="#ff8a7a" strokeDasharray="3 3" />{nm && <circle cx={x(now)} cy={y(nm.m)} r="5" fill="#ff8a7a" />}<text x={Math.min(x(now) + 4, W - 26)} y={H - 26} fontSize="10.5" fill="#ff8a7a">now</text></>}
-    {["12 am", "6 am", "12 pm", "6 pm", "12 am"].map((l, i) => <text key={i} x={(i / 4) * W} y={H - 6} fontSize="9.5" fill="#9fb4ae" textAnchor={i === 0 ? "start" : i === 4 ? "end" : "middle"}>{l}</text>)}
+    {now >= from && now < to && <><line x1={x(now)} x2={x(now)} y1="16" y2={H - 22} stroke="#ff8a7a" strokeDasharray="3 3" />{nm && <circle cx={x(now)} cy={y(nm.m)} r="5" fill="#ff8a7a" />}<text x={Math.min(x(now) + 4, W - 62)} y={H - 26} fontSize="10.5" fill="#ff8a7a">now {clock(now, TZ).replace(" ", "")}</text></>}
+    {["12 am", "6 am", "12 pm", "6 pm", "12 am"].map((l, i) => <text key={i} x={i === 0 ? 0 : i === 4 ? W : x(dayStart(key, TZ) + 0) + ((tickAt(key, i * 6) - from) / (to - from)) * W} y={H - 6} fontSize="9.5" fill="#9fb4ae" textAnchor={i === 0 ? "start" : i === 4 ? "end" : "middle"}>{l}</text>)}
   </svg>;
 }
 
