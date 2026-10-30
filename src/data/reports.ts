@@ -37,7 +37,7 @@ export const CHANNEL_NOTES: Record<string, string> = {
   brendan: "Western Port mulloway ('ghosts of the estuary') and snapper. Mostly from a boat. Recommended by Choc.",
 };
 export const PODCASTS = [
-  { t: "Australian Lure Fishing podcast – Melbourne snapper with Lee Rayner (ep. 276)", u: "https://doclures.com/melbourne-snapper-lee-rayner/" },
-  { t: "Australian Lure Fishing podcast – Melbourne estuary perch with Lee Rayner (ep. 435)", u: "https://doclures.com/melbourne-estuary-perch-lee-rayner/" },
-  { t: "Australian Lure Fishing podcast – Winter fishing around Melbourne with Lee Rayner (ep. 513)", u: "https://doclures.com/five-winter-fishing-options-melbourne-lee-rayner/" },
+  { t: "Australian Lure Fishing podcast – Melbourne snapper with Lee Rayner (ep. 276)", u: "https://podcasts.apple.com/au/podcast/melbourne-snapper-with-lee-rayner/id1447917143?i=1000493579463" },
+  { t: "Australian Lure Fishing podcast – Melbourne estuary perch with Lee Rayner (ep. 435)", u: "https://podcasts.apple.com/au/podcast/melbourne-estuary-perch-with-lee-rayner/id1447917143?i=1000538876204" },
+  { t: "Australian Lure Fishing podcast – Winter fishing around Melbourne with Lee Rayner (ep. 513)", u: "https://podcasts.apple.com/au/podcast/episode-513-five-best-winter-fishing-options-around/id1447917143?i=1000562062163" },
 ];

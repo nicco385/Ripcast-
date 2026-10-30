@@ -14,7 +14,7 @@ export const SRC: Record<string, { t: string; u: string }> = {
   pvStKilda: { t: "Parks Victoria – St Kilda Pier", u: "https://www.parks.vic.gov.au/places-to-see/parks/st-kilda-pier-and-breakwater" },
   pvFrankston: { t: "Parks Victoria – Frankston Pier", u: "https://www.parks.vic.gov.au/places-to-see/sites/frankston-pier" },
   frankston: { t: "Frankston City Council – waterfront parking", u: "https://www.frankston.vic.gov.au/Things-To-Do/Frankston-Waterfront-Your-Ultimate-Summer-Destination" },
-  pvRye: { t: "Parks Victoria – Rye Pier rebuild", u: "https://www.parks.vic.gov.au/projects/melbourne-region/rye-pier-approach-reconstruction" },
+  pvRye: { t: "Victorian Premier – Rye Pier rebuild (new deck, handrails, solar lights)", u: "https://www.premier.vic.gov.au/rye-pier-reopens-time-summer" },
   pvAltona: { t: "Parks Victoria – new Altona Pier", u: "https://www.parks.vic.gov.au/news/2024/01/23/00/45/new-altona-pier-open" },
   hobsons: { t: "Hobsons Bay Council – boating facilities", u: "https://www.hobsonsbay.vic.gov.au/Community/Sport-and-recreation/Foreshore-beaches-and-boating-facilities" },
   pvSeaford: { t: "Parks Victoria – Seaford Pier", u: "https://www.parks.vic.gov.au/places-to-see/sites/seaford-pier" },
