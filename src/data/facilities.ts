@@ -47,7 +47,7 @@ export const SRC: Record<string, { t: string; u: string }> = {
   fmSandy: { t: "FishingMad – Sandringham breakwater fishing guide", u: "https://fishingmad.com.au/location/sandringham-breakwater/" },
   bcSandy: { t: "Bite Compass – Sandringham breakwater", u: "https://bitecompass.com/vic/locations/sandringham-breakwater" },
   fvSandyWall: { t: "Fishing Victoria forum – Sandringham rock wall (2023)", u: "https://www.fishing-victoria.com/viewtopic.php?t=26801" },
-  syc: { t: "Sandringham Yacht Club – breakwater works notice", u: "https://syc.com.au/sandringham-breakwater/" },
+  syc: { t: "Parks Victoria – Sandringham Jetty and Breakwater", u: "https://www.parks.vic.gov.au/places-to-see/parks/sandringham-jetty-and-breakwater" },
   pvHampton: { t: "Parks Victoria – Hampton Pier", u: "https://www.parks.vic.gov.au/places-to-see/sites/hampton-pier" },
   baysideHampton: { t: "Bayside City Council – Hampton's new pier opens (19 Jan 2026)", u: "https://www.bayside.vic.gov.au/news/hamptons-new-pier-opens" },
   bcPrinces: { t: "Bite Compass – Princes Pier", u: "https://bitecompass.com/vic/locations/princes-pier" },
