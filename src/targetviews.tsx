@@ -45,6 +45,7 @@ function SpotCard({ s, i, onSpot, label }: { s: SpotPlan; i: number; onSpot: (id
     <div className="row"><h3>{label ?? `${i + 1}.`} {s.spot.name}</h3><VB v={s.verdict} /></div>
     <p className="muted small">{s.spot.info ? AREAS[s.spot.info.area].name : ""}{s.dist != null ? ` · ${fmtDist(s.dist)}` : ""}</p>
     <p className="big-txt">⏰ <b>Best {spanTxt(s.from, s.to)}</b></p>
+    {s.why && <p className="small why-line">💡 {s.why}</p>}
     <p className="small muted">{[s.windTxt && `Wind then: ${s.windTxt}`, s.tideTxt && `Tide: ${s.tideTxt}`].filter(Boolean).join(" · ")}</p>
     {nightNote(s) && <p className="small neg">{nightNote(s)}</p>}
     <ul className="why">{pos.map((f) => <li key={f.txt} className="pos">✅ {f.txt}</li>)}{neg.map((f) => <li key={f.txt} className="neg">⚠️ {f.txt}</li>)}</ul>
@@ -127,7 +128,7 @@ export function FishingToday({ place, rain24, onOpen, onPick }: { place: Place; 
     {out?.near.far && <div className="banner warn">No fishing spots in the app within {out.near.radiusKm} km of here. The nearest is {spotLabel(out.near.nearest.spot.name)}, {Math.round(out.near.nearest.km)} km away – these picks are the closest ones.</div>}
     {!out ? <><div className="skel line" /><div className="skel line short" /></> : <>
       <div className="verdict-big"><VB v={out.verdict} /></div>
-      {top && s ? <p className="headline">Best bet: {fishName(top.profile.name)} at {spotLabel(s.spot.name)} · {Math.round(km(place, s.spot))} km, {spanTxt(s.from, s.to)}.</p> : <p>No good options left today – check tomorrow in the 7-day forecast.</p>}
+      {top && s ? <><p className="headline">Best bet: {fishName(top.profile.name)} at {spotLabel(s.spot.name)} · {Math.round(km(place, s.spot))} km, {spanTxt(s.from, s.to)}.</p>{s.why && <p className="small why-line">💡 Why then: {s.why}</p>}</> : <p>No good options left today – check tomorrow in the 7-day forecast.</p>}
       {rain}{noWind}
       {out.plans.slice(1).map((pl) => { const x = pl.spots[0];
         return <button key={pl.profile.slug} className="item tline" onClick={() => onPick(pl.profile.slug)}>
@@ -149,7 +150,7 @@ function SpotToday({ here, place, out, area, rain, noWind, foot, onPick }: { her
     {closed ? <div className="banner warn">⛔ This spot is closed: {here.info!.status!.note}</div> : !out ? <><div className="skel line" /><div className="skel line short" /></> : <>
       <div className="verdict-big"><VB v={top ? top.spots[0].verdict : "Poor"} /></div>
       {top && s ? <>
-        <p className="headline">{good ? "Best here" : "Best chance here"}: {fishName(top.profile.name)}{occ(top.profile.slug)}, {spanTxt(s.from, s.to)}.</p>
+        <p className="headline">{good ? "Best here" : "Best chance here"}: {fishName(top.profile.name)}{occ(top.profile.slug)}, {spanTxt(s.from, s.to)}.</p>{s.why && <p className="small why-line">💡 Why then: {s.why}</p>}
         {reasons(top) && <p className="small">Why: {reasons(top)}.</p>}
         <p className="small">🪝 {top.profile.tip}</p>
         {nightNote(s) && <p className="small">{nightNote(s)}</p>}

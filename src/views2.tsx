@@ -54,6 +54,7 @@ export function Where({ place, onSpot, onMap }: { place: Place; onSpot: (id: str
         <span className="row"><h3>{i + 1}. {r.spot.name}</h3><VB v={r.verdict} /></span>
         <span className="muted small block">{r.spot.info ? AREAS[r.spot.info.area].name : ""} · {Math.round(dist)} km away{r.windTxt ? ` · wind ${r.windTxt}` : ""}</span>
         <span className="block">⏰ <b>Best: {spanTxt(r.from, r.to)}</b> for {r.profile.name.toLowerCase().replace("king george", "King George").replace("australian", "Australian")}</span>
+        {r.why && <span className="block small why-line">💡 {r.why}</span>}
         <span className="block small">{why.map((f) => `${f.pts > 0 ? "✅" : "⚠️"} ${f.txt}`).join("  ")}</span>
         {tg.length > 0 && <span className="block small">🎯 <b>In season here:</b> {tg.map((o) => short(o.x)).join(", ")}{tg.some((o) => o.hot) ? ` · ⭐ VFA hot spot for ${tg.filter((o) => o.hot).map((o) => short(o.x)).join(", ")}` : ""}</span>}
         <span className="more">Spot guide, tides & tips ›</span>

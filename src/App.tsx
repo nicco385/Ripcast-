@@ -247,6 +247,7 @@ function Week({ f, place, rain24 }: { f: Forecast; place: Place; rain24: number 
             <div className="muted small">Wind up to {Math.round(d.windMax)} kn {compass(d.dir)}, gusts {Math.round(d.gustMax)} · Rain {d.rainChance}%{d.rainSum >= 1 ? ` (${d.rainSum.toFixed(0)} mm)` : ""} · {m.icon}</div></div>
             {o ? <VB v={o.verdict} /> : <div className="skel line short" style={{ width: 70 }} />}</div>
           {top && s && <div className="small">🎯 Best: <b>{top.profile.name}</b> at {s.spot.name}, {spanTxt(s.from, s.to)}</div>}
+          {top && s?.why && <div className="small muted">💡 {s.why}</div>}
           {open === i && o && <>
             {s && <ul className="reasons">{s.factors.filter((x) => x.pts !== 0).sort((a, b) => Math.abs(b.pts) - Math.abs(a.pts)).slice(0, 5).map((x) => <li key={x.txt}>{x.pts > 0 ? "👍" : "👎"} {x.txt}</li>)}</ul>}
             {o.showery ? <p className="small">🌧️ Rain likely for much of the day, so it can't rate above Fair.</p> : o.damp && o.verdict === "Good" ? <p className="small">🌦️ Some rain about, so the day rates Good at best.</p> : null}

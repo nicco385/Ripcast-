@@ -148,21 +148,21 @@ export const EXTRA: [Spot, Info][] = [
     tips: "This stretch is above Dights Falls, so it is freshwater with no tide. FishingMad reports redfin, carp, eels and estuary perch. Small plastics, blades and spinners for redfin; surface lures at dusk for perch; worms or corn for carp. Do not leave line in the trees – flying-foxes get caught. Murray cod: the closed season (1 Sep–30 Nov) applies in the Yarra River. Fish from the river have health advice." },
     { area: "freshwater", src: "local", fresh: true, noWind: true, eat: true, other: ["European carp", "eels"] }],
   [{ id: "st-helens", name: "St Helens boat ramp & rock walls (Geelong)", kind: "shore", lat: -38.12, lon: 144.3595, shore: "west", species: ["snapper", "sand-flathead", "king-george-whiting", "calamari"],
-    tideNote: "", windNote: "", exposedTo: [], shelteredFrom: [], tideLagHours: 0, depth: "Not verified",
+    tideNote: "", windNote: "", exposedTo: ["NE", "E", "SE"], shelteredFrom: ["W", "SW", "NW"], tideLagHours: 0, depth: "Not verified",
     access: "Swinburne Street, North Geelong, on Corio Bay. Car park beside the three-lane boat ramp, with toilets, a fish-cleaning table, picnic facilities and a free boat ramp run with the Coast Guard. The City of Greater Geelong lists the St Helens Harbour rock walls with pole holders and solar lighting, and a St Helens jetty (Bay or Swinburne Street). Coordinates are approximate (from a map listing).",
     tips: "Local reviews say you can fish from the shore beside the ramp and breakwater, and name snapper (including pinkies), squid, flathead and whiting. We found no VFA listing for this spot, so treat the fish list as local knowledge. Keep clear of boats and the ramp lanes, and take line and hooks home. Check the Reports tab for recent Geelong catches." },
-    { area: "bellarine", src: "local", noWind: true,
+    { area: "bellarine", src: "local",
     report: { items: [
       { t: "Choc caught a snapper over 40 cm (his estimate) at St Helens on a small blade lure. Date not given. The length is his estimate, not measured or verified here.", photo: { src: "spots/sthelens-lure.webp", cap: "Choc's snapper from St Helens, with the small blade lure it took (his estimate: over 40 cm). The photo has a graphic effect added." } },
       { t: "The same fish, held beside the water at the St Helens rock wall.", photo: { src: "spots/sthelens-choc.webp", cap: "Choc with his St Helens snapper (his estimate: over 40 cm)." } } ],
       note: "This is one angler's personal account, not a VFA or official report." } }],
   // ---- Merv's Reef (added 2 Nov 2026). Pin = VFA published mark (GDA94 38°07.228'S 144°21.658'E = -38.120467, 144.360967). ----
   [{ id: "mervs-reef", name: "Merv's Reef (St Helens, Geelong)", kind: "shore", lat: -38.120467, lon: 144.360967, shore: "west", depth: "To about 10 m (The Scuba Doctor)",
-    species: ["snapper", "king-george-whiting", "calamari"], tideNote: "", windNote: "", exposedTo: [], shelteredFrom: [], tideLagHours: 0,
+    species: ["snapper", "king-george-whiting", "calamari"], tideNote: "", windNote: "", exposedTo: ["NE", "E", "SE"], shelteredFrom: ["W", "SW", "NW"], tideLagHours: 0,
     access: "Fish it from the St Helens rock wall (break wall) at Swinburne Street, North Geelong – see the St Helens boat ramp & rock walls spot for parking, toilets and lights. Choc (local knowledge) says the reef is about 40–60 m from land, within casting distance from the shore. The VFA puts it about 62 m from the break wall, close enough to reach with a good cast. You can also fish it from a boat or kayak. The pin is the VFA's mark for the middle of the reef.",
     tips: "A man-made rocky reef built by the VFA in 2021 from basalt and limestone, seeded with native flat oysters and blue mussels. It's five small reefs in a north–south line (The Scuba Doctor). The VFA built it for King George whiting, snapper and calamari. Expect some snags when you cast right on to the rocks – fish the edges and carry spare rigs. Divers use this reef too, under a dive flag: if you see one, keep your casts well clear. Normal Port Phillip Bay size and bag limits apply – check the VFA rules.",
   },
-    { area: "bellarine", src: "vfa", noWind: true,
+    { area: "bellarine", src: "vfa",
       photo: { src: "spots/mervs-reef-map.webp", cap: "Map © The Scuba Doctor – the yellow lines are their suggested dive route out to the five reef piles (red dots). Fishers cast from the rock wall.", link: "https://www.scubadoctor.com.au/diveshop/index.php?main_page=divesite&site=mervs-reef", wide: true } }],
 
   // ---- Added 23 Oct 2026: local land-based favourites the VFA list leaves out. Coordinates checked on OpenStreetMap. Proven/occasional fish and the evidence behind each are in data/audit.ts. ----

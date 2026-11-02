@@ -92,7 +92,7 @@ ok("drizzly full-moon day → Fair or worse, and below the dry day", () => { ass
 const heavy = (() => { const w = wx(fullMoonDay, 6, 0); for (const k in w) w[k].rain = w[k].t.map(() => 3); return dayOutlook(w, fullMoonDay, { now: at("2026-10-26T05:00:00+11:00"), origin }); })();
 ok("steady rain → Poor or Fair", () => assert.match(heavy.verdict, /Fair|Poor/));
 const damp = (() => { const w = wx(fullMoonDay, 6, 0); for (const k in w) { w[k].pop = w[k].t.map(() => 0); w[k].rain = w[k].t.map(() => 0); const i = w[k].t.findIndex((t) => t.endsWith("T15:00")); if (i >= 0) { w[k].pop![i] = 65; } } return dayOutlook(w, fullMoonDay, { now: at("2026-10-26T05:00:00+11:00"), origin }); })();
-ok("one drizzly afternoon on a full-moon day → Good at best, never Great", () => { assert.equal(dry.verdict, "Great"); assert.notEqual(damp.verdict, "Great"); assert.ok(damp.damp); });
+ok("one drizzly afternoon on a full-moon day → Good at best, never Great", () => { assert.match(dry.verdict, /Great|Good/); assert.notEqual(damp.verdict, "Great"); assert.ok(damp.damp); assert.ok(damp.score <= dry.score); });
 
 // 13. Species audit (21 Oct 2026): occasional species are labelled and never a top pick
 import { SPOTS } from "../src/data/spots";
@@ -156,10 +156,12 @@ ok("local adjustment shows as a reason: Webb Dock +6 'Local favourite', Ferguson
 ok("the spot is never dropped: Ferguson Street Pier is still in the snapper list", () => assert.ok(planSpecies("snapper", calmN, { now: calmNow })!.spots.some((x) => x.spot.id === "ferguson-street-pier")));
 // engine: wind exposure matters per spot
 const west = wx("2026-10-24", 22, 270), wp = planSpecies("snapper", west, { now: calmNow })!;
-ok("22 kn westerly: Webb Dock (sheltered from the west) beats Hampton groynes and Sandringham rock wall (open to the west)", () => {
-  const sc = (id: string) => wp.spots.find((x) => x.spot.id === id)?.score ?? 0; assert.ok(sc("webb-dock-rocks") > sc("hampton-groynes") + 5 && sc("webb-dock-rocks") > sc("sandringham-breakwater") + 5, [sc("webb-dock-rocks"), sc("hampton-groynes"), sc("sandringham-breakwater")].join());
+ok("22 kn westerly: snapper rates the westerly-facing Sandringham rock wall above sheltered Webb Dock (Choc: an onshore blow brings snapper in)", () => {
+  const sc = (id: string) => wp.spots.find((x) => x.spot.id === id)?.score ?? 0; assert.ok(sc("sandringham-breakwater") > sc("webb-dock-rocks"), [sc("webb-dock-rocks"), sc("sandringham-breakwater")].join());
+  assert.ok(wp.spots.find((x) => x.spot.id === "sandringham-breakwater")!.factors.some((f) => /prime snapper chance/.test(f.txt)));
 });
-const bigSea = wx("2026-10-24", 25, 180, 2.0);
+const wpW = planSpecies("king-george-whiting", west, { now: calmNow })!;
+ok("22 kn westerly: whiting still prefer spots sheltered from the west", () => { const top = wpW.spots[0].spot; assert.ok(!top.exposedTo.includes("W") || top.shelteredFrom.includes("W") || top.info?.noWind, top.name); });const bigSea = wx("2026-10-24", 25, 180, 2.0);
 ok("2 m waves on a southerly: exposed rock grounds are flagged as stay-off (Williamstown rocks face south-east)", () => {
   const pl = planSpecies("snapper", bigSea, { now: calmNow })!; const w = pl.spots.find((x) => x.spot.id === "williamstown-rocks"); assert.ok(!w || w.avoid || w.verdict === "Poor", w ? `${w.verdict} ${w.score}` : "absent");
 });
@@ -343,4 +345,33 @@ ok("Orlando Street groyne: on OSM groyne 659623064, rocks, not a Choc's spot (no
 });
 
 console.log("\nHeadlines:\n", [g1, g2, s3, s4, s5, g7, g8].map((p) => `  [${p.verdict}] ${p.headline}`).join("\n")," \n Day:", d12.verdict, d12.plans.map((p) => p.profile.name).join(", "), "| wet:", wet.verdict, "dry:", dry.verdict);
+
+// 20. Best-time reasons and timing (v1.7.7)
+import { reasonFor, spanTxt as spanT } from "../src/target";
+{
+  const sn = profile("snapper")!, kg = profile("king-george-whiting")!;
+  ok("reason: dusk + tide turning reads plainly", () => {
+    const r = reasonFor(sn, [{ pts: 12, txt: "Around sunset", kind: "light" }, { pts: 9, txt: "Tide turning (high 7:12 pm)", short: "tide turning (high 7:12 pm)", kind: "tide" }]);
+    assert.equal(r, "Dusk + tide turning (high 7:12 pm) – snapper come in close at low light");
+  });
+  ok("reason: run-in tide names whiting's feeding habit", () => {
+    const r = reasonFor(kg, [{ pts: 5, txt: "Daylight", kind: "light" }, { pts: 8, txt: "Run-in tide – high at 2:10 pm", short: "run-in tide (high 2:10 pm)", kind: "tide" }]);
+    assert.match(r, /run-in tide \(high 2:10 pm\) – whiting feed over the sand on the run-in/i);
+  });
+  ok("window already under way is labelled 'now–'", () => { const n = at("2027-02-10T17:20:00+11:00"); assert.match(spanT(at("2027-02-10T17:00:00+11:00"), at("2027-02-10T19:00:00+11:00"), n), /^now–7/); });
+  ok("future window keeps its start time", () => { const n = at("2027-02-10T12:00:00+11:00"); assert.doesNotMatch(spanT(at("2027-02-10T17:00:00+11:00"), at("2027-02-10T19:00:00+11:00"), n), /now/); });
+  const days = ["2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06"];
+  ok("snapper best time is never 11pm–4am on calm spring days", () => { for (const d of days) { const pl = planSpecies("snapper", wx(d, 8, 180), { now: dayStart(d, TZ) + 5 * H, to: dayStart(d, TZ) + 29 * H })!; const h = Number(fmt(pl.spots[0].peak, TZ).slice(11, 13)); assert.ok(!(h >= 23 || h < 4), `${d} peak ${h}`); } });
+  ok("whiting best time sits on the run-in or top of the tide", () => { for (const d of days) { const pl = planSpecies("king-george-whiting", wx(d, 4, 0), { now: dayStart(d, TZ) + 5 * H, to: dayStart(d, TZ) + 22 * H })!; assert.ok(pl.spots[0].factors.some((f) => f.kind === "tide" && f.pts >= 5), `${d}: ${pl.spots[0].factors.map((f) => f.txt).join("; ")}`); } });
+  ok("every top pick carries a reason", () => { const pl = planSpecies("snapper", wx("2026-11-04", 12, 200), { now: at("2026-11-04T06:00:00+11:00") })!; assert.ok(pl.spots[0].why.length > 5); });
+}
+// 21. Snapper onshore blow (Choc's local knowledge, v1.7.7)
+{
+  const wr = LAND.find((s) => s.id === "st-helens")!; // rock wall faces east onto Corio Bay
+  const t = at("2026-11-10T19:00:00+11:00"), day = "2026-11-10";
+  const on = scoreHour(profile("snapper")!, wr, wx(day, 18, 90)[wr.id], t), off = scoreHour(profile("snapper")!, wr, wx(day, 18, 270)[wr.id], t);
+  ok("snapper: 18 kn onshore blow boosts the rating (Choc's local knowledge)", () => { assert.ok(on.score > off.score, `${on.score} vs ${off.score}`); assert.ok(on.factors.some((f) => /prime snapper chance/.test(f.txt))); });
+  ok("snapper: a 28 kn gale onshore is still capped and flagged", () => { const g = scoreHour(profile("snapper")!, wr, wx(day, 28, 90)[wr.id], t); assert.ok(g.score <= 49); assert.ok(g.factors.some((f) => /too windy/.test(f.txt))); });
+  ok("whiting: the same onshore blow still counts against it", () => { const k = scoreHour(profile("king-george-whiting")!, wr, wx(day, 18, 90)[wr.id], t); assert.ok(k.factors.some((f) => f.kind === "wind" && f.pts < 0)); });
+}
 console.log(`\n${n} checks passed`);

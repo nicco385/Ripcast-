@@ -21,69 +21,71 @@ export type Profile = {
   light: { day: number; dd: number; night: number }; nightPier?: boolean;
   tide: TidePref[]; moonBig?: boolean; afterRain?: boolean;
   tip: string; why: string;
+  /** short plain-English reasons shown with a best time: by tide (run-in, top of the tide, change) and by light */
+  note?: { tide?: string; light?: string };
 };
 // Species that have at least two land-based spots in the app.
 export const PROFILES: Profile[] = [
-  { slug: "snapper", name: "Snapper", wind: "stir", light: { day: -2, dd: 12, night: 10 }, tide: ["high", "change"],
+  { slug: "snapper", name: "Snapper", wind: "stir", light: { day: -2, dd: 12, night: 8 }, tide: ["high", "change"],
     tip: "Running sinker rig, 4/0–6/0 circle hook, fresh pilchard, squid or silver whiting. A little berley helps. Experts' tip: last light and the end of the tide are prime; leave the rod in the holder and let the fish hook itself (Lee Rayner).",
-    why: "VFA: morning or late afternoon, a few hours either side of high tide. Anglers report windy days help from the shore (snapper move into the shallows when it is rough), and evenings and after dark suit bigger fish." },
-  { slug: "king-george-whiting", name: "King George whiting", wind: "calm", light: { day: 5, dd: 10, night: 2 }, tide: ["high"],
+    why: "VFA: morning or late afternoon, a few hours either side of high tide. Anglers report windy days help from the shore (snapper move into the shallows when it is rough), and evenings and after dark suit bigger fish.", note: { tide: "snapper feed on the tide change", light: "snapper come in close at low light" } },
+  { slug: "king-george-whiting", name: "King George whiting", wind: "calm", light: { day: 5, dd: 10, night: 2 }, tide: ["rising", "high"],
     tip: "Light paternoster or small running sinker, size 4–6 hook, fresh pipi or bass yabby. Cast to sand patches between weed. If the bite gets tough, switch to fresh pipi or mussel (Brett Reed).",
-    why: "VFA: morning or late afternoon, a few hours either side of high tide, onto sand patches between weed. Light gear and calm water make the light bites easier to feel." },
+    why: "VFA: morning or late afternoon, a few hours either side of high tide, onto sand patches between weed. Light gear and calm water make the light bites easier to feel.", note: { tide: "whiting feed over the sand on the run-in", light: "whiting bite well at the change of light" } },
   { slug: "calamari", name: "Squid (calamari)", wind: "calm", clear: true, light: { day: 4, dd: 10, night: 0 }, nightPier: true, tide: ["rising"],
     tip: "Size 2.5–3.5 prawn-style jig. Cast, let it sink, then lift and let it fall. Clear water; pier lights at night.",
-    why: "VFA: day or night under pier lights; the run-in (rising) tide is best. Squid hunt by sight, so clear water matters – strong onshore wind and heavy rain cloud the water." },
+    why: "VFA: day or night under pier lights; the run-in (rising) tide is best. Squid hunt by sight, so clear water matters – strong onshore wind and heavy rain cloud the water.", note: { tide: "squid hunt on the clean run-in water", light: "squid hunt at dawn and dusk" } },
   { slug: "garfish", name: "Garfish", wind: "calm", clear: true, light: { day: 10, dd: 5, night: -12 }, tide: ["rising"],
     tip: "Small float with a split-shot, size 10–12 long-shank hook, tiny bits of pipi, prawn or maggot. Keep a steady, fine berley trail. Set the float so only its tip shows (Lee Rayner).",
-    why: "VFA: any time of day on the run-in (rising) tide, with a float rig. Berley is often the difference (Compleat Angler). Garfish feed near the surface, so calm, clear water and light winds suit them and make the float easy to watch." },
+    why: "VFA: any time of day on the run-in (rising) tide, with a float rig. Berley is often the difference (Compleat Angler). Garfish feed near the surface, so calm, clear water and light winds suit them and make the float easy to watch.", note: { tide: "garfish feed on the run-in", light: "garfish feed near the surface by day" } },
   { slug: "australian-salmon", name: "Australian salmon", wind: "stir", light: { day: 4, dd: 12, night: -8 }, tide: ["high"],
     tip: "Metal slug cast out and wound back fast, or a paternoster with pilchard or whitebait. Watch for diving birds.",
-    why: "VFA: morning or late afternoon, a few hours either side of high tide. Salmon are active fish that don't mind a bit of breeze and chop." },
+    why: "VFA: morning or late afternoon, a few hours either side of high tide. Salmon are active fish that don't mind a bit of breeze and chop.", note: { tide: "salmon chase bait on the moving tide", light: "salmon feed hard at dawn and dusk" } },
   { slug: "sand-flathead", name: "Sand flathead", wind: "mid", light: { day: 8, dd: 6, night: -6 }, tide: ["high"],
     tip: "Paternoster rig or a soft plastic dragged slowly over sand. Pilchard, whitebait, prawn or squid on a 2/0–4/0 hook.",
-    why: "VFA: can be caught through the day, a few hours either side of high tide, over sand." },
-  { slug: "black-bream", name: "Black bream", wind: "calm", light: { day: 2, dd: 10, night: 6 }, tide: ["high"],
+    why: "VFA: can be caught through the day, a few hours either side of high tide, over sand.", note: { tide: "flathead ambush bait on the moving tide", light: "flathead feed through the day" } },
+  { slug: "black-bream", name: "Black bream", wind: "calm", light: { day: 2, dd: 10, night: 6 }, tide: ["rising", "high"],
     tip: "Light gear, small ball sinker, size 2–6 hook. Bass yabby, prawn, sandworm or scrub worm close to structure.",
-    why: "VFA: morning or late afternoon, a few hours either side of high tide. Bream are shy, so quiet, calmer conditions and light line help." },
+    why: "VFA: morning or late afternoon, a few hours either side of high tide. Bream are shy, so quiet, calmer conditions and light line help.", note: { tide: "bream push up on the run-in", light: "bream feed at low light" } },
   { slug: "silver-trevally", name: "Silver trevally", wind: "mid", light: { day: 5, dd: 8, night: 0 }, tide: ["high"],
     tip: "Float or paternoster close to the pylons, size 2–2/0 hook, pipi, pilchard or squid. A little berley brings them up.",
-    why: "VFA: morning or late afternoon, a few hours either side of high tide, close to pylons and structure." },
+    why: "VFA: morning or late afternoon, a few hours either side of high tide, close to pylons and structure.", note: { tide: "trevally feed round the pylons on the tide", light: "trevally feed at the change of light" } },
   { slug: "mulloway", name: "Mulloway", wind: "stir", light: { day: -6, dd: 10, night: 12 }, tide: ["change"], afterRain: true,
     tip: "Running sinker rig, 6/0–8/0 hook, live mullet or a big fresh bait (squid, fish fillet) near structure. Be patient – they are a rare catch.",
-    why: "No VFA season. Autumn–winter is best around Melbourne (VFA-funded tagging, Patterson River). Most are caught at night, on tide changes and after rain (FishingMad). A rough guide." },
+    why: "No VFA season. Autumn–winter is best around Melbourne (VFA-funded tagging, Patterson River). Most are caught at night, on tide changes and after rain (FishingMad). A rough guide.", note: { tide: "mulloway feed on the tide change", light: "mulloway hunt after dark" } },
   { slug: "estuary-perch", name: "Estuary perch", wind: "calm", light: { day: 0, dd: 12, night: 6 }, tide: ["change"],
     tip: "Small soft plastic or shallow lure cast to timber and rock edges, or a prawn or yabby on a size 2–6 hook.",
-    why: "FishingMad: perch are more active in the warmer months and the best surface bites come on warm, calm evenings. No official season." },
+    why: "FishingMad: perch are more active in the warmer months and the best surface bites come on warm, calm evenings. No official season.", note: { tide: "perch feed on the tide change", light: "perch hit lures at dawn and dusk" } },
   { slug: "gummy-shark", name: "Gummy shark", wind: "stir", light: { day: -10, dd: 6, night: 14 }, tide: ["rising"], moonBig: true,
     tip: "Running sinker or paternoster, strong trace, 6/0–8/0 circle hook, fresh oily bait (salmon, pilchard, squid).",
-    why: "VFA: night, around the full and new moon, on a rising tide." },
+    why: "VFA: night, around the full and new moon, on a rising tide.", note: { tide: "gummies feed on the rising tide", light: "gummies feed after dark" } },
   { slug: "leatherjacket", name: "Leatherjacket", wind: "mid", light: { day: 6, dd: 4, night: -4 }, tide: [],
     tip: "Small long-shank hook (size 6–8), small bits of pipi or squid, close to the pier pylons.",
-    why: "VFA: any time of day; tide is not important." },
+    why: "VFA: any time of day; tide is not important.", note: { light: "leatherjackets feed through the day" } },
   { slug: "golden-perch", name: "Golden perch", wind: "calm", light: { day: 0, dd: 10, night: 2 }, tide: [],
     tip: "Slow-roll a dark soft plastic or a blade along weed edges and snags, or a scrub worm or yabby on a light running sinker.",
-    why: "FishingMad: sunrise and sunset get the most bites, and warm months beat winter. Freshwater – no tides. A rough guide." },
+    why: "FishingMad: sunrise and sunset get the most bites, and warm months beat winter. Freshwater – no tides. A rough guide.", note: { light: "golden perch bite best at dawn and dusk" } },
   { slug: "silver-perch", name: "Silver perch", wind: "calm", light: { day: 2, dd: 8, night: 0 }, tide: [],
     tip: "Small running sinker or float rig, size 6 hook, scrub worm, shrimp or yabby near the bottom.",
-    why: "FishingMad: dawn and dusk on a quiet day; warm months are better. Freshwater – no tides. A rough guide." },
+    why: "FishingMad: dawn and dusk on a quiet day; warm months are better. Freshwater – no tides. A rough guide.", note: { light: "silver perch bite best at dawn and dusk" } },
   { slug: "rainbow-trout", name: "Rainbow trout", wind: "mid", light: { day: 4, dd: 8, night: -6 }, tide: [],
     tip: "6 lb line, running sinker with PowerBait or worms, or cast a Tassie devil or spinner and wind it back (VFA).",
-    why: "VFA: stocked ready-to-catch in the July and September school holidays – best soon after. Cooler months and dawn/dusk are better. Freshwater – no tides. A rough guide." },
+    why: "VFA: stocked ready-to-catch in the July and September school holidays – best soon after. Cooler months and dawn/dusk are better. Freshwater – no tides. A rough guide.", note: { light: "trout feed at dawn and dusk" } },
   { slug: "carp", name: "European carp", wind: "mid", light: { day: 6, dd: 4, night: -4 }, tide: [],
     tip: "Corn, bread or worms on a light running sinker or float. Never put a carp back alive – it's a noxious pest (VFA).",
-    why: "Any time of day; warm, calm days are often better. Freshwater – no tides. A rough guide." },
+    why: "Any time of day; warm, calm days are often better. Freshwater – no tides. A rough guide.", note: { light: "carp feed through the day" } },
   { slug: "redfin", name: "Redfin", wind: "calm", light: { day: 4, dd: 8, night: -4 }, tide: [],
     tip: "Small soft plastics, blades or spinners near snags, or a worm on a light running sinker. Don't release them – they're a pest.",
-    why: "Anytime; dawn and dusk are good (FishingMad). Freshwater – no tides." },
+    why: "Anytime; dawn and dusk are good (FishingMad). Freshwater – no tides.", note: { light: "redfin bite at dawn and dusk" } },
 ];
 export const profile = (slug: string) => PROFILES.find((p) => p.slug === slug);
 export const spotsFor = (slug: string) => LAND.filter((s) => s.species.includes(slug));
 
-export type Factor = { pts: number; txt: string; kind: "wind" | "wave" | "light" | "tide" | "moon" | "season" | "spot" | "rain" };
+export type Factor = { pts: number; txt: string; kind: "wind" | "wave" | "light" | "tide" | "moon" | "season" | "spot" | "rain"; short?: string };
 export type Wx = Record<string, Raw> | null;
 export type SpotPlan = {
   spot: LandSpot; score: number; verdict: Verdict; from: number; to: number; peak: number; factors: Factor[];
-  avoid: boolean; dist: number | null; windTxt: string | null; tideTxt: string | null;
+  avoid: boolean; dist: number | null; windTxt: string | null; tideTxt: string | null; why: string;
 };
 export type Verdict = "Great" | "Good" | "Fair" | "Poor";
 export type Plan = { profile: Profile; verdict: Verdict; headline: string; spots: SpotPlan[]; notes: string[]; noWind: boolean; from: number; to: number };
@@ -110,7 +112,10 @@ function windFactor(p: Profile, s: LandSpot, w: number, dir: number, prevMaxOn: 
   const rel = relWind(s, dir), wn = WINDNAME[c8(dir)], kn = `${Math.round(w)} kn`, shel = rel === "sheltered" || rel === "offshore";
   const f = (pts: number, txt: string): Factor => ({ pts, txt, kind: "wind" });
   const out: Factor[] = [];
-  if (p.wind === "stir") {
+  if (p.slug === "snapper" && rel === "onshore" && w >= 15 && w < 25) {
+    // Choc's local knowledge: an onshore blow stirs and discolours the water and brings snapper in close – rough and uncomfortable, but a prime chance
+    out.push({ pts: 20, txt: `Onshore ${wn} blow (${kn}) – rough & uncomfortable but prime snapper chance (Choc's local knowledge)`, kind: "wind", short: "onshore blow stirring it up" });
+  } else if (p.wind === "stir") {
     if (w >= 25) out.push(f(shel ? -12 : -24, `${cap(wn)} ${kn} – too windy to fish comfortably or safely`));
     else if (w >= 20) out.push(f(shel ? 2 : rel === "onshore" ? -6 : -6, shel ? `Sheltered from a strong ${wn} (${kn})` : `Strong ${wn} (${kn}) – rough and hard to fish`));
     else if (w >= 10) out.push(rel === "onshore" ? f(16, `${cap(wn)} (${kn}) blowing in, stirring up the water`) : shel ? f(6, `Sheltered from the ${wn} (${kn})`) : f(4, `${cap(wn)} cross-wind (${kn})`));
@@ -172,7 +177,8 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
       if ((p.wind === "calm" && (w >= 24 || (w >= 15 && !shelH))) || (p.wind === "mid" && w >= 22) || w >= 25) ceil = 49;
       // a sheltered pier in a 20–24 kn blow is fishable for light-line fish, but never better than Fair
       else if (p.wind === "calm" && w >= 20) ceil = 64;
-      if (gust >= 30) fs.push({ pts: -10, txt: `Gusts to ${Math.round(gust)} kn`, kind: "wind" });
+      const snapBlow = p.slug === "snapper" && relWind(s, dir) === "onshore" && w >= 15 && w < 25;
+      if (gust >= 30 && !(snapBlow && gust < 38)) fs.push({ pts: -10, txt: `Gusts to ${Math.round(gust)} kn`, kind: "wind" });
       windTxt = `${Math.round(w)} kn from the ${c8(dir)}`;
       const wave = r.wave.length ? r.wave[i] : null, rel = relWind(s, dir);
       if (wave != null && ((s.type === "rocks" && wave >= 1.5 && rel !== "sheltered") || (wave >= 2.5 && rel === "onshore" && s.type !== "estuary"))) { avoid = true; fs.push({ pts: -30, txt: `Big waves (${wave.toFixed(1)} m) – stay off the rocks and edges`, kind: "wave" }); }
@@ -192,7 +198,8 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
   }
   fs.push({ pts: lp, txt: ltxt, kind: "light" });
   const hr = Number(lf(t).slice(11, 13));
-  if (hr >= 0 && hr < 4 && L.k === "night" && p.light.night < 10) fs.push({ pts: -4, txt: "Very late night", kind: "light" });
+  // the middle of the night is rarely a sensible "best time" for a land-based angler: only true night feeders escape most of it
+  if ((hr >= 23 || hr < 4) && L.k === "night") fs.push({ pts: p.light.night >= 12 ? -3 : -12, txt: "Middle of the night", kind: "light" });
   // tide (BOM, nearest station)
   let tideTxt: string | null = null;
   const st: Station | undefined = s.info?.fresh ? undefined : stationFor(s);
@@ -202,16 +209,29 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
     const hi = ev.filter((e) => e.type === "High").sort((a, b) => Math.abs(a.t - mid) - Math.abs(b.t - mid))[0];
     const near = ev.sort((a, b) => Math.abs(a.t - mid) - Math.abs(b.t - mid))[0];
     if (next) tideTxt = `${next.type === "High" ? "rising" : "falling"} – ${next.type.toLowerCase()} ${clock(next.t, TZ)}`;
-    let tp = 0, tt = "";
-    if (p.tide.includes("high") && hi && Math.abs(hi.t - mid) <= 3 * H) { tp = 8; tt = `Within 3 h of high tide (${clock(hi.t, TZ)})`; }
-    if (p.tide.includes("rising") && next?.type === "High" && 7 > tp) { tp = 7; tt = `Rising tide – high at ${clock(next.t, TZ)}`; }
-    if (p.tide.includes("change") && near && Math.abs(near.t - mid) <= 75 * 60000 && 6 > tp) { tp = 6; tt = `Tide change (${near.type.toLowerCase()} ${clock(near.t, TZ)})`; }
+    let tp = 0, tt = "", ts = "";
+    const set = (pts: number, txt: string, short: string) => { if (pts > tp) { tp = pts; tt = txt; ts = short; } };
+    const toNext = next ? next.t - mid : Infinity, sincePrev = prev ? mid - prev.t : Infinity;
+    // run-in: the last 3 hours before high water are the best of the flood; earlier in the flood is still OK
+    if (p.tide.includes("rising") && next?.type === "High") {
+      if (toNext <= 3 * H) set(8, `Run-in tide – high at ${clock(next.t, TZ)}`, `run-in tide (high ${clock(next.t, TZ)})`);
+      else set(5, `Early run-in tide – high at ${clock(next.t, TZ)}`, `early run-in (high ${clock(next.t, TZ)})`);
+    }
+    // top of the tide: 3 h before to 1 h after high is best; 1–2.5 h into the run-out still fishes
+    if (p.tide.includes("high") && hi) {
+      const dt = mid - hi.t;
+      if (dt >= -3 * H && dt <= 1 * H) set(8, dt < 0 ? `Run-in to high tide (${clock(hi.t, TZ)})` : `Top of the tide (high ${clock(hi.t, TZ)})`, dt < 0 ? `run-in to high (${clock(hi.t, TZ)})` : `top of the tide (high ${clock(hi.t, TZ)})`);
+      else if (dt > 1 * H && dt <= 2.5 * H) set(5, `Early run-out after high (${clock(hi.t, TZ)})`, `early run-out (high was ${clock(hi.t, TZ)})`);
+    }
+    // the turn itself (slack water and the first push either way)
+    if (p.tide.includes("change") && near && Math.abs(near.t - mid) <= 75 * 60000) set(p.tide[0] === "change" ? 9 : 9, `Tide turning (${near.type.toLowerCase()} ${clock(near.t, TZ)})`, `tide turning (${near.type.toLowerCase()} ${clock(near.t, TZ)})`);
+    void sincePrev;
     if (!tp && p.tide.length && prev && next) { tp = -2; tt = p.tide.includes("rising") ? "Falling tide" : "Away from high tide"; }
-    if (tt) fs.push({ pts: tp, txt: tt, kind: "tide" });
+    if (tt) fs.push({ pts: tp, txt: tt, kind: "tide", short: ts || undefined });
   }
   // moon
   const day = lf(mid).slice(0, 10), per = periodsFor(day).find((q) => q.t0 < t + H && q.t1 > t);
-  if (per) fs.push({ pts: per.rating * 2, txt: `${per.kind === "major" ? "Major" : "Minor"} solunar feeding time (traditional theory)`, kind: "moon" });
+  if (per) fs.push({ pts: per.rating + 1, txt: `${per.kind === "major" ? "Major" : "Minor"} solunar feeding time (traditional theory)`, kind: "moon" });
   if (p.moonBig && nearNewFull(mid)) fs.push({ pts: 8, txt: "Near the new or full moon", kind: "moon" });
   if (p.afterRain && extra.rain24 != null && extra.rain24 >= 5) fs.push({ pts: 6, txt: `After rain (${Math.round(extra.rain24)} mm in the last day)`, kind: "rain" });
   if (p.clear && extra.rain24 != null && extra.rain24 >= 10 && (s.type === "estuary" || s.type === "river")) fs.push({ pts: -6, txt: "Heavy rain – river water likely dirty", kind: "rain" });
@@ -221,6 +241,27 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
   return { score: Math.max(0, Math.min(100, Math.round(score))), factors: fs, avoid, windTxt, tideTxt };
 }
 
+/** A short plain-English reason for a best time, e.g. "Dusk + tide turning (high 7:12 pm) – snapper feed on the tide change". */
+export function reasonFor(p: Profile, fs: Factor[]): string {
+  const parts: string[] = [];
+  const L = fs.find((f) => f.kind === "light" && f.pts > 0 && f.txt !== "Middle of the night");
+  if (L) {
+    const w = /sunrise/i.test(L.txt) ? "Dawn" : /sunset/i.test(L.txt) ? "Dusk" : /pier lights/i.test(L.txt) ? "Pier lights after dark" : /after dark/i.test(L.txt) ? "After dark" : L.pts >= 6 ? "Daylight" : "";
+    if (w) parts.push(w);
+  }
+  const T = fs.find((f) => f.kind === "tide" && f.pts > 0);
+  if (T?.short) parts.push(T.short);
+  const W = fs.find((f) => f.kind === "wind" && f.pts >= 10);
+  if (W?.short) parts.unshift(cap(W.short));
+  else if (W) parts.push(/blowing in|stirring/.test(W.txt) ? "breeze stirring the water" : /^Sheltered/.test(W.txt) ? "sheltered from the wind" : "light winds");
+  if (fs.some((f) => f.kind === "moon" && f.pts >= 3)) parts.push("solunar time");
+  if (!parts.length) return "";
+  const lightPts = L?.pts ?? 0, tidePts = T?.pts ?? 0;
+  const note = W?.short && p.slug === "snapper" ? "rough & uncomfortable but a prime snapper chance (Choc's local knowledge)" : (tidePts >= lightPts && T ? p.note?.tide : p.note?.light) ?? p.note?.light ?? p.note?.tide;
+  const head = parts.slice(0, 2).map((x, i) => i ? x[0].toLowerCase() + x.slice(1) : x).join(" + ");
+  return cap(head) + (note ? ` – ${note}` : "");
+}
+
 const periodWord = (t: number, now: number) => {
   const d = fmt(t, TZ), today = fmt(now, TZ).slice(0, 10), h = Number(d.slice(11, 13)), tom = d.slice(0, 10) > today;
   if (h >= 20 || h < 4) return tom && h >= 4 ? "tomorrow night" : "tonight";
@@ -228,7 +269,8 @@ const periodWord = (t: number, now: number) => {
   if (h < 16) return tom ? "tomorrow afternoon" : "this afternoon";
   return tom ? "tomorrow evening" : "this evening";
 };
-export const spanTxt = (a: number, b: number) => { const x = clock(a, TZ), y = clock(b, TZ); return x.slice(-2) === y.slice(-2) ? `${x.replace(/:00| am| pm/g, "")}–${y.replace(":00", "")}` : `${x.replace(":00", "")}–${y.replace(":00", "")}`; };
+export const spanTxt = (a: number, b: number, now = Date.now()) => {
+  if (a < now && b > now) return `now–${clock(b, TZ).replace(":00", "")}`; const x = clock(a, TZ), y = clock(b, TZ); return x.slice(-2) === y.slice(-2) ? `${x.replace(/:00| am| pm/g, "")}–${y.replace(":00", "")}` : `${x.replace(":00", "")}–${y.replace(":00", "")}`; };
 const joinAnd = (a: string[]) => a.length <= 1 ? a.join("") : `${a.slice(0, -1).join(", ")} and ${a[a.length - 1]}`;
 
 /** Rank spots for one species between `from` and `to` (default: the next 24 hours). */
@@ -248,7 +290,7 @@ export function planSpecies(slug: string, wx: Wx, o: { now?: number; from?: numb
     while (a > 0 && b - a < 3 && hrs[a - 1].v.score >= best - 4) a--;
     while (b < hrs.length - 1 && b - a < 3 && hrs[b + 1].v.score >= best - 4) b++;
     const v = hrs[bi].v;
-    return { spot: s, score: best, verdict: verdictOf(best), from: hrs[a].t, to: hrs[b].t + H, peak: hrs[bi].t, factors: v.factors, avoid: v.avoid, dist: o.origin ? km(o.origin, s) : null, windTxt: v.windTxt, tideTxt: v.tideTxt };
+    return { spot: s, score: best, verdict: verdictOf(best), from: hrs[a].t, to: hrs[b].t + H, peak: hrs[bi].t, factors: v.factors, avoid: v.avoid, dist: o.origin ? km(o.origin, s) : null, windTxt: v.windTxt, tideTxt: v.tideTxt, why: reasonFor(p, v.factors) };
   // Occasional-catch spots (data/audit.ts) always rank below regular spots, so they are never the top pick
   // while a regular spot exists – even on days when their wind shelter scores them higher.
   }).sort((x, y) => Number(isOcc(x.spot, p.slug)) - Number(isOcc(y.spot, p.slug)) || y.score - x.score || (x.dist ?? 0) - (y.dist ?? 0));
@@ -287,7 +329,7 @@ export function rainLast24(f: { hours: { time: string; rain: number }[]; place: 
 export const speciesName = (slug: string) => SPECIES.find((s) => s.slug === slug)?.name ?? slug;
 
 // ---- one rating engine for the whole app: Today, Where, Target a fish and the 7-day forecast ----
-export type SpotRating = { spot: LandSpot; profile: Profile; score: number; verdict: Verdict; from: number; to: number; peak: number; factors: Factor[]; avoid: boolean; windTxt: string | null; tideTxt: string | null; noWind: boolean };
+export type SpotRating = { spot: LandSpot; profile: Profile; score: number; verdict: Verdict; from: number; to: number; peak: number; factors: Factor[]; avoid: boolean; windTxt: string | null; tideTxt: string | null; noWind: boolean; why: string };
 /** Rate a spot for whichever of its fish suits the conditions best, between `from` and `to`. */
 export function rateSpot(s: LandSpot, r: Raw | undefined, from: number, to: number, o: { rain24?: number | null } = {}): SpotRating | null {
   const ps = PROFILES.filter((p) => s.species.includes(p.slug)); if (!ps.length) return null;
@@ -303,7 +345,7 @@ export function rateSpot(s: LandSpot, r: Raw | undefined, from: number, to: numb
     while (a > 0 && b - a < 3 && hrs[a - 1].v.score >= sc - 4) a--;
     while (b < hrs.length - 1 && b - a < 3 && hrs[b + 1].v.score >= sc - 4) b++;
     const v = hrs[bi].v, noWind = !r || !r.t.includes(keyOf(hrs[bi].t));
-    best = { spot: s, profile: p, score: sc, verdict: noWind && sc >= 65 ? "Fair" : verdictOf(sc), from: hrs[a].t, to: hrs[b].t + H, peak: hrs[bi].t, factors: v.factors, avoid: v.avoid, windTxt: v.windTxt, tideTxt: v.tideTxt, noWind };
+    best = { spot: s, profile: p, score: sc, verdict: noWind && sc >= 65 ? "Fair" : verdictOf(sc), from: hrs[a].t, to: hrs[b].t + H, peak: hrs[bi].t, factors: v.factors, avoid: v.avoid, windTxt: v.windTxt, tideTxt: v.tideTxt, noWind, why: reasonFor(p, v.factors) };
   }
   return best;
 }

@@ -3,6 +3,9 @@ import * as SunCalc from "suncalc";
 import { type Place, moonInfo } from "./lib";
 import { solunar, moonDay, dayRating, dayStart, dayEnd, fmt, type Period, type TideEv } from "./astro";
 import { nearestStation, eventsBetween, clock } from "./tides";
+import { useWx } from "./targetviews";
+import { dayOutlook, spanTxt } from "./target";
+import { spotAt, spotLabel } from "./where";
 
 const TZ = "Australia/Melbourne";
 const t12 = (ms: number | null) => (ms == null ? "–" : clock(ms, TZ));
@@ -55,9 +58,15 @@ export function SolunarView({ place }: { place: Place }) {
   const today = dateKey(0), keys = useMemo(() => [0, 1, 2, 3, 4, 5, 6].map(dateKey), [today]);
   const key = keys[i];
   const d = useMemo(() => dayData(place, key), [place.lat, place.lon, key]);
+  const { wx } = useWx();
+  const best = useMemo(() => { const o = dayOutlook(wx?.data ?? null, key, { origin: place, only: spotAt(place), n: 1 }); const pl = o.plans[0]; return pl ? { pl, s: pl.spots[0] } : null; }, [wx, key, place.lat, place.lon, now - (now % 600000)]);
   return <>
     <section className="card">
       <h2>🌙 Moon & feeding times</h2>
+      {best ? <div className="bestbox"><p className="small"><b>🎯 Best time to fish {i === 0 ? "today" : label(key, i).toLowerCase() === "tomorrow" ? "tomorrow" : `on ${label(key, i)}`}: {spanTxt(best.s.from, best.s.to)}</b> – {best.pl.profile.name.toLowerCase().replace("king george", "King George").replace("australian", "Australian")} at {spotLabel(best.s.spot.name)}</p>
+        {best.s.why && <p className="small why-line">💡 {best.s.why}</p>}
+        <p className="muted small">This weighs tide, sunrise and sunset, wind and season – the same as Today and Where to fish. The moon periods below are only one part of it.</p></div>
+        : <p className="muted small">No good fishing time left {i === 0 ? "today" : "this day"}.</p>}
       <p className="muted small">For {place.name}. Melbourne time. Worked out on your phone from the moon's position.</p>
       <div className="chips" role="group" aria-label="Day">{keys.map((k, n) => <button key={k} className={i === n ? "on" : ""} onClick={() => setI(n)}>{label(k, n)}</button>)}</div>
       <p className="rateline"><span className={`rate r-${d.rating}`}>{d.rating.toUpperCase()}</span> <span className="muted small">feeding-time rating</span></p>
@@ -65,7 +74,7 @@ export function SolunarView({ place }: { place: Place }) {
       <p className="muted small">Green bars = major periods, blue = minor. Taller = higher rating. Dots are {d.station ? `${d.station} tide turns` : "tides (no station nearby)"}.</p>
     </section>
     <section className="card"><h3>Feeding periods</h3>
-      {d.periods.map((p) => <div key={p.tm} className="solrow"><div className="period-head"><b>{t12(p.t0)} – {t12(p.t1)}</b> <Fish n={p.rating} /></div>
+      {d.periods.map((p) => <div key={p.tm} className="solrow" style={p.t1 < now ? { opacity: 0.55 } : undefined}><div className="period-head"><b>{t12(p.t0)} – {t12(p.t1)}</b>{p.t1 < now ? <span className="muted small"> (passed)</span> : p.t0 < now ? <span className="small"> (on now)</span> : null} <Fish n={p.rating} /></div>
         <div><b>{p.kind === "major" ? "Major" : "Minor"}</b> · {WORD[p.rating]} · {p.label}</div>
         <small className="muted">{WHY[p.moonEvent]} {p.sun ? `This lines up with ${p.sun}, which anglers rate higher.` : ""}</small></div>)}
       {d.periods.length === 0 && <p className="muted">No moon events fall on this day.</p>}
