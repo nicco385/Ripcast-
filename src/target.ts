@@ -11,6 +11,7 @@ import { solunar, nearNewFull, fmt, dayStart, dayEnd, type Period } from "./astr
 import { nearestStation, eventsBetween, clock, type Station } from "./tides";
 import { FACILITIES } from "./data/facilities";
 import { isOcc } from "./data/spots";
+import { hotFor, shortDate } from "./data/hotThisWeek";
 
 const TZ = "Australia/Melbourne", H = 3600000;
 type WindPref = "calm" | "mid" | "stir";
@@ -161,6 +162,9 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
   // angler reports (data/audit.ts has the evidence): local favourites go up a little, spots that report weaker than their VFA listing go down a little
   const lc = s.info?.local?.[p.slug];
   if (lc) fs.push({ pts: lc, txt: lc > 0 ? (s.info?.src === "choc" ? "Choc's spot – local knowledge" : "Local favourite (angler reports)") : "Quieter than its VFA listing suggests (angler reports)", kind: "spot" });
+  // recent catch reports (data/hotThisWeek.ts, updated weekly by hand; expired entries are ignored by date). Safety caps below still apply.
+  const hot = hotFor(s.id, p.slug, t);
+  if (hot) { const src = `${hot.source.replace(/^VFA – /, "")}, ${shortDate(hot.reported)}`; fs.push({ pts: hot.level === "spot" ? 6 : 3, txt: `🔥 Reported biting ${hot.level === "spot" ? "here" : "in this area"} this week – ${src}`, kind: "spot", short: `🔥 Reported biting this week – ${src}` }); }
   // only an occasional catch here (data/audit.ts): shown, but never a top pick
   if (isOcc(s, p.slug)) { fs.push({ pts: -12, txt: "Only an occasional catch at this spot", kind: "spot" }); ceil = 64; }
   // wind and waves
@@ -255,12 +259,13 @@ export function reasonFor(p: Profile, fs: Factor[]): string {
   if (W?.short) parts.unshift(cap(W.short));
   else if (W) parts.push(/blowing in|stirring/.test(W.txt) ? "breeze stirring the water" : /^Sheltered/.test(W.txt) ? "sheltered from the wind" : "light winds");
   if (fs.some((f) => f.kind === "moon" && f.pts >= 3)) parts.push("solunar time");
-  if (!parts.length) return "";
+  const hotF = fs.find((f) => f.kind === "spot" && f.short?.startsWith("🔥"));
+  if (!parts.length) return hotF?.short ?? "";
   const lightPts = L?.pts ?? 0, tidePts = T?.pts ?? 0;
   const snapNight = p.slug === "snapper" && L && /after dark/i.test(L.txt);
   const note = snapNight && !W?.short ? "snapper move into the shallows to feed under darkness (Choc's local knowledge)" : W?.short && p.slug === "snapper" ? "rough & uncomfortable but a prime snapper chance (Choc's local knowledge)" : (tidePts >= lightPts && T ? p.note?.tide : p.note?.light) ?? p.note?.light ?? p.note?.tide;
   const head = parts.slice(0, 2).map((x, i) => i ? x[0].toLowerCase() + x.slice(1) : x).join(" + ");
-  return cap(head) + (note ? ` – ${note}` : "");
+  return cap(head) + (note ? ` – ${note}` : "") + (hotF ? ` · ${hotF.short}` : "");
 }
 
 const periodWord = (t: number, now: number) => {

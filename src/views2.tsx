@@ -8,6 +8,7 @@ import { APP_NAME, APP_VERSION } from "./config";
 import { type Place } from "./lib";
 import { LAND, ALL_LAND, km, inSeasonHere, short, fromTxt } from "./where";
 import { rateSpot, spanTxt, type SpotRating } from "./target";
+import { activeHot, shortDate, HOT_UPDATED } from "./data/hotThisWeek";
 import { useWx, VB } from "./targetviews";
 import { fmt, dayEnd } from "./astro";
 import { StaleNote } from "./stale";
@@ -43,6 +44,7 @@ export function Where({ place, onSpot, onMap }: { place: Place; onSpot: (id: str
       <p className="muted small">Distance from: <b>{fromTxt(origin.name)}</b> · <button className="linkish" onClick={gps}>use my location</button> {gpsMsg}</p>
       <button className="btn alt wide" onClick={onMap}>🗺️ See all spots on the map</button>
     </section>
+    <HotThisWeek onSpot={onSpot} />
     {failed && !wx && <div className="banner warn">{navigator.onLine ? "Can't reach the weather service right now, so spots are rated on tide, time, moon and season only." : "You're offline, so spots are rated on tide, time, moon and season only."}</div>}
     {wx?.stale && <div className="banner">Using the wind forecast saved {Math.round((Date.now() - wx.at) / 60000)} min ago.</div>}
     {!wx && !failed && <><p className="muted small center">Checking wind at every spot…</p><div className="skel card-h tall" /><div className="skel card-h tall" /></>}
@@ -146,4 +148,16 @@ export function TipsView({ onSpecies }: { onSpecies: (slug: string) => void }) {
       {GUIDES.map((r) => <Ext key={r.u} href={r.u} cls="rep"><b>{r.t} ↗</b><small>{r.by} · {r.how}</small>{r.note && <small>{r.note}</small>}</Ext>)}</section>
     <p className="muted small center">{LEFT_OUT}</p>
   </>;
+}
+
+/** Small list of recent catch reports that boost spot ratings this week (data/hotThisWeek.ts). Each item links to its source. */
+export function HotThisWeek({ onSpot }: { onSpot: (id: string) => void }) {
+  const hot = activeHot();
+  return <section className="card hot">
+    <h2>🔥 Hot this week</h2>
+    {hot.length ? <ul className="plain">{hot.map((h) => { const sp = ALL_LAND.find((x) => x.id === h.spots[0]);
+      return <li key={h.url + h.species + h.spots.join()} className="small"><b>{short(h.species)}</b>{sp ? <> – <button className="linkish" onClick={() => onSpot(sp.id)}>{sp.name}</button>{h.level === "area" ? " (area)" : ""}</> : null}. {h.note} <a href={h.url} target="_blank" rel="noreferrer">{h.source}, {shortDate(h.reported)} ↗</a></li>; })}</ul>
+      : <p className="small muted">No recent land-based catch reports we could tie to a spot this week.</p>}
+    <p className="muted small">From weekly catch reports, checked by hand (last update {shortDate(HOT_UPDATED)}). Matching spots get a small boost until each report is about a week old – wind and safety still come first.</p>
+  </section>;
 }
