@@ -152,6 +152,14 @@ export const EXTRA: [Spot, Info][] = [
       { t: "Choc caught a snapper over 40 cm (his estimate) at St Helens on a small blade lure. Date not given. The length is his estimate, not measured or verified here.", photo: { src: "spots/sthelens-lure.webp", cap: "Choc's snapper from St Helens, with the small blade lure it took (his estimate: over 40 cm). The photo has a graphic effect added." } },
       { t: "The same fish, held beside the water at the St Helens rock wall.", photo: { src: "spots/sthelens-choc.webp", cap: "Choc with his St Helens snapper (his estimate: over 40 cm)." } } ],
       note: "This is one angler's personal account, not a VFA or official report." } }],
+  // ---- Merv's Reef (draft 2 Nov 2026). Pin = VFA published mark (GDA94 38°07.228'S 144°21.658'E = -38.120467, 144.360967). ----
+  [{ id: "mervs-reef", name: "Merv's Reef (St Helens, Geelong)", kind: "shore", lat: -38.120467, lon: 144.360967, shore: "west", depth: "To about 10 m (The Scuba Doctor)",
+    species: ["snapper", "king-george-whiting", "calamari"], tideNote: "", windNote: "", exposedTo: [], shelteredFrom: [], tideLagHours: 0,
+    access: "Fish it from the St Helens rock wall (break wall) at Swinburne Street, North Geelong – see the St Helens boat ramp & rock walls spot for parking, toilets and lights. The VFA says the reef is about 62 m out from the break wall: close enough to reach with a good cast. You can also fish it from a boat or kayak. The pin is the VFA's mark for the middle of the reef.",
+    tips: "A man-made rocky reef built by the VFA in 2021 from basalt and limestone, seeded with native flat oysters and blue mussels. It's five small reefs in a north–south line (The Scuba Doctor). The VFA built it for King George whiting, snapper and calamari. Expect some snags when you cast right on to the rocks – fish the edges and carry spare rigs. Divers use this reef too, under a dive flag: if you see one, keep your casts well clear. Normal Port Phillip Bay size and bag limits apply – check the VFA rules.",
+    // photo: { src: "spots/mervs-reef-map.webp", cap: "Map © The Scuba Doctor", link: "https://www.scubadoctor.com.au/diveshop/index.php?main_page=divesite&site=mervs-reef" }  // add when Choc resends the photo
+  },
+    { area: "bellarine", src: "vfa", noWind: true }],
 
   // ---- Added 23 Oct 2026: local land-based favourites the VFA list leaves out. Coordinates checked on OpenStreetMap. Proven/occasional fish and the evidence behind each are in data/audit.ts. ----
   [{ id: "webb-dock-rocks", name: "Webb Dock rock wall (Port Melbourne)", kind: "shore", lat: -37.8452, lon: 144.9155, shore: "mid", depth: "Not verified",

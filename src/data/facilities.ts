@@ -187,5 +187,6 @@ export const FACILITIES: Record<string, Facilities> = {
   "beaumaris-pier": f(U, Y("Public parking above, on Beach Road, Ray Street and Charman Road – the lower car park is for squadron members only (SquidFishing.com.au)"), ["sqBeaumaris"], { lights: { has: "unknown", note: "A local squid guide mentions pier lights – not officially confirmed" } }),
   "albert-park-lake": f(Y("Public toilet block by the Carousel, about 70 m (OpenStreetMap, not checked); more at the picnic grounds around the lake"), Y("Car park about 90 m from Choc's spot (OpenStreetMap) – check signs for fees and time limits"), ["osmCarousel", "pvAlbert"], { lights: U, rails: U }),
   "yarra-bend": f(Y("Near the Long Oval pavilion, about 100 m – open 24 hours"), Y("Car parks in the park"), ["pvYarraBend"]),
+  "mervs-reef": f(Y("St Helens Coast Guard, about 300 m – open 24 hours"), Y("St Helens boat ramp car park"), ["geelong"], { lights: Y("Solar lights on the rock wall") }),
   "st-helens": f(Y("St Helens Coast Guard, about 60 m – open 24 hours"), Y("Car park beside the boat ramp"), ["geelong"], { lights: Y("Solar lights on the harbour rock walls"), cleaning: Y("Fish cleaning table at the rock walls") }),
 };
