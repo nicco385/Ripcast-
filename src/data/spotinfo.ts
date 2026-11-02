@@ -26,7 +26,7 @@ export type Info = Partial<Omit<Spot, "id">> & {
   /** Freshwater, not tidal: no tide times or sea waves. */
   fresh?: boolean;
   /** A photo shown on the spot guide, with an honest caption. */
-  photo?: { src: string; cap: string };
+  photo?: { src: string; cap: string; link?: string; wide?: boolean };
   /** Spot-specific rules, shown in their own card. */
   rules?: string[];
   /** Angler-report adjustments to the ranking, per fish: + for local favourites, - where local reports are weaker than an official listing. Reasons live in data/audit.ts. */
@@ -133,7 +133,11 @@ export const EXTRA: [Spot, Info][] = [
     species: ["golden-perch", "estuary-perch", "silver-perch", "rainbow-trout", "carp", "redfin", "murray-cod"], tideNote: "Freshwater lake – no tides.", windNote: "", exposedTo: [], shelteredFrom: [], tideLagHours: 0,
     access: "Choc's spot is the east shore by the Carousel Restaurant, Aughtie Drive, Albert Park. A car park is about 90 m away (OpenStreetMap) – check the signs for fees and time limits. You can also walk the lake's shore track (about 5 km round). FishingMad names the carousel area and the yacht club pontoons (Aquatic Drive) as popular spots.",
     tips: "Weedy and shallow, so use shallow lures and light gear. Surface lures on warm calm evenings for estuary perch; slow-rolled plastics for golden perch; scrub worms for silver perch. Redfin are listed by the VFA but rarely caught here (FishingMad). Trout are stocked in winter and school holidays. Carp must not be put back. Take line and hooks home – there are swans, and Parks Victoria asks you not to touch sick or dead birds (bird flu alert)." },
-    { area: "freshwater", src: "choc", fresh: true, noWind: true, hot: [], local: { "rainbow-trout": 3, "golden-perch": 3, "estuary-perch": 3, carp: 3, "silver-perch": 3 }, other: ["eels"],
+    { area: "freshwater", src: "choc",
+      report: { items: [
+        { t: "A big rainbow trout caught at Albert Park Lake, with the Melbourne city skyline behind. Date and size not given.", photo: { src: "spots/albertpark-trout-skyline.webp", cap: "Albert Park Lake rainbow trout, with the city skyline behind." } },
+        { t: "Another rainbow trout from Albert Park Lake. Date and size not given.", photo: { src: "spots/albertpark-trout-2.webp", cap: "Albert Park Lake rainbow trout. A text label has been removed from the photo." } } ],
+        note: "Catch photos shared by Choc. Albert Park Lake trout are stocked by the VFA." }, fresh: true, noWind: true, hot: [], local: { "rainbow-trout": 3, "golden-perch": 3, "estuary-perch": 3, carp: 3, "silver-perch": 3 }, other: ["eels"],
       sources: ["parksAP", "vfaTroutLakes", "vfaHoliday", "vfaStonker", "vfaCarp", "vfaGP", "vfaSP", "osmCarousel"],
       notice: "Fishing is allowed with a Victorian fishing licence (Parks Victoria). Parks Victoria encourages catch and release and says Albert Park Lake fish are not suitable to eat. Carp must be removed from the lake – never put one back alive. Sailing races run on Saturdays and rowing crews train here – keep casts clear of boats.",
       rules: ["Rainbow trout (VFA, family fishing lakes): no minimum size, 5 trout/salmon a day, no more than 2 over 35 cm, no closed season.", "Golden perch (yellowbelly): minimum 30 cm, bag 5. Silver perch: minimum 30 cm, bag 5. Estuary perch: minimum 27 cm, bag 5 combined with bass. Keep perch whole until you leave.", "European carp: no size or bag limit, noxious – kill it straight away, never return it alive. Take it away or cut it so it sinks (VFA).", "Murray cod: 55–75 cm only, bag 2 in Albert Park Lake."],
@@ -152,14 +156,14 @@ export const EXTRA: [Spot, Info][] = [
       { t: "Choc caught a snapper over 40 cm (his estimate) at St Helens on a small blade lure. Date not given. The length is his estimate, not measured or verified here.", photo: { src: "spots/sthelens-lure.webp", cap: "Choc's snapper from St Helens, with the small blade lure it took (his estimate: over 40 cm). The photo has a graphic effect added." } },
       { t: "The same fish, held beside the water at the St Helens rock wall.", photo: { src: "spots/sthelens-choc.webp", cap: "Choc with his St Helens snapper (his estimate: over 40 cm)." } } ],
       note: "This is one angler's personal account, not a VFA or official report." } }],
-  // ---- Merv's Reef (draft 2 Nov 2026). Pin = VFA published mark (GDA94 38°07.228'S 144°21.658'E = -38.120467, 144.360967). ----
+  // ---- Merv's Reef (added 2 Nov 2026). Pin = VFA published mark (GDA94 38°07.228'S 144°21.658'E = -38.120467, 144.360967). ----
   [{ id: "mervs-reef", name: "Merv's Reef (St Helens, Geelong)", kind: "shore", lat: -38.120467, lon: 144.360967, shore: "west", depth: "To about 10 m (The Scuba Doctor)",
     species: ["snapper", "king-george-whiting", "calamari"], tideNote: "", windNote: "", exposedTo: [], shelteredFrom: [], tideLagHours: 0,
     access: "Fish it from the St Helens rock wall (break wall) at Swinburne Street, North Geelong – see the St Helens boat ramp & rock walls spot for parking, toilets and lights. Choc (local knowledge) says the reef is about 40–60 m from land, within casting distance from the shore. The VFA puts it about 62 m from the break wall, close enough to reach with a good cast. You can also fish it from a boat or kayak. The pin is the VFA's mark for the middle of the reef.",
     tips: "A man-made rocky reef built by the VFA in 2021 from basalt and limestone, seeded with native flat oysters and blue mussels. It's five small reefs in a north–south line (The Scuba Doctor). The VFA built it for King George whiting, snapper and calamari. Expect some snags when you cast right on to the rocks – fish the edges and carry spare rigs. Divers use this reef too, under a dive flag: if you see one, keep your casts well clear. Normal Port Phillip Bay size and bag limits apply – check the VFA rules.",
-    // photo: { src: "spots/mervs-reef-map.webp", cap: "Map © The Scuba Doctor", link: "https://www.scubadoctor.com.au/diveshop/index.php?main_page=divesite&site=mervs-reef" }  // add when Choc resends the photo
   },
-    { area: "bellarine", src: "vfa", noWind: true }],
+    { area: "bellarine", src: "vfa", noWind: true,
+      photo: { src: "spots/mervs-reef-map.webp", cap: "Map © The Scuba Doctor – the yellow lines are their suggested dive route out to the five reef piles (red dots). Fishers cast from the rock wall.", link: "https://www.scubadoctor.com.au/diveshop/index.php?main_page=divesite&site=mervs-reef", wide: true } }],
 
   // ---- Added 23 Oct 2026: local land-based favourites the VFA list leaves out. Coordinates checked on OpenStreetMap. Proven/occasional fish and the evidence behind each are in data/audit.ts. ----
   [{ id: "webb-dock-rocks", name: "Webb Dock rock wall (Port Melbourne)", kind: "shore", lat: -37.8452, lon: 144.9155, shore: "mid", depth: "Not verified",

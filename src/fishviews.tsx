@@ -77,6 +77,8 @@ export function SpeciesView({ slug, onSpot, onTarget, onTips }: { slug: string; 
     <section className="card spec-hero">
       <SpThumb name={sp.name} size={300} />
       {slug === "estuary-perch" && <p className="muted small" style={{ marginTop: 0 }}>Choc's 41 cm estuary perch, caught on a lure at Southbank.</p>}
+      {slug === "black-bream" && <p className="muted small" style={{ marginTop: 0 }}>A black bream on a measuring mat – Choc's photo.</p>}
+      {slug === "garfish" && <p className="muted small" style={{ marginTop: 0 }}>A southern garfish caught off Middle Brighton – Choc's photo.</p>}
       <h2>{sp.name}</h2>{sp.aka && <p className="muted small">Also called: {sp.aka}</p>}
       <p>{g.intro}</p>
       <div className="grid">
@@ -87,6 +89,7 @@ export function SpeciesView({ slug, onSpot, onTarget, onTips }: { slug: string; 
       <p className="muted small">Size and bag limits checked against the VFA on {REGS.checked}. <Ext href={REGS.sourceUrl}>Check the latest ↗</Ext> <StaleNote checked={REGS.checked} what="limits" /></p>
       {onTarget && profile(slug) && <button className="big" onClick={() => onTarget(slug)}>🎯 Where to catch {sp.name.toLowerCase().replace("king george", "King George").replace("australian", "Australian")} now</button>}
     </section>
+    {slug === "garfish" && <section className="card"><h2>🎣 Catch photo</h2><figure className="spotphoto"><img src={`${BASE}spots/garfish-middle-brighton.webp`} alt="Garfish caught off Middle Brighton" width={240} height={334} loading="lazy" /><figcaption>Caught off Middle Brighton – five whole garfish and three cleaned ones. Choc's photo.</figcaption></figure></section>}
     {g.trust !== "good" && <div className="banner warn">{g.trust === "low" ? "Limited information: we could not find strong sources for this fish from the shore, so treat this page as a rough guide." : "Some details here come from local angler reports rather than the VFA – treat them as a guide."}</div>}
     <section className="card">
       <h2>📅 When</h2><p><b>{sl.t}</b></p><MonthStrip slug={slug} /><SeasonKey /><p className="small">{g.seasonText}</p>
@@ -131,7 +134,7 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
   return <>
     <section className="card">
       <h2>{spot.name}</h2>
-      {i?.photo && <figure className="spotphoto"><img src={BASE + i.photo.src} alt={i.photo.cap} width={280} height={350} loading="lazy" /><figcaption>{i.photo.cap}</figcaption></figure>}
+      {i?.photo && <figure className="spotphoto"><img src={BASE + i.photo.src} alt={i.photo.cap} width={280} height={350} loading="lazy" style={i.photo.wide ? { aspectRatio: "4/3", objectFit: "contain", maxWidth: "100%" } : undefined} /><figcaption>{i.photo.cap}{i.photo.link && <> <Ext href={i.photo.link}>Open the map page ↗</Ext></>}</figcaption></figure>}
       <p className="muted small">{i ? AREAS[i.area].name : ""} · {spot.type} · {Math.round(km(place, spot))} km from {place.name}</p>
       {i?.status?.closed && <div className="banner danger">⛔ Closed. {i.status.note}<br /><Ext href={i.status.url}>Official update ↗</Ext> <small>(as of {i.status.asOf})</small> <StaleNote checked={i.status.asOf} what="closure" /></div>}
       {i?.notice && <div className="banner warn">⚠️ {i.notice}</div>}
@@ -159,9 +162,9 @@ export function SpotView({ spot, place, onBack, onMap, onUse, onSpecies }: { spo
     {i?.sources?.length ? <section className="card"><h2>📚 Where this comes from</h2>
       <p className="muted small">Angler forum posts and tackle-shop guides are one person's or one shop's account, so we mark fish as occasional unless several reports agree. Official pages are listed first where we found them.</p>
       <ul className="plain">{i.sources.filter((k) => SRC[k]).map((k) => <li key={k}><Ext href={SRC[k].u}>{SRC[k].t} ↗</Ext></li>)}</ul></section> : null}
-    {i?.report && <section className="card"><h2>🎣 Angler report</h2>{i.report.items.map((r) => <div key={r.t}><p className="small">{r.t}</p>{r.photo && <figure className="spotphoto" style={{ marginTop: 8 }}><img src={BASE + r.photo.src} alt={r.photo.cap} width={240} height={r.photo.src.includes("bream") ? 300 : 150} loading="lazy" style={r.photo.src.includes("snapper") ? { aspectRatio: "16/10" } : undefined} /><figcaption>{r.photo.cap}</figcaption></figure>}</div>)}
+    {i?.report && <section className="card"><h2>🎣 Angler report</h2>{i.report.items.map((r) => <div key={r.t}><p className="small">{r.t}</p>{r.photo && <figure className="spotphoto" style={{ marginTop: 8 }}><img src={BASE + r.photo.src} alt={r.photo.cap} width={240} height={r.photo.src.includes("bream") || r.photo.src.includes("albertpark") ? 300 : 150} loading="lazy" style={r.photo.src.includes("snapper") ? { aspectRatio: "16/10" } : undefined} /><figcaption>{r.photo.cap}</figcaption></figure>}</div>)}
       <p className="small">{i.report.note}</p>
-      <p className="small"><b>Snapper rules (VFA):</b> minimum 28 cm, bag 10, and no more than 3 may be 40 cm or longer. Keep whole until you are away from the water.</p>{i.report.items.some((r) => /bream/i.test(r.t)) && <p className="small"><b>Black bream rules (VFA):</b> minimum 28 cm, bag 10 (combined with other bream and tarwhine), no maximum size here (the 38 cm maximum is only for the Gippsland Lakes). Keep whole until you are away from the water.</p>}</section>}
+      {i.report.items.some((r) => /snapper|pinkie/i.test(r.t)) && <p className="small"><b>Snapper rules (VFA):</b> minimum 28 cm, bag 10, and no more than 3 may be 40 cm or longer. Keep whole until you are away from the water.</p>}{i.report.items.some((r) => /bream/i.test(r.t)) && <p className="small"><b>Black bream rules (VFA):</b> minimum 28 cm, bag 10 (combined with other bream and tarwhine), no maximum size here (the 38 cm maximum is only for the Gippsland Lakes). Keep whole until you are away from the water.</p>}</section>}
     {i?.rules && !i.fresh && <section className="card"><h2>📏 Rules here</h2>{i.rules.map((r) => <p key={r} className="small">{r}</p>)}<p className="small"><Ext href="https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons">VFA size and bag limits ↗</Ext></p></section>}
     {i?.eat && !i.fresh && <section className="card"><h2>🌙 Safety by the water</h2><p className="small">Fish with a friend if you can and tell someone where you are. Keep back from the edge – there is often no rail, the water is deep and cold, and the wall can be slippery. Wear a life jacket on rocks or if you are not a strong swimmer. Keep your gear out of the walkway and take all line and hooks home.</p></section>}
     {i?.fresh && <section className="card"><h2>📏 Rules for the perch here</h2>
