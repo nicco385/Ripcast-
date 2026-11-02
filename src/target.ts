@@ -26,7 +26,7 @@ export type Profile = {
 };
 // Species that have at least two land-based spots in the app.
 export const PROFILES: Profile[] = [
-  { slug: "snapper", name: "Snapper", wind: "stir", light: { day: -2, dd: 12, night: 8 }, tide: ["high", "change"],
+  { slug: "snapper", name: "Snapper", wind: "stir", light: { day: -2, dd: 12, night: 12 }, tide: ["high", "change"],
     tip: "Running sinker rig, 4/0–6/0 circle hook, fresh pilchard, squid or silver whiting. A little berley helps. Experts' tip: last light and the end of the tide are prime; leave the rod in the holder and let the fish hook itself (Lee Rayner).",
     why: "VFA: morning or late afternoon, a few hours either side of high tide. Anglers report windy days help from the shore (snapper move into the shallows when it is rough), and evenings and after dark suit bigger fish.", note: { tide: "snapper feed on the tide change", light: "snapper come in close at low light" } },
   { slug: "king-george-whiting", name: "King George whiting", wind: "calm", light: { day: 5, dd: 10, night: 2 }, tide: ["rising", "high"],
@@ -257,7 +257,8 @@ export function reasonFor(p: Profile, fs: Factor[]): string {
   if (fs.some((f) => f.kind === "moon" && f.pts >= 3)) parts.push("solunar time");
   if (!parts.length) return "";
   const lightPts = L?.pts ?? 0, tidePts = T?.pts ?? 0;
-  const note = W?.short && p.slug === "snapper" ? "rough & uncomfortable but a prime snapper chance (Choc's local knowledge)" : (tidePts >= lightPts && T ? p.note?.tide : p.note?.light) ?? p.note?.light ?? p.note?.tide;
+  const snapNight = p.slug === "snapper" && L && /after dark/i.test(L.txt);
+  const note = snapNight && !W?.short ? "snapper move into the shallows to feed under darkness (Choc's local knowledge)" : W?.short && p.slug === "snapper" ? "rough & uncomfortable but a prime snapper chance (Choc's local knowledge)" : (tidePts >= lightPts && T ? p.note?.tide : p.note?.light) ?? p.note?.light ?? p.note?.tide;
   const head = parts.slice(0, 2).map((x, i) => i ? x[0].toLowerCase() + x.slice(1) : x).join(" + ");
   return cap(head) + (note ? ` – ${note}` : "");
 }

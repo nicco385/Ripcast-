@@ -361,7 +361,14 @@ import { reasonFor, spanTxt as spanT } from "../src/target";
   ok("window already under way is labelled 'now–'", () => { const n = at("2027-02-10T17:20:00+11:00"); assert.match(spanT(at("2027-02-10T17:00:00+11:00"), at("2027-02-10T19:00:00+11:00"), n), /^now–7/); });
   ok("future window keeps its start time", () => { const n = at("2027-02-10T12:00:00+11:00"); assert.doesNotMatch(spanT(at("2027-02-10T17:00:00+11:00"), at("2027-02-10T19:00:00+11:00"), n), /now/); });
   const days = ["2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06"];
-  ok("snapper best time is never 11pm–4am on calm spring days", () => { for (const d of days) { const pl = planSpecies("snapper", wx(d, 8, 180), { now: dayStart(d, TZ) + 5 * H, to: dayStart(d, TZ) + 29 * H })!; const h = Number(fmt(pl.spots[0].peak, TZ).slice(11, 13)); assert.ok(!(h >= 23 || h < 4), `${d} peak ${h}`); } });
+  ok("snapper best time is dusk or night, never the middle of the day", () => { for (const d of days) { const pl = planSpecies("snapper", wx(d, 8, 180), { now: dayStart(d, TZ) + 5 * H, to: dayStart(d, TZ) + 29 * H })!; const h = Number(fmt(pl.spots[0].peak, TZ).slice(11, 13)); assert.ok(h >= 18 || h <= 6, `${d} peak ${h}`); } });
+ok("snapper: night is prime (Choc) – after dark beats midday, with the shallows reason", () => {
+  const sp = LAND.find((s) => s.id === "williamstown-rocks")!, w = wx("2026-11-10", 6, 0)[sp.id];
+  const night = scoreHour(profile("snapper")!, sp, w, at("2026-11-10T22:00:00+11:00")), noon = scoreHour(profile("snapper")!, sp, w, at("2026-11-10T12:00:00+11:00"));
+  assert.ok(night.factors.find((f) => f.kind === "light")!.pts >= 12); assert.ok(!night.factors.some((f) => f.txt === "Middle of the night"));
+  assert.match(reasonFor(profile("snapper")!, night.factors.filter((f) => f.kind !== "tide")), /shallows to feed under darkness \(Choc's local knowledge\)/);
+  assert.ok(night.factors.find((f) => f.kind === "light")!.pts > noon.factors.find((f) => f.kind === "light")!.pts);
+});
   ok("whiting best time sits on the run-in or top of the tide", () => { for (const d of days) { const pl = planSpecies("king-george-whiting", wx(d, 4, 0), { now: dayStart(d, TZ) + 5 * H, to: dayStart(d, TZ) + 22 * H })!; assert.ok(pl.spots[0].factors.some((f) => f.kind === "tide" && f.pts >= 5), `${d}: ${pl.spots[0].factors.map((f) => f.txt).join("; ")}`); } });
   ok("every top pick carries a reason", () => { const pl = planSpecies("snapper", wx("2026-11-04", 12, 200), { now: at("2026-11-04T06:00:00+11:00") })!; assert.ok(pl.spots[0].why.length > 5); });
 }
