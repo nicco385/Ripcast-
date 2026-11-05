@@ -14,11 +14,13 @@ export type HotEntry = {
 };
 
 /** Last weekly update (Melbourne date). */
-export const HOT_UPDATED = "2026-11-02";
+export const HOT_UPDATED = "2026-11-06";
 
 export const HOT: HotEntry[] = [
-  { spots: ["black-rock-jetty"], level: "area", species: "snapper", note: "Black Rock named as the go-to area for big snapper this week (paternoster rigs with squid, pilchard or garfish; soft plastics at bite times). The report doesn't say if these were shore or boat catches, so this counts as an area mention.",
-    source: "VFA – The Pelican's Pick", url: "https://vfa.vic.gov.au/recreational-fishing/the-pelicans-pick", reported: "2026-10-30", expires: "2026-11-08" },
+  { spots: ["black-rock-jetty"], level: "area", species: "snapper", note: "Black Rock still named as the go-to area for large snapper (paternoster with squid, pilchard or garfish around 7 m; soft plastics at bite times). Shore vs boat not split out, so this stays an area mention.",
+    source: "Fishing Australia – Port Phillip", url: "https://www.fishingaustralia.com.au/fishing-reports/port-phillip/", reported: "2026-11-04", expires: "2026-11-13" },
+  { spots: ["mornington-pier", "rye-pier"], level: "spot", species: "calamari", note: "Squid fishing from Mornington to Rye called consistent, with the piers recommended as the place to start (bright jigs near the pylons).",
+    source: "VFA – The Pelican's Pick", url: "https://vfa.vic.gov.au/recreational-fishing/the-pelicans-pick", reported: "2026-11-06", expires: "2026-11-15" },
 ];
 
 const TZ = "Australia/Melbourne";

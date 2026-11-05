@@ -30,3 +30,4 @@ The list lives in `src/data/hotThisWeek.ts` and is updated by hand once a week (
 
 ## Log
 - 2026-11-02: first update. One entry: Black Rock snapper (Pelican's Pick, 30 Oct, area-level). FishingMad 2 Nov land-based report said popular Melbourne spots fished well for snapper but named no spots in the public part; Trelly's 30 Oct was inland only; Getfished's newest Port Phillip report was 11 Oct; Fishing Australia's newest was 14–21 Oct – all skipped.
+- 2026-11-06: weekly update. Black Rock snapper refreshed from Fishing Australia (28 Oct–4 Nov, area). Pelican's Pick (6 Nov) named consistent squid Mornington to Rye with piers as the start point → Mornington & Rye piers spot-level calamari (Dromana skipped: pier closed for rebuild). FishingMad 2 Nov land-based teaser praised Melbourne snapper spots but named none publicly; Trelly's 30 Oct inland only; Getfished newest Port Phillip still 11 Oct – all skipped.

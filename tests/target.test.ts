@@ -389,12 +389,12 @@ import { activeHot, hotFor, HOT, type HotEntry } from "../src/data/hotThisWeek";
   ok("hot: expired entry is ignored automatically", () => { assert.equal(activeHot(at("2026-11-10T00:30:00+11:00"), fake).length, 0); assert.equal(hotFor("williamstown-rocks", "snapper", at("2026-11-12T12:00:00+11:00"), fake), undefined); });
   ok("hot: only the reported species matches", () => assert.equal(hotFor("williamstown-rocks", "calamari", at("2026-11-03T12:00:00+11:00"), fake), undefined));
   ok("hot: every live entry is valid (known spots, species, expiry 7–10 days, https link)", () => { for (const h of HOT) { const days = (Date.parse(h.expires) - Date.parse(h.reported)) / 864e5; assert.ok(days >= 7 && days <= 10, h.note); assert.ok(h.spots.every((id) => LAND.some((s) => s.id === id && s.species.includes(h.species))), h.spots.join()); assert.match(h.url, /^https:/); } });
-  const br = LAND.find((s) => s.id === "black-rock-jetty")!, p = profile("snapper")!, t1 = at("2026-11-03T20:00:00+11:00"), t2 = at("2026-11-20T20:00:00+11:00");
+  const br = LAND.find((s) => s.id === "black-rock-jetty")!, p = profile("snapper")!, t1 = at("2026-11-06T20:00:00+11:00"), t2 = at("2026-11-20T20:00:00+11:00");
   ok("hot: Black Rock snapper gets a modest boost with the source in the reason, and not after expiry", () => {
-    const a = scoreHour(p, br, wx("2026-11-03", 8, 180)[br.id], t1), f = a.factors.find((x) => x.txt.startsWith("🔥"))!;
-    assert.ok(f && f.pts > 0 && f.pts <= 6); assert.match(reasonFor(p, a.factors), /🔥 Reported biting this week – The Pelican.s Pick, 30 Oct/);
+    const a = scoreHour(p, br, wx("2026-11-06", 8, 180)[br.id], t1), f = a.factors.find((x) => x.txt.startsWith("🔥"))!;
+    assert.ok(f && f.pts > 0 && f.pts <= 6); assert.match(reasonFor(p, a.factors), /🔥 Reported biting this week – Fishing Australia – Port Phillip, 4 Nov/);
     assert.ok(!scoreHour(p, br, wx("2026-11-20", 8, 180)[br.id], t2).factors.some((x) => x.txt.startsWith("🔥")));
   });
-  ok("hot: the boost never lifts a gale above the safety cap", () => { const g = scoreHour(p, br, wx("2026-11-03", 30, 270)[br.id], t1); assert.ok(g.score <= 49); });
+  ok("hot: the boost never lifts a gale above the safety cap", () => { const g = scoreHour(p, br, wx("2026-11-06", 30, 270)[br.id], t1); assert.ok(g.score <= 49); });
 }
 console.log(`\n${n} checks passed`);
