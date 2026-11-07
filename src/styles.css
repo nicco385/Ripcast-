@@ -264,3 +264,14 @@ optgroup{font-weight:700}
 
 .why-line{color:#f6d77a;margin:2px 0 6px;line-height:1.35;overflow-wrap:anywhere}
 .bestbox{background:#ffffff0d;border:1px solid #f6c45333;border-radius:12px;padding:8px 10px;margin:6px 0 8px}
+
+/* Research/reference cards: readable, keyboard-accessible and compact on phones. */
+.research{border-top:1px solid #ffffff22;padding:12px 0;scroll-margin-top:80px}
+.research summary{cursor:pointer;font-weight:700;min-height:44px;padding:8px 0;line-height:1.4}
+.research summary::marker{color:var(--aqua)}
+.resource-spots{flex-wrap:wrap;overflow:visible}
+.resource-spots button{white-space:normal;text-align:left;max-width:100%;padding:10px 14px;height:auto}
+[id^="tip-"]{scroll-margin-top:80px}
+
+.research-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.research-nav button{min-height:52px;border-radius:12px;padding:10px 8px;border:1px solid #ffffff22;background:#ffffff0a;color:var(--txt);font-size:15px;line-height:1.4;text-align:left}

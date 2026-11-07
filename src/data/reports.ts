@@ -1,24 +1,19 @@
-// Report sources. Every link below was opened and checked live on 19 Oct 2026 (Sydney time) and showed content from the past month.
-// "How often" describes what we saw. Nothing here is our own report – we link out so you always see the original.
+// Actual fishing report sources only. Guides, videos and forums belong in Resources.
 import type { Area } from "./spotinfo";
 export type ReportLink = { t: string; u: string; by: string; how: string; areas: (Area | "all")[]; note?: string };
-export const REPORTS: ReportLink[] = [
-  { t: "The Pelican's Pick", u: "https://vfa.vic.gov.au/recreational-fishing/the-pelicans-pick", by: "Victorian Fisheries Authority", how: "Weekly (latest seen: 16 Oct 2026)", areas: ["all"], note: "Official. The 'Around the Bays' section covers Port Phillip and Western Port." },
-  { t: "FishingMad – weekly reports", u: "https://fishingmad.com.au/reports/", by: "FishingMad (Melbourne angler)", how: "Weekly (latest seen: 10 Oct 2026)", areas: ["all"], note: "Separate land-based, Port Phillip, Western Port and estuary reports. Some detail may need a FishingMad membership." },
-  { t: "Trelly's Victorian Fishing Report", u: "https://www.trellys.com.au/blogs/fishing-report-victoria", by: "Trellys tackle store", how: "Written weekly, no maps (latest seen: 16 Oct 2026)", areas: ["all"], note: "Covers Corio Bay and the Bellarine in some weeks, and lakes and rivers in others." },
-  { t: "The Burley Pot", u: "https://www.fishingcamping.com.au/the-burley-pot-august-2026/", by: "Compleat Angler Dandenong (tackle shop)", how: "Monthly newsletter (first edition: Aug 2026)", areas: ["east", "peninsula", "westernport"], note: "Pier and bait tips for Port Phillip and Western Port. Shop phone: 03 9794 9397." },
-  { t: "Getfished – Port Phillip Bay", u: "https://getfished.fish/vic/port-phillip-bay/fishing-report/", by: "Getfished (community entries)", how: "A few entries a month (latest seen: 11 Oct 2026)", areas: ["northwest", "east", "peninsula", "bellarine"], note: "Small sample – treat as a hint, not a forecast." },
-  { t: "Getfished – Western Port", u: "https://getfished.fish/vic/western-port/fishing-report/", by: "Getfished (community entries)", how: "A few entries a month (latest seen: 27 Sep 2026)", areas: ["westernport"], note: "Small sample – treat as a hint, not a forecast." },
-  { t: "All Out Fishing – weekly video report", u: "https://www.facebook.com/alloutfishingau", by: "All Out Fishing (Geelong store, Manifold Heights)", how: "Geelong store – weekly video report with map (posts can be irregular). Latest seen: 23 Sep 2026", areas: ["bellarine"], note: "Facebook videos that use a map to show where fish are biting around Geelong and the Bellarine. Facebook may ask you to log in." },
-  { t: "Geelong Times – fishing column", u: "https://timesnewsgroup.com.au/geelongtimes/sport/fishing/", by: "Geelong Times / Torquay Angling Club", how: "Regular (latest seen: 9 Oct 2026)", areas: ["bellarine"], note: "Short reports from Torquay, Point Lonsdale and Clifton Springs." },
-  { t: "Fishing Victoria Forum – Geelong & Bellarine", u: "https://www.fishing-victoria.com/viewforum.php?f=150", by: "Fishing Victoria Forum (members)", how: "Quieter lately – last posts Jan 2026", areas: ["bellarine"], note: "Good for local spot knowledge. Older posts, so check dates." },
-  { t: "FlyStream local reports (The Flyfisher)", u: "https://theflyfisher.com.au/a/blog", by: "The Flyfisher (fly shop, South Melbourne)", how: "Every few weeks (latest seen: 15 Oct 2026)", areas: ["freshwater"], note: "Written trout reports with photos, for the Goulburn Valley streams and Bright. Those are a 1.5–3 hour drive from Melbourne. Look for posts marked 'Local reports'." },
+export type ReportSource = ReportLink & { kind: "report"; published: string; scope: "mixed" | "general"; checked: string; older?: boolean };
+export const REPORTS: ReportSource[] = [
+  { kind: "report", t: "The Pelican's Pick", u: "https://vfa.vic.gov.au/recreational-fishing/the-pelicans-pick", by: "Victorian Fisheries Authority", how: "Weekly · latest opened: 6 Nov 2026", published: "2026-11-06", checked: "8 Nov 2026", scope: "mixed", areas: ["all"], note: "Squid consistent Mornington to Rye; piers suggested with bright jigs near pylons. Bay snapper around 8 m on flooding tide; Cowes whiting. General catches are not confirmed at particular piers. Stony Point gummies around 10 m are not proven shore catches." },
+  { kind: "report", t: "FishingMad – weekly report summaries", u: "https://fishingmad.com.au/fishing_reports/", by: "FishingMad", how: "Weekly · public summaries: 2 Nov 2026", published: "2026-11-02", checked: "8 Nov 2026", scope: "mixed", areas: ["all"], note: "Separate land-based, bay and estuary reports. Public teaser describes a strong week for land-based snapper but names no exact spots. Full reports may need membership; no hidden detail used." },
+  { kind: "report", t: "Fishing Australia – Port Phillip", u: "https://www.fishingaustralia.com.au/fishing-reports/port-phillip/", by: "Fishing Australia (secondary report)", how: "Report period: 28 Oct–4 Nov 2026", published: "2026-11-04", checked: "8 Nov 2026", scope: "mixed", areas: ["northwest", "east", "peninsula", "bellarine"], note: "Black Rock snapper around 7 m on squid, pilchard or garfish. Shore versus boat is not separated: not a confirmed Black Rock Jetty catch and no shore score boost. Do not use this report's old weekend weather as today's forecast." },
+  { kind: "report", t: "Getfished – Port Phillip Bay", u: "https://getfished.fish/vic/port-phillip-bay/fishing-report/", by: "Getfished (community entries)", how: "Older reports · newest: 11 Oct 2026", published: "2026-10-11", checked: "8 Nov 2026", scope: "general", older: true, areas: ["northwest", "east", "peninsula", "bellarine"], note: "Newest entry names only Port Phillip Bay, not an exact shore spot. Small sample. Shares of submitted reports are not your chance of catching a fish. No weekly boost." },
+  { kind: "report", t: "Geelong Times – fishing column", u: "https://timesnewsgroup.com.au/geelongtimes/sport/fishing/", by: "Geelong Times / Torquay Angling Club", how: "Older column opened: 9 Oct 2026", published: "2026-10-09", checked: "8 Nov 2026", scope: "mixed", older: true, areas: ["bellarine"], note: "Torquay snapper/flathead, Point Lonsdale whiting and Clifton Springs sand whiting near channels. Shore versus boat not stated; not a current Geelong shore report." },
 ];
 export const NO_REPORTS: Record<string, string> = {
-  rivers: "No weekly Yarra or Maribyrnong report found. FishingMad's weekly reports often cover the city rivers.",
-  westernport: "Lang Lang: check FishingMad's weekly Western Port report (the muddy banks near Lang Lang were a hot spot in Oct 2026) and the Pelican's Pick.",
+  rivers: "No fresh public report verified at an exact Yarra or Maribyrnong shore spot. FishingMad has dated estuary summaries; videos and forum discussions are in Tips & rigs, not current reports.",
+  westernport: "Check the official weekly bay report above. Cowes whiting and Stony Point channel catches are area reports, not confirmed catches from those jetties.",
 };
-export const REPORT_CHECKED = "19 Oct 2026";
+export const REPORT_CHECKED = "8 Nov 2026";
 
 /** Guides and how-to places (moved out of Reports in v1.7.1). Shown on the Tips & rigs page. */
 export const GUIDES: ReportLink[] = [
@@ -32,12 +27,14 @@ export const GUIDES: ReportLink[] = [
 ];
 /** Notes from the old Reports entries for the experts' channels (kept, shown under The experts). */
 export const CHANNEL_NOTES: Record<string, string> = {
-  lee: "Snapper, whiting and mulloway how-tos, mostly Port Phillip and Western Port (mostly from a boat, but the tips work from land too). Recommended by Choc.",
+  lee: "Snapper, whiting and mulloway how-tos, mostly Port Phillip and Western Port (mostly from a boat, some techniques may help from land; boat marks and depths are not shore access). Recommended by Choc.",
   brett: "Rig-tying, whiting, squid and gummy videos, including a land-based gummy set-up for Western Port. His website has a snapper guide for both bays (it's a tackle shop, so some links sell products). Recommended by Choc.",
   brendan: "Western Port mulloway ('ghosts of the estuary') and snapper. Mostly from a boat. Recommended by Choc.",
 };
 export const PODCASTS = [
-  { t: "Australian Lure Fishing podcast – Melbourne snapper with Lee Rayner (ep. 276)", u: "https://podcasts.apple.com/au/podcast/melbourne-snapper-with-lee-rayner/id1447917143?i=1000493579463" },
-  { t: "Australian Lure Fishing podcast – Melbourne estuary perch with Lee Rayner (ep. 435)", u: "https://podcasts.apple.com/au/podcast/melbourne-estuary-perch-with-lee-rayner/id1447917143?i=1000538876204" },
-  { t: "Australian Lure Fishing podcast – Winter fishing around Melbourne with Lee Rayner (ep. 513)", u: "https://podcasts.apple.com/au/podcast/episode-513-five-best-winter-fishing-options-around/id1447917143?i=1000562062163" },
+  { t: "Maribyrnong River Bream Fishing with Dale Baxter – ALF ep. 79", u: "https://doclures.libsyn.com/episode-79-maribyrnong-river-bream-fishing-with-dale-baxter", note: "28 Jun 2019 · local reference. Tournament/kayak specialist on finding bream and lure tactics; not purely land-based. Exact public episode page verified, full audio not reviewed." },
+  { t: "Lee Rayner & Joel Ryan – The Fishing Podcast, ep. 23", u: "https://podcasts.apple.com/au/podcast/ep-23-300kg-tuna-14kg-of-drag-and-lees-big-news-season-2-finale/id1878239404?i=1000793303553", note: "6 Oct 2026 AEDT · start at 10:50 for land-based versus boat fishing and the early snapper run. Most of the episode covers other fishing/boating. Explicit language. Description checked, not a current catch report or a full-audio review." },
+  { t: "Australian Lure Fishing – Melbourne snapper with Lee Rayner (ep. 276)", u: "https://podcasts.apple.com/au/podcast/melbourne-snapper-with-lee-rayner/id1447917143?i=1000493579463", note: "5 Oct 2020 · historical reference, Port Phillip and Western Port. Exact episode page reopened 8 Nov 2026." },
+  { t: "Australian Lure Fishing – Melbourne estuary perch with Lee Rayner (ep. 435)", u: "https://podcasts.apple.com/au/podcast/melbourne-estuary-perch-with-lee-rayner/id1447917143?i=1000538876204", note: "18 Oct 2021 · historical local lure-fishing reference. Exact episode page reopened 8 Nov 2026." },
+  { t: "Australian Lure Fishing – Winter options around Melbourne with Lee Rayner (ep. 513)", u: "https://podcasts.apple.com/au/podcast/episode-513-five-best-winter-fishing-options-around/id1447917143?i=1000562062163", note: "18 May 2022 · historical winter reference. Exact episode page reopened 8 Nov 2026." },
 ];

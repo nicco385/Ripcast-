@@ -33,16 +33,16 @@ export const TIP_GROUPS: TipGroup[] = [
   { id: "plan", icon: "🗓️", title: "Plan your trip", tips: [
     { t: "Check the forecast a few days ahead – wave height, wind strength and direction, and the tide. If it's very rough or very windy, pick another day.", by: [READ] },
     { t: "Decide which fish you're after before you leave home. That decides your hook, sinker, line and bait. Have a plan rather than just turning up.", by: [READ, B_KGW] },
-    { t: "Low light is best: first light to just after sunrise, and the last hour before dark into early night. Overcast days can fish all day; bright midday sun is usually slow.", by: [READ, B_KGW, B_LB10] },
-    { t: "Tide changes matter. The few hours around a change are when most bites come – try to line up dawn or dusk with a tide change.", by: [B_KGWG, L_WIN] },
-    { t: "Land-based snapper often bite well in a big blow with a low barometer – the opposite of boat fishing.", by: [L_POD], species: ["snapper"], inGuide: true },
+    { t: "For many shore targets the experts favour first or last light. Overcast conditions may extend activity. It varies by species and spot; daylight is still useful for flathead and some pier fish.", by: [READ, B_KGW, B_LB10] },
+    { t: "The experts often favour tide changes or a moving tide. Try a session overlapping dawn or dusk, but the best stage varies by location and species, and tide height is not the same as current slack.", by: [B_KGWG, L_WIN] },
+    { t: "Lee reports land-based snapper can feed in onshore rough weather with a low barometer. This is expert observation, not a guarantee: never fish a platform being washed by waves or unsafe conditions.", by: [L_POD], species: ["snapper"], inGuide: true },
     { t: "Keep trying different times and spots, and make your own reports rather than chasing other people's. Every trip teaches you something.", by: [R("Roger's #1 tip", "qp3R1OrS6ew"), B_KGW] },
     { t: "Believe you'll catch one. Be organised – net, bait and rig ready – so you don't fumble when the bite comes.", by: [B_KGW, L_HOW] },
   ] },
   { id: "spots", icon: "📍", title: "Victorian spot tips", note: "From Lee and Brett, who fish Melbourne's bays. Always check the VFA rules and the spot's own page in this app.", tips: [
     { t: "Mornington Pier snapper: the reef runs about halfway down the pier. After strong westerlies the water dirties and snapper feed on the reef edge about 15 m out – cast just past it on the west side.", by: [B_MORN], species: ["snapper"] },
     { t: "Mornington Pier wind: south-west is best, southerly is excellent, and a strong westerly pushes snapper in tight to the reef. A northerly blows straight in your face – the hardest.", by: [B_MORN], species: ["snapper"] },
-    { t: "Big tides in the five days before a full or new moon are prime for snapper. Fish 2 hours either side of high tide; the run-in is extra good early in the season.", by: [B_MORN], species: ["snapper"] },
+    { t: "For Mornington Pier, Brett favours the bigger tides leading up to a full or new moon and fishing around high tide. This is his local preference, not a universal snapper rule; wind, access and safety come first.", by: [B_MORN], species: ["snapper"] },
     { t: "Squid: focus on Frankston to Sorrento in clear water. At Mordialloc Pier, fish the reef side, not the clean sand.", by: [L_WIN], species: ["calamari"], inGuide: true },
     { t: "Winter bream and estuary perch school up in the Yarra, Maribyrnong, Patterson and Werribee. Find the school – there are long stretches with no fish. Estuaries are a good option when the bay is too rough.", by: [L_WIN], species: ["black-bream", "estuary-perch"] },
     { t: "Estuary perch are also stocked in Albert Park Lake, with fish of 40 cm or more.", by: [L_WIN], species: ["estuary-perch"] },
@@ -62,7 +62,7 @@ export const TIP_GROUPS: TipGroup[] = [
     { t: "Squid lay eggs on seagrass – fish the edge of the weed beds, especially in spring.", by: [W_LOGIC], species: ["calamari"], inGuide: true },
     { t: "Snapper from land: look for reef edges, rocky points, breakwalls and drop-offs, and watch for birds or bait splashing on the surface.", by: [B_LB10], species: ["snapper"] },
     { t: "Don't just cast and wait. Cast long, wind in a little and pause; when you get a bite, cast back to that spot.", by: [READ] },
-    { t: "No bite? Move – but give a spot about 10–15 minutes first.", by: [READ, B_KGW] },
+    { t: "When actively searching with lures or for whiting, try another patch after about 10–15 quiet minutes. This is not a leave-early rule for patient snapper or mulloway bait sessions.", by: [READ, B_KGW] },
     { t: "Stay quiet in shallow water – snapper spook easily.", by: [B_LB10], species: ["snapper"] },
   ] },
   { id: "rigs", icon: "🪝", title: "Rigs", tips: [
@@ -77,6 +77,7 @@ export const TIP_GROUPS: TipGroup[] = [
     { t: "Use a snap swivel or lead clip on the sinker so you can swap weights quickly as conditions change.", by: [RIGS, B_KGWG] },
   ] },
   { id: "bait", icon: "🦐", title: "Baits & how to use them", tips: [
+    { t: "Roger demonstrates cutting a legally kept tailor fillet lengthways into two slab baits for mulloway. This is a general bait-preparation idea, not a Melbourne location or an exemption from Victorian bait-fish rules.", by: [R("An effective mulloway bait + how I slice it! (28 Apr 2025)", "o7zErqfgx8k")], species: ["mulloway"] },
     { t: "Fresh bait beats frozen. Catching your own squid first is the top snapper bait.", by: [B_LB10, W_LOGIC], species: ["snapper"], inGuide: true },
     { t: "Whiting: carry pipi, squid and mussel. Squid works when they're biting freely; switch to fresh pipi or mussel when it gets tough.", by: [B_KGW], species: ["king-george-whiting"], inGuide: true },
     { t: "Use smaller baits for snapper so they swallow them in one go. A tough bait like a whiting head stays on for ages and is usually taken by a big fish.", by: [L_HOW], species: ["snapper"] },
@@ -89,7 +90,7 @@ export const TIP_GROUPS: TipGroup[] = [
     { t: "Berley: finely chopped pilchards for snapper. For garfish use a very fine berley (e.g. tuna oil on bread crumbs) so it attracts them without filling them up.", by: [L_HOW, L_GAR], species: ["snapper", "garfish"], inGuide: true },
   ] },
   { id: "bite", icon: "🎣", title: "Hooking & landing", tips: [
-    { t: "Snapper: don't strike. Leave the rod in the holder (a baitrunner reel helps), engage and wind as the fish runs – the hook sets itself.", by: [L_HOW], species: ["snapper"], inGuide: true },
+    { t: "For circle-hook snapper rigs, wind steadily as the rod loads rather than striking hard. Lee demonstrates letting fish take the bait; hook style and drag setup matter.", by: [L_HOW], species: ["snapper"], inGuide: true },
     { t: "Re-cast or re-bait every 5–10 minutes so fresh scent keeps going out.", by: [L_HOW], species: ["snapper"], inGuide: true },
     { t: "Whiting: when the bite goes quiet, hold the rod and strike rather than sitting back. Otherwise wait for the rod to load up, then lift smoothly.", by: [B_KGW, B_KGWG], species: ["king-george-whiting"], inGuide: true },
     { t: "Near the net a fish often makes a last dive – don't tighten the drag then; let the rod bend to soak up the lunge.", by: [L_HOW], species: ["snapper"] },

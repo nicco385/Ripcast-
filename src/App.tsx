@@ -106,7 +106,7 @@ export default function App() {
         {v?.k === "log" && <Log place={place} />}
         {v?.k === "rules" && <Rules onSpecies={openSpecies} />}
         {v?.k === "about" && <About />}
-        {v?.k === "tips" && <TipsView onSpecies={openSpecies} />}
+        {v?.k === "tips" && <TipsView onSpecies={openSpecies} onSpot={openSpot} />}
         {v && v.k !== "picker" && <button className="btn alt wide backbottom" onClick={back}>‹ Back</button>}
         <p className="muted small center foot">Tides: Bureau of Meteorology · Weather: <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo.com</a> (CC BY 4.0) · Map © OpenStreetMap</p>
       </main>

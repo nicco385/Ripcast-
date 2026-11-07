@@ -1,3 +1,4 @@
+import { VIDEOS, FORUMS, HISTORY, PATTERNS, NIGHT_OPTIONS, NIGHT_SAFETY, NORTH_SHORE_NOTE, PATTERN_LOG_TIP, RESEARCH_CHECKED, type Resource } from "./data/research";
 import { PEOPLE, TIP_GROUPS, LEFT_OUT, personOf, type Cred } from "./data/tips";
 import { useEffect, useMemo, useState } from "react";
 import { SPECIES, bagText } from "./data/species";
@@ -73,13 +74,13 @@ export function ReportsTab() {
   const groups = (["all", ...Object.keys(AREAS)] as (Area | "all")[]);
   return <>
     <section className="card"><h2>📰 Local fishing reports</h2>
-      <p className="muted small">Where real anglers and shops post what's biting, by area. These are other people's reports, so we link to the original. We opened every link on {REPORT_CHECKED} and it was working. <StaleNote checked={REPORT_CHECKED} what="reports" /></p>
-      <p className="small"><b>Tip:</b> check the date at the top of a report. A weekly report is only useful for about a week.</p>
+      <p className="muted small">Dated fishing reports only, with links to the original. Public pages reviewed {REPORT_CHECKED}; publication dates are shown separately. Older reports are labelled, never presented as this week's catches. <StaleNote checked={REPORT_CHECKED} what="reports" /></p>
+      <p className="small"><b>Tip:</b> check the date at the top of a report. A report is a clue, not a prediction. Unclear shore/boat reports do not boost shore spot scores.</p>
     </section>
     {groups.map((a) => { const items = REPORTS.filter((r) => a === "all" ? r.areas.includes("all") : r.areas.includes(a) && !r.areas.includes("all"));
       if (!items.length && !(a !== "all" && NO_REPORTS[a])) return null;
       return <section key={a} className="card"><h3>{a === "all" ? "Whole bay & Western Port (start here)" : AREAS[a].name}</h3>{a !== "all" && <p className="muted small">{AREAS[a].blurb}</p>}
-        {items.map((r) => <Ext key={r.u} href={r.u} cls="rep"><b>{r.t} ↗</b><small>{r.by} · {r.how}</small>{r.note && <small>{r.note}</small>}</Ext>)}
+        {items.map((r) => <Ext key={r.u} href={r.u} cls="rep"><b>{r.t} ↗</b><small>{r.by} · {r.how}</small><small>{r.older ? "🗓️ Older report" : "📰 Dated report"} · {r.scope === "mixed" ? "Shore/boat mixed or unspecified" : "Broad-area community data"} · checked {r.checked}</small>{r.note && <small>{r.note}</small>}</Ext>)}
         {a !== "all" && NO_REPORTS[a] && <p className="muted small">{NO_REPORTS[a]}</p>}</section>; })}
     <section className="card"><h3>Also useful</h3>
       <Ext href="http://www.bom.gov.au/australia/tides/#!/vic" cls="rep"><b>BOM tide tables ↗</b><small>Official tide predictions</small></Ext>
@@ -90,7 +91,7 @@ export function ReportsTab() {
 }
 
 export function More({ go }: { go: (k: "log" | "rules" | "about" | "tips") => void }) {
-  const rows: [string, string, "log" | "rules" | "about" | "tips"][] = [["🧺", "Catch log – your own record", "log"], ["🪝", "Tips & rigs – the experts", "tips"], ["📏", "Rules, licence & safety", "rules"], ["ℹ️", `About ${APP_NAME}, credits & privacy`, "about"]];
+  const rows: [string, string, "log" | "rules" | "about" | "tips"][] = [["🧺", "Catch log – your own record", "log"], ["🪝", "Tips, videos & night fishing", "tips"], ["📏", "Rules, licence & safety", "rules"], ["ℹ️", `About ${APP_NAME}, credits & privacy`, "about"]];
   return <><section className="card"><h2>More</h2>{rows.map(([i, t, k]) => <button key={k} className="item moreitem" onClick={() => go(k)}><span>{i}</span><b>{t}</b><span className="chev">›</span></button>)}</section>
     <p className="muted small center">Version {APP_VERSION}</p></>;
 }
@@ -119,7 +120,7 @@ export function About() {
   return <section className="card" id="about"><h2>ℹ️ About {APP_NAME}</h2>
     <p className="small"><b>Privacy:</b> no accounts, ads or trackers. Your catch log and saved spots are stored only on this phone. If you allow location, it's used on the phone to sort spots by distance. To get the forecast, the spot's coordinates are sent to Open-Meteo; we never receive them. <a href={`${BASE}privacy.html`}>Full privacy policy</a></p>
     <p className="small"><b>Disclaimer:</b> scores and spot picks are a guide only, not a guarantee. Tide times are the Bureau of Meteorology's predictions but real water levels can differ with wind and air pressure. Always check the <Ext href="http://www.bom.gov.au/vic/">Bureau of Meteorology</Ext> forecasts and warnings and the <Ext href="https://vfa.vic.gov.au/">VFA</Ext> rules before you go. Fish safely: keep off rock ledges in big swell, wear a life jacket on rocks, and never fish alone in rough conditions.</p>
-    <p className="small"><b>Where the information comes from:</b> fish seasons, spot details and tips from the Victorian Fisheries Authority's Go Fishing pages and the weekly Pelican's Pick; month-by-month movements from FishingMad's weekly reports, Peninsula Insider and Compleat Angler. Where we found no reliable source we say so. Gear sizes are general angler advice.</p>
+    <p className="small"><b>Where the information comes from:</b> fish seasons, spot details and tips from the Victorian Fisheries Authority's Go Fishing pages and the weekly Pelican's Pick; historical movement research from VFA acoustic tracking and Nature Glenelg Trust tagging, alongside clearly labelled expert observations and older reports. Where we found no reliable source we say so. Gear sizes are general angler advice.</p>
     <p className="small"><b>Credits:</b> tides: {BOM_CREDIT} Weather & marine data by <Ext href="https://open-meteo.com/">Open-Meteo.com</Ext> (CC BY 4.0). Map data and marine park outlines © <Ext href="https://www.openstreetmap.org/copyright">OpenStreetMap</Ext> contributors (ODbL). Rules: Victorian Fisheries Authority. Fonts: Barlow Condensed and Outfit (SIL Open Font License).</p>
     <p className="muted small">{BOM_DISCLAIMER}</p>
     <p className="muted small">Version {APP_VERSION} · rules checked {REGS.checked} · tide tables to 31 Dec 2027</p>
@@ -129,11 +130,29 @@ void seasonLabel;
 
 export const Credits = ({ by }: { by: Cred[] }) => <small className="block muted">Source: {by.map((c, i) => <span key={c.src}>{i > 0 ? "; " : ""}{personOf(c.p).name} – <Ext href={c.src}>{c.title} ↗</Ext></span>)}</small>;
 
-export function TipsView({ onSpecies }: { onSpecies: (slug: string) => void }) {
+export function TipsView({ onSpecies, onSpot }: { onSpecies: (slug: string) => void; onSpot: (id: string) => void }) {
   return <>
     <section className="card"><h2>🪝 Tips & rigs</h2>
-      <p>Simple shore-fishing tips from four experts, grouped by topic and written in our own words. Each tip links to the video or article it came from.</p>
-      <div className="chips">{[...TIP_GROUPS, { id: "learn", icon: "📺", title: "Videos, podcasts & guides" }].map((g) => <button key={g.id} onClick={() => document.getElementById(`tip-${g.id}`)?.scrollIntoView({ behavior: "smooth" })}>{g.icon} {g.title}</button>)}</div>
+      <p>Practical shore advice, location videos, podcasts and forums, plus fish movements and after-dark options. Reference knowledge is kept separate from current catch reports. Research reviewed {RESEARCH_CHECKED}.</p>
+      <div className="research-nav">{[{ id: "night", icon: "🌙", title: "Night shore options" }, { id: "movements", icon: "🐟", title: "Movements & patterns" }, { id: "videos", icon: "📺", title: "Location videos" }, { id: "podcasts", icon: "🎧", title: "Podcasts" }, { id: "forums", icon: "💬", title: "Forums" }, { id: "learn", icon: "📚", title: "Channels & guides" }].map((g) => <button key={g.id} onClick={() => document.getElementById(`tip-${g.id}`)?.scrollIntoView({ behavior: "smooth" })}>{g.icon} {g.title}</button>)}</div>
+      <p className="muted small">Practical tips by topic (swipe):</p><div className="chips">{TIP_GROUPS.map((g) => <button key={g.id} onClick={() => document.getElementById(`tip-${g.id}`)?.scrollIntoView({ behavior: "smooth" })}>{g.icon} {g.title}</button>)}</div>
+    </section>
+    <section className="card" id="tip-night"><h2>🌙 After-dark shore options</h2>
+      <p className="muted small">Shallow reef and shore alternatives, not a list of proven catches tonight. Evidence and access limits are shown separately. No personal pins have been moved.</p>
+      <details className="research" open><summary>Before any night session</summary><ul className="plain small">{NIGHT_SAFETY.map((t) => <li key={t}>{t}</li>)}</ul></details>
+      {NIGHT_OPTIONS.map((n) => <details className="research" key={n.title}><summary>{n.title}</summary><p className="muted small">{n.evidence}</p><p className="small">{n.advice}</p><p className="small"><b>⚠️ {n.caution}</b></p>
+        <div className="chips resource-spots">{n.spots.map((id) => { const spot = ALL_LAND.find((x) => x.id === id); return spot ? <button key={id} onClick={() => onSpot(id)}>{spot.name} guide ›</button> : null; })}</div>
+        {n.sources.map((r) => <p className="small" key={r.u}><Ext href={r.u}>{r.t} ↗</Ext></p>)}
+      </details>)}
+      <p className="muted small">{NORTH_SHORE_NOTE} <Ext href="https://vfa.vic.gov.au/recreational-fishing/victorias-top-fishing-destinations/port-phillip/where-to-fish-port-phillip/western">VFA source ↗</Ext></p>
+    </section>
+    <section className="card" id="tip-movements"><h2>🐟 Fish movements & seasonal patterns</h2>
+      <p className="muted small">Scientific studies explain broad patterns. They do not locate fish live, guarantee a bite time or replace safe conditions.</p>
+      {PATTERNS.map((p) => <details className="research" key={p.id}><summary>{p.title}</summary><p className="muted small">{p.evidence}</p><ul className="plain small">{p.points.map((t) => <li key={t}>{t}</li>)}</ul>{p.sources.map((r) => <p className="small" key={r.u}><Ext href={r.u}>{r.t} ↗</Ext></p>)}</details>)}
+      <p className="small">{PATTERN_LOG_TIP}</p>
+    </section>
+    <section className="card" id="tip-videos"><h2>📺 Location videos & practical demonstrations</h2><p className="muted small">Individual videos, not current reports. Publication dates are shown in Sydney local date where a timestamp was available. We checked public descriptions/transcripts, not every full playback. Commercial promotions may appear.</p>{VIDEOS.map((r) => <ResourceCard key={r.u} r={r} />)}
+      <p className="small"><Ext href="https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/food-safety">Eating Lower Yarra and Maribyrnong fish: official health advice ↗</Ext></p>
     </section>
     {TIP_GROUPS.map((g) => <section key={g.id} className="card" id={`tip-${g.id}`}><h2>{g.icon} {g.title}</h2>
       {g.note && <p className="muted small">{g.note}</p>}
@@ -143,21 +162,27 @@ export function TipsView({ onSpecies }: { onSpecies: (slug: string) => void }) {
     <section className="card" id="tip-learn"><h2>📺 Watch & learn – YouTube</h2>
       {PEOPLE.map((p) => <div key={p.id}><h3>{p.name}</h3><p className="muted small">{p.who}{CHANNEL_NOTES[p.id] ? `. ${CHANNEL_NOTES[p.id]}` : ""}</p>{p.links.map((l, i) => <Ext key={l.u} href={l.u} cls={`big link-btn${i ? " alt" : ""}`}>{l.t} ↗</Ext>)}</div>)}
     </section>
-    <section className="card"><h2>🎧 Podcasts</h2>{PODCASTS.map((x) => <Ext key={x.u} href={x.u} cls="rep"><b>{x.t} ↗</b></Ext>)}</section>
+    <section className="card" id="tip-podcasts"><h2>🎧 Podcasts</h2>{PODCASTS.map((x) => <Ext key={x.u} href={x.u} cls="rep"><b>{x.t} ↗</b><small>{x.note}</small></Ext>)}<Ext href="https://podcasts.apple.com/au/podcast/the-fishing-podcast/id1878239404" cls="rep"><b>The Fishing Podcast – Lee Rayner & Joel Ryan ↗</b><small>Show directory · active in 2026 · mixed fishing and boating, explicit language. Not an individual location guide or current shore report.</small></Ext></section>
+    <section className="card" id="tip-forums"><h2>💬 Forums & local discussion</h2>{FORUMS.map((r) => <ResourceCard key={r.u} r={r} />)}</section>
+    <section className="card"><h2>🗓️ Historical reports – learn the patterns</h2><p className="muted small">Older observations for comparison, not fresh hotspots or score bonuses.</p>{HISTORY.map((r) => <ResourceCard key={r.u} r={r} />)}</section>
     <section className="card"><h2>📚 Fishing guides</h2><p className="muted small">Where-to-fish guides for piers, rivers and bays.</p>
       {GUIDES.map((r) => <Ext key={r.u} href={r.u} cls="rep"><b>{r.t} ↗</b><small>{r.by} · {r.how}</small>{r.note && <small>{r.note}</small>}</Ext>)}</section>
     <p className="muted small center">{LEFT_OUT}</p>
   </>;
 }
 
-/** Small list of recent catch reports that boost spot ratings this week (data/hotThisWeek.ts). Each item links to its source. */
+const ResourceCard = ({ r }: { r: Resource }) => <Ext href={r.u} cls="rep"><b>{r.t} ↗</b><small>{r.by} · {r.date}</small><small>{r.scope}</small><small>{r.note}</small></Ext>;
+
+/** Recent regional information is visible, but only confirmed shore catches can boost ratings. */
 export function HotThisWeek({ onSpot }: { onSpot: (id: string) => void }) {
   const hot = activeHot();
   return <section className="card hot">
-    <h2>🔥 Hot this week</h2>
+    <h2>📰 Reports this week</h2>
+    {!hot.some((h) => h.shoreConfirmed) && <p className="small"><b>No verified recent shore catches tied to an app spot or shore area, so no report score bonuses are active.</b></p>}
     {hot.length ? <ul className="plain">{hot.map((h) => { const sp = ALL_LAND.find((x) => x.id === h.spots[0]);
-      return <li key={h.url + h.species + h.spots.join()} className="small"><b>{short(h.species)}</b>{sp ? <> – <button className="linkish" onClick={() => onSpot(sp.id)}>{sp.name}</button>{h.level === "area" ? " (area)" : ""}</> : null}. {h.note} <a href={h.url} target="_blank" rel="noreferrer">{h.source}, {shortDate(h.reported)} ↗</a></li>; })}</ul>
-      : <p className="small muted">No recent land-based catch reports we could tie to a spot this week.</p>}
-    <p className="muted small">From weekly catch reports, checked by hand (last update {shortDate(HOT_UPDATED)}). Matching spots get a small boost until each report is about a week old – wind and safety still come first.</p>
+      return <li key={h.url + h.species + h.spots.join()} className="small"><b>{short(h.species)} – {h.area || sp?.name || "Regional report"}</b>. {h.note} <span className="block muted">{h.shoreConfirmed ? "Confirmed shore report · small ranking boost" : "Regional information only · no score boost"}</span><Ext href={h.url}>{h.source}, {shortDate(h.reported)} ↗</Ext>
+        {h.shoreConfirmed && sp && <button className="linkish block" onClick={() => onSpot(sp.id)}>Open spot guide ›</button>}</li>; })}</ul>
+      : <p className="small muted">No current reports in the hand-checked list. Read the Reports tab and check publication dates.</p>}
+    <p className="muted small">Reviewed {shortDate(HOT_UPDATED)}. Report dates are unchanged. Items expire automatically; only unambiguous recent shore catches can boost rankings, and wind and safety always come first.</p>
   </section>;
 }

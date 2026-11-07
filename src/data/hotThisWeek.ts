@@ -1,9 +1,12 @@
 // "Hot this week": a small, hand-made list of recent land-based catch reports (see docs/weekly-reports.md).
-// Each entry boosts matching spots a little until its expiry date, then it is ignored automatically.
+// Only confirmed recent shore catches can boost spots. Ambiguous regional reports are information-only.
 // Paraphrase only – never copy report text – and always credit and link the source.
 export type HotEntry = {
   /** app spot ids this report can be tied to with confidence */
   spots: string[];
+  /** True only when the source explicitly supports recent shore catches at this spot/area. */
+  shoreConfirmed: boolean;
+  area?: string; // use regional label, not a false exact-spot catch claim
   /** "spot" = the report names this spot; "area" = it names the area/suburb only (smaller boost) */
   level: "spot" | "area";
   species: string; // species slug, e.g. "snapper"
@@ -14,12 +17,12 @@ export type HotEntry = {
 };
 
 /** Last weekly update (Melbourne date). */
-export const HOT_UPDATED = "2026-11-06";
+export const HOT_UPDATED = "2026-11-08";
 
 export const HOT: HotEntry[] = [
-  { spots: ["black-rock-jetty"], level: "area", species: "snapper", note: "Black Rock still named as the go-to area for large snapper (paternoster with squid, pilchard or garfish around 7 m; soft plastics at bite times). Shore vs boat not split out, so this stays an area mention.",
+  { spots: ["black-rock-jetty"], shoreConfirmed: false, area: "Black Rock area", level: "area", species: "snapper", note: "Black Rock still named as the go-to area for large snapper (paternoster with squid, pilchard or garfish around 7 m; soft plastics at bite times). Shore vs boat not split out: information only, not a confirmed jetty catch or score boost.",
     source: "Fishing Australia – Port Phillip", url: "https://www.fishingaustralia.com.au/fishing-reports/port-phillip/", reported: "2026-11-04", expires: "2026-11-13" },
-  { spots: ["mornington-pier", "rye-pier"], level: "spot", species: "calamari", note: "Squid fishing from Mornington to Rye called consistent, with the piers recommended as the place to start (bright jigs near the pylons).",
+  { spots: ["mornington-pier", "rye-pier"], shoreConfirmed: false, area: "Mornington to Rye", level: "area", species: "calamari", note: "Squid fishing from Mornington to Rye called consistent, with piers recommended as a place to start (bright jigs near pylons). Not confirmed catches at both named piers; information only, no score boost.",
     source: "VFA – The Pelican's Pick", url: "https://vfa.vic.gov.au/recreational-fishing/the-pelicans-pick", reported: "2026-11-06", expires: "2026-11-15" },
 ];
 
@@ -30,4 +33,4 @@ export const activeHot = (t = Date.now(), list = HOT) => { const d = dayOf(t); r
 export const shortDate = (d: string) => new Date(d + "T12:00:00Z").toLocaleDateString("en-AU", { day: "numeric", month: "short", timeZone: "UTC" });
 /** Best matching current report for a spot + species (a spot-level mention beats an area one). */
 export const hotFor = (spotId: string, slug: string, t = Date.now(), list = HOT) =>
-  activeHot(t, list).filter((h) => h.species === slug && h.spots.includes(spotId)).sort((a, b) => Number(b.level === "spot") - Number(a.level === "spot"))[0];
+  activeHot(t, list).filter((h) => h.shoreConfirmed === true && h.species === slug && h.spots.includes(spotId)).sort((a, b) => Number(b.level === "spot") - Number(a.level === "spot"))[0];

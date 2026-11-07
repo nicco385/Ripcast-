@@ -2,10 +2,11 @@
 // "Go Fishing" pages (Port Phillip Bay and Western Port), read in Oct 2026. Gear sizes are common angler practice
 // (not official rules) and are labelled that way in the app. Where we have no reliable source we say so.
 export const SRC = {
+  vfaSnapTrack: { t: "VFA – Historical snapper acoustic tracking (2011–15)", u: "https://vfa.vic.gov.au/science-in-fisheries/fisheries-research-findings/science-supporting-key-species/tracking-snapper-in-port-phillip-bay" },
   vfaPP: { t: "VFA – Go Fishing: Port Phillip Bay", u: "https://vfa.vic.gov.au/recreational-fishing/fishing-locations/go-fishing-port-phillip-bay" },
   vfaWP: { t: "VFA – Go Fishing: Western Port", u: "https://vfa.vic.gov.au/recreational-fishing/fishing-locations/go-fishing-western-port" },
   pelican: { t: "VFA – The Pelican's Pick (weekly)", u: "https://vfa.vic.gov.au/recreational-fishing/the-pelicans-pick" },
-  fm: { t: "FishingMad – weekly Melbourne reports", u: "https://fishingmad.com.au/reports/" },
+  fm: { t: "FishingMad – weekly Melbourne reports", u: "https://fishingmad.com.au/fishing_reports/" },
   fmYarra: { t: "FishingMad – Yarra River guide", u: "https://fishingmad.com.au/location/yarra-river/" },
   food: { t: "VFA – Eating your catch safely", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/food-safety" },
   vfaEP: { t: "VFA – Estuary perch rules", u: "https://vfa.vic.gov.au/recreational-fishing/recreational-fishing-guide/catch-limits-and-closed-seasons/types-of-fish/marine-and-estuarine-scale-fish/estuary-perch" },
@@ -85,7 +86,7 @@ export const GUIDES: Guide[] = [
     slug: "snapper", trust: "good",
     intro: "Victoria's favourite bay fish. Small ones ('pinkies') are common from piers; big reds arrive in the spring run.",
     best: [10, 11, 12, 1, 2, 3, 4, 5], run: [10, 11, 12],
-    seasonText: "VFA peak season is October–May. The big spring run is October–December, and Western Port usually fires a few weeks before Port Phillip as the water warms (FishingMad). Brett Reed (Reedy's Rigs) says the fish actually arrive in both bays at the same time – Western Port is just smaller and warms sooner, so they are easier to find early. Small schools from August–September, then the big schools around the end of October.",
+    seasonText: "VFA peak season is October–May. Historical Port Phillip acoustic tracking (2011–15) found most adult arrivals in October at 13–16°C, with November detections peaking at 16–18°C. Early schools and timing vary by year. Experts differ on how early Western Port fires; there is no proven fixed arrival gap between the bays. These are seasonal clues, not current catch reports.",
     where: [
       "Port Phillip piers VFA lists for snapper: Mordialloc, Cunningham (Geelong), Ferguson Street (Williamstown – VFA 'hot spot'), Mornington and Sorrento. VFA also names St Kilda and Brighton piers as hot spots.",
       "Western Port: Stony Point, San Remo and Cowes jetties (VFA). The top end – Lang Lang, Tenby Point, Corinella – has been reported firing in October.",
@@ -99,7 +100,7 @@ export const GUIDES: Guide[] = [
       "Tip from Lee Rayner: he likes fishing shallow water before dawn – he finds fewer fish, but bigger ones.",
       "Tip from Brett Reed: fish the tide changes and the first hour of new flow, and don't leave early – midday bites happen too. He finds Western Port fishes best on the big new- and full-moon tides, while Port Phillip often fishes better on the smaller 'quarter moon' tides.",
       "Tip from Brendan Wing (YouFishTV, Western Port): sunset is the key bite, and Sunday nights after the weekend boats leave can be good. 'When the wind's from the east you'll catch a beast' – he rates a light south-east breeze (10–12 knots) as ideal.",
-      "These experts mostly fish from boats; the timing (last light, tide changes, quiet nights) applies from piers too, but boat marks and depths don't.",
+      "These experts mostly fish from boats. Last light, tide changes and quiet water are useful ideas to test from shore, not proof of a bite at a particular pier. Boat marks and depths are not shore-access evidence.",
     ],
     rig: ["Running sinker rig: ball sinker sliding on the main line, then a swivel and about 60–100 cm of leader to the hook.", "Or a paternoster (dropper) rig if the bottom is clean. Both are VFA-listed.",
       "Brett Reed's running rig (Port Phillip): size 1–2 ball sinker running above a swivel, about 1 m of 30–40 lb leader, then two snelled 4/0–5/0 suicide hooks. Keep the sinker as light as you can so you feel bites.",
@@ -111,12 +112,12 @@ export const GUIDES: Guide[] = [
     lures: ["Soft plastics worked slowly near the bottom (VFA) – paddle-tail or curl-tail, about 4–5 inch."],
     tips: ["Fresh bait beats old bait. A little berley (crushed pilchards) helps hold fish near the pier.", "Snapper are cautious – keep noise and light off the water at night.", "Check the size rule before you keep one – see below.",
       "Tip from Lee Rayner: berley with finely chopped pilchards, and re-cast or re-bait every 5–10 minutes so fresh scent keeps going out. Use smaller baits so fish swallow them.",
-      "Tip from Lee Rayner: don't strike. Leave the rod in the holder (a baitrunner reel helps) and wind once the fish is running so the hook sets itself – this works with circle and suicide hooks.",
+      "With circle-hook rigs, wind steadily as the rod loads rather than striking hard. Lee demonstrates letting fish take the bait; hook style, drag setup and local conditions matter.",
       "Tip from Brett Reed: avoid glow (lumo) beads and sleeves early in the season – they attract rays and seven-gill sharks.",
       "Tip from Brendan Wing: catch your own fresh squid first – it is his number one snapper bait. Pin a squid head through the hard gristle so it stays on.",
       "Western Port: don't bust off a big unknown fish – it may be a mulloway or gummy (Lee Rayner)."],
     care: ["Min 28 cm. Bag 10, but no more than 3 can be 40 cm or longer.", "Must be kept whole (not filleted) until you are away from the water.", "Release small fish quickly: wet your hands, hold it flat and unhook it in the water if you can."],
-    sources: [SRC.vfaPP, SRC.vfaWP, SRC.pelican, SRC.fm, SRC.reedySnap, SRC.reedyRigs, SRC.raynerHow, SRC.raynerBig, SRC.raynerDark, SRC.wingSnap, SRC.wingEast, SRC.alfSnap],
+    sources: [SRC.vfaSnapTrack, SRC.vfaPP, SRC.vfaWP, SRC.pelican, SRC.fm, SRC.reedySnap, SRC.reedyRigs, SRC.raynerHow, SRC.raynerBig, SRC.raynerDark, SRC.wingSnap, SRC.wingEast, SRC.alfSnap],
   }),
   G({
     slug: "king-george-whiting", trust: "good",

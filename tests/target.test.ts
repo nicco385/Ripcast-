@@ -1,3 +1,4 @@
+import { ALL_LAND } from "../src/where";
 import { SPECIES, bagText } from "../src/data/species";
 // Scenario checks for "Target a fish". Run: npm run test:target
 import assert from "node:assert/strict";
@@ -384,17 +385,52 @@ ok("snapper: night is prime (Choc) – after dark beats midday, with the shallow
 // 22. Hot this week: expiry by date and a modest boost (v1.7.9)
 import { activeHot, hotFor, HOT, type HotEntry } from "../src/data/hotThisWeek";
 {
-  const fake: HotEntry[] = [{ spots: ["williamstown-rocks"], level: "spot", species: "snapper", note: "x", source: "Test", url: "https://example.com", reported: "2026-11-01", expires: "2026-11-09" }];
+  const fake: HotEntry[] = [{ shoreConfirmed: true, spots: ["williamstown-rocks"], level: "spot", species: "snapper", note: "x", source: "Test", url: "https://example.com", reported: "2026-11-01", expires: "2026-11-09" }];
   ok("hot: entry counts from report date to expiry, inclusive", () => { assert.equal(activeHot(at("2026-11-01T08:00:00+11:00"), fake).length, 1); assert.equal(activeHot(at("2026-11-09T23:30:00+11:00"), fake).length, 1); });
   ok("hot: expired entry is ignored automatically", () => { assert.equal(activeHot(at("2026-11-10T00:30:00+11:00"), fake).length, 0); assert.equal(hotFor("williamstown-rocks", "snapper", at("2026-11-12T12:00:00+11:00"), fake), undefined); });
   ok("hot: only the reported species matches", () => assert.equal(hotFor("williamstown-rocks", "calamari", at("2026-11-03T12:00:00+11:00"), fake), undefined));
   ok("hot: every live entry is valid (known spots, species, expiry 7–10 days, https link)", () => { for (const h of HOT) { const days = (Date.parse(h.expires) - Date.parse(h.reported)) / 864e5; assert.ok(days >= 7 && days <= 10, h.note); assert.ok(h.spots.every((id) => LAND.some((s) => s.id === id && s.species.includes(h.species))), h.spots.join()); assert.match(h.url, /^https:/); } });
   const br = LAND.find((s) => s.id === "black-rock-jetty")!, p = profile("snapper")!, t1 = at("2026-11-06T20:00:00+11:00"), t2 = at("2026-11-20T20:00:00+11:00");
-  ok("hot: Black Rock snapper gets a modest boost with the source in the reason, and not after expiry", () => {
-    const a = scoreHour(p, br, wx("2026-11-06", 8, 180)[br.id], t1), f = a.factors.find((x) => x.txt.startsWith("🔥"))!;
-    assert.ok(f && f.pts > 0 && f.pts <= 6); assert.match(reasonFor(p, a.factors), /🔥 Reported biting this week – Fishing Australia – Port Phillip, 4 Nov/);
-    assert.ok(!scoreHour(p, br, wx("2026-11-20", 8, 180)[br.id], t2).factors.some((x) => x.txt.startsWith("🔥")));
+  ok("hot: ambiguous regional reports remain visible but never boost exact shore spots", () => {
+    const ambiguous: HotEntry[] = [{ ...fake[0], spots: [br.id], shoreConfirmed: false, area: "Black Rock area" }, { ...fake[0], spots: ["mornington-pier"], species: "calamari", shoreConfirmed: false, level: "area", area: "Mornington to Rye" }];
+    assert.equal(activeHot(t1, ambiguous).length, 2);
+    assert.equal(hotFor(br.id, "snapper", t1, ambiguous), undefined);
+    assert.equal(hotFor("mornington-pier", "calamari", t1, ambiguous), undefined);
+    assert.equal(activeHot(t2, ambiguous).length, 0);
+  });
+  ok("hot: only explicitly confirmed shore evidence is eligible", () => {
+    assert.ok(hotFor("williamstown-rocks", "snapper", t1, fake));
+    assert.equal(hotFor("williamstown-rocks", "snapper", t1, fake.map((h) => ({ ...h, shoreConfirmed: false }))), undefined);
   });
   ok("hot: the boost never lifts a gale above the safety cap", () => { const g = scoreHour(p, br, wx("2026-11-06", 30, 270)[br.id], t1); assert.ok(g.score <= 49); });
+}
+// 23. Content refresh: provenance, report taxonomy, safe location links and personal pins.
+import { REPORTS, PODCASTS } from "../src/data/reports";
+import { VIDEOS, FORUMS, HISTORY, PATTERNS, NIGHT_OPTIONS } from "../src/data/research";
+import { YEAR } from "../src/data/calendar";
+{
+  ok("reports: only actual dated report sources; no guide, forum or video URL", () => {
+    for (const r of REPORTS) { assert.equal(r.kind, "report"); assert.match(r.published, /^\d{4}-\d{2}-\d{2}$/); assert.ok(Date.parse(r.published) <= Date.now() + 86400000); assert.match(r.u, /^https:/); assert.doesNotMatch(r.u, /youtube|viewforum|viewtopic|podcast|\/location\//); assert.ok(Number.isFinite(Date.parse(r.checked))); }
+    assert.ok(REPORTS.some((r) => r.older));
+  });
+  ok("resources: unique direct links and visible scope/date/caveats", () => {
+    for (const list of [VIDEOS, FORUMS, HISTORY]) { assert.equal(new Set(list.map((r) => r.u)).size, list.length); for (const r of list) { assert.match(r.u, /^https:/); assert.ok(r.scope.length > 10 && r.date.length > 3 && r.note.length > 30); } }
+    assert.equal(new Set(PODCASTS.map((r) => r.u)).size, PODCASTS.length);
+    assert.ok(VIDEOS.filter((r) => /Roger/.test(r.by)).length >= 3);
+    assert.ok(PODCASTS.some((r) => /baxter/.test(r.u))); assert.ok(PODCASTS.some((r) => /1000793303553/.test(r.u)));
+  });
+  ok("night options: all links use existing spots, never new invented pins", () => {
+    for (const o of NIGHT_OPTIONS) { assert.ok(o.evidence && o.caution && o.sources.length); for (const id of o.spots) assert.ok(ALL_LAND.some((s) => s.id === id), id); }
+    const hampton = ALL_LAND.find((s) => s.id === "hampton-groynes")!;
+    assert.equal(hampton.lat, -37.9415); assert.equal(hampton.lon, 144.9980);
+    const merv = ALL_LAND.find((s) => s.id === "mervs-reef")!;
+    assert.equal(merv.lat, -38.120467); assert.equal(merv.lon, 144.360967);
+  });
+  ok("patterns: studies are explicitly historical and month notes avoid fixed bay arrival lag", () => {
+    assert.ok(PATTERNS.some((p) => /2011/.test(p.evidence))); assert.ok(PATTERNS.some((p) => /2019/.test(p.evidence)));
+    assert.ok(PATTERNS.every((p) => p.sources.length && p.points.length >= 2));
+    assert.doesNotMatch(YEAR.map((m) => m.points.join(" ")).join(" "), /usually fires 3–4 weeks|Western Port first, then Port Phillip/);
+  });
+  ok("hot: known Nov 2026 ambiguous source reports cannot acquire a shore boost", () => { for (const h of HOT.filter((x) => (x.reported === "2026-11-04" && /fishingaustralia/.test(x.url)) || (x.reported === "2026-11-06" && /pelicans-pick/.test(x.url)))) { assert.equal(h.shoreConfirmed, false); assert.ok(h.area); } });
 }
 console.log(`\n${n} checks passed`);
