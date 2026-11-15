@@ -8,7 +8,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 8081",
     "typecheck": "tsc --noEmit",
-    "test:target": "esbuild tests/target.test.ts --bundle --platform=node --format=cjs --outfile=/tmp/ripcast-target-test.cjs --log-level=error && node /tmp/ripcast-target-test.cjs"
+    "test:target": "esbuild tests/target.test.ts --bundle --platform=node --format=cjs --outfile=/tmp/ripcast-target-test.cjs --log-level=error && node /tmp/ripcast-target-test.cjs",
+    "test:fresh": "esbuild tests/fresh.test.ts --bundle --platform=node --format=cjs --outfile=/tmp/ripcast-fresh-test.cjs --log-level=error && node /tmp/ripcast-fresh-test.cjs",
+    "test": "npm run test:target && npm run test:fresh"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

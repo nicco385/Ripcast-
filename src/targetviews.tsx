@@ -18,7 +18,16 @@ const m = () => new Date().getMonth() + 1;
 /** Spot forecast: the saved copy straight away (instant first paint), then a fresh one in the background. */
 export function useWx() {
   const [wx, setWx] = useState<Wx | null>(() => peekSpotWeather()); const [failed, setFailed] = useState(false);
-  useEffect(() => { let live = true; getSpotWeather().then((w) => live && setWx(w)).catch(() => live && setFailed(true)); return () => { live = false; }; }, []);
+  useEffect(() => {
+    let live = true;
+    const loadWx = () => getSpotWeather().then((w) => { if (live) { setWx(w); setFailed(false); } }).catch(() => { if (live) setFailed(true); });
+    loadWx();
+    const onVis = () => { if (document.visibilityState === "visible") loadWx(); };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", loadWx);
+    window.addEventListener("pageshow", loadWx);
+    return () => { live = false; document.removeEventListener("visibilitychange", onVis); window.removeEventListener("focus", loadWx); window.removeEventListener("pageshow", loadWx); };
+  }, []);
   return { wx, failed, loading: !wx && !failed };
 }
 

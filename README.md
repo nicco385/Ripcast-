@@ -71,3 +71,4 @@ To rename the app, edit `APP_NAME` in `src/config.ts`. The cover, title and mani
 
 - v1.9.0: dated actual reports separated from historical guides/forums; ten individual video resources, five podcast episodes, night-shore options linked to existing spots, historical scientific movement cards and safer advice. Ambiguous Black Rock and Peninsula squid reports remain visible without score bonuses; no personal coordinates or safety caps changed.
 - v1.9.1: weekly Hot this week update (13 Nov). No boosted entries; expired Black Rock report removed; Mornington–Rye pier squid kept as information only; report summaries refreshed (FishingMad 9 Nov, Fishing Australia 4–11 Nov, Getfished 6 Nov).
+- v1.9.2: weather refetches automatically when the app is opened or brought back on screen if the saved data is older than about 30 minutes; a failed update now says it is showing older data; the refresh button always fetches live weather.

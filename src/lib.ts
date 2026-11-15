@@ -46,7 +46,7 @@ export const j = async (u: string, tries = 2, timeoutMs = 15000): Promise<any> =
   for (let i = 0; i < tries; i++) {
     const ac = new AbortController(); const t = setTimeout(() => ac.abort(), timeoutMs);
     try {
-      const r = await fetch(u, { signal: ac.signal });
+      const r = await fetch(u, { signal: ac.signal, cache: "no-store" });
       if (r.ok) return await r.json();
       last = new Error(`Data service error (${r.status})`);
       if (r.status < 500 && r.status !== 429) break;
@@ -111,6 +111,23 @@ export async function reverseName(lat: number, lon: number): Promise<string | nu
     const n = a.suburb || a.town || a.village || a.city_district || a.hamlet || a.locality;
     return typeof n === "string" && n.trim() ? n.trim() : null;
   } catch { return null; }
+}
+
+
+/** Weather older than this should be refetched when the app is opened or brought back on screen. */
+export const WX_FRESH_MS = 30 * 60 * 1000;
+export const isWxFresh = (at: number, now = Date.now()) => now - at < WX_FRESH_MS;
+export function agoText(at: number, now = Date.now()): string {
+  const mins = Math.max(0, Math.round((now - at) / 60000));
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.round(mins / 60);
+  if (mins < 24 * 60) return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+  const days = Math.floor(mins / (24 * 60));
+  return days === 1 ? "1 day ago" : `${days} days ago`;
+}
+export function fetchedWhen(at: number): string {
+  return new Date(at).toLocaleString("en-AU", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 }
 
 // --- helpers ---

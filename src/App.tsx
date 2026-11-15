@@ -1,9 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 const MapTab = lazy(() => import("./MapTab"));
 import { AREAS, type Area } from "./data/spotinfo";
 import {
   type Forecast, type Place, getForecast, searchPlaces, reverseName, compass, kmh, hhmm, dayName, weatherText,
-  moonInfo, safety, localNowKey,
+  moonInfo, safety, localNowKey, WX_FRESH_MS, isWxFresh, agoText, fetchedWhen,
 } from "./lib";
 import { APP_NAME, TAGLINE } from "./config";
 import { LAND, ALL_LAND, nearName, spotAt } from "./where";
@@ -37,24 +37,61 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [cover, setCover] = useState(true);
 
+  const placeRef = useRef(place); placeRef.current = place;
+  const dataRef = useRef(data); dataRef.current = data;
+  const loadingRef = useRef(false);
+  const genRef = useRef(0);
+
   const refresh = useCallback(async (p: Place) => {
+    const gen = ++genRef.current;
+    loadingRef.current = true;
     setLoading(true); setErr("");
-    try { const f = await getForecast(p); setData(f); save("rc-cache", f); }
-    catch {
+    try {
+      const f = await getForecast(p);
+      if (gen !== genRef.current) return;
+      setData(f); save("rc-cache", f);
+    } catch {
+      if (gen !== genRef.current) return;
       // never show another place's cached weather as if it were this place
       const cached = load<Forecast | null>("rc-cache", null);
       const same = !!cached && cached.place.name === p.name;
       if (!same) setData(null);
-      const when = same && cached ? ` Showing the last saved data from ${new Date(cached.fetchedAt).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })}.` : "";
-      setErr(!navigator.onLine ? `You're offline.${when || " Connect to the internet to see conditions."}` : `Can't reach the weather service right now (mobile signal or network).${when || ""} Tap ⟳ to try again.`);
+      const when = same && cached ? ` Couldn't update, showing data from ${fetchedWhen(cached.fetchedAt)}.` : "";
+      setErr(!navigator.onLine
+        ? `You're offline.${when || " Connect to the internet to see conditions."}`
+        : `Couldn't update the weather (mobile signal or network).${when || ""} Tap ⟳ to try again.`);
+    } finally {
+      if (gen === genRef.current) { loadingRef.current = false; setLoading(false); }
     }
-    finally { setLoading(false); }
   }, []);
+
+  const refreshIfStale = useCallback(() => {
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+    const p = placeRef.current;
+    const f = dataRef.current;
+    const same = !!(f && f.place.name === p.name);
+    if (same && isWxFresh(f!.fetchedAt)) return;
+    if (loadingRef.current && same) return;
+    refresh(p);
+  }, [refresh]);
 
   useEffect(() => { save("rc-place", place); refresh(place); }, [place, refresh]);
   useEffect(() => { save("rc-favs", favs); }, [favs]);
   useEffect(() => { const on = () => refresh(place); window.addEventListener("online", on); return () => window.removeEventListener("online", on); }, [place, refresh]);
-  useEffect(() => { const t = setInterval(() => refresh(place), 15 * 60000); return () => clearInterval(t); }, [place, refresh]);
+  useEffect(() => { const t = setInterval(() => refreshIfStale(), 15 * 60000); return () => clearInterval(t); }, [refreshIfStale]);
+  // A phone often keeps the app frozen in the background for hours or days; the interval does not run then.
+  // When it comes back on screen, refetch if the saved weather is older than about 30 minutes.
+  useEffect(() => {
+    const onVis = () => { if (document.visibilityState === "visible") refreshIfStale(); };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", refreshIfStale);
+    window.addEventListener("pageshow", refreshIfStale);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", refreshIfStale);
+      window.removeEventListener("pageshow", refreshIfStale);
+    };
+  }, [refreshIfStale]);
 
   const isFav = favs.some((f) => f.name === place.name);
   const toggleFav = () => setFavs(isFav ? favs.filter((f) => f.name !== place.name) : [...favs, place]);
@@ -84,6 +121,9 @@ export default function App() {
         <button className="icon" onClick={() => refresh(place)} aria-label="Refresh" disabled={loading}>{loading ? "…" : "⟳"}</button>
       </header>
       {err && <div className="banner warn">{err}</div>}
+      {!err && shown && Date.now() - shown.fetchedAt > WX_FRESH_MS && (
+        <div className="banner warn">{loading ? `Updating weather… showing data from ${agoText(shown.fetchedAt)}.` : `This weather is from ${agoText(shown.fetchedAt)}. Tap ⟳ to update.`}</div>
+      )}
       <main key={`${nav.tab}-${v ? JSON.stringify(v) : ""}`} className="fade">
         {v && <h1 className="pagetitle">{TITLES[v.k]}</h1>}
         {needsWx && !shown && !err && <><div className="skel card-h" /><div className="skel card-h tall" /><div className="skel card-h" /></>}
@@ -192,7 +232,7 @@ function Today({ f, stale, place, onTides, onSolunar, onWeek, rain24, onTarget }
   const warn = safety(f);
   const nowKey = localNowKey(f.tz);
   const cur = f.hours.find((h) => h.time >= nowKey);
-  const age = Math.round((Date.now() - f.fetchedAt) / 60000);
+  const age = agoText(f.fetchedAt);
   return (
     <>
       {stale && <div className="banner">Loading new spot… showing {f.place.name} for now.</div>}
@@ -209,7 +249,7 @@ function Today({ f, stale, place, onTides, onSolunar, onWeek, rain24, onTarget }
             : f.hasMarine && cur?.seaTemp != null ? <Stat k="Water temp" v={`${cur.seaTemp.toFixed(1)}°`} s="sea surface" />
             : <Stat k="Pressure" v={`${Math.round(n.pressure)} hPa`} />}
         </div>
-        <p className="muted small">Updated {age < 1 ? "just now" : `${age} min ago`} · Open-Meteo{f.inBay ? " · inside the bay, go by the wind (no wave model)" : ""}</p>
+        <p className="muted small">Updated {age} · Open-Meteo{f.inBay ? " · inside the bay, go by the wind (no wave model)" : ""}</p>
         <button className="btn alt wide" onClick={onWeek}>Next 24 hours & 7-day forecast ›</button>
       </section>
       <TideCard place={place} onMore={onTides} compact />
