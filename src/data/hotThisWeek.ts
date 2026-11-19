@@ -17,11 +17,23 @@ export type HotEntry = {
 };
 
 /** Last weekly update (Melbourne date). */
-export const HOT_UPDATED = "2026-11-13";
+export const HOT_UPDATED = "2026-11-20";
 
 export const HOT: HotEntry[] = [
-  { spots: ["mornington-pier", "rye-pier"], shoreConfirmed: false, area: "Mornington to Rye", level: "area", species: "calamari", note: "Squid fishing from Mornington to Rye called consistent, with piers recommended as a place to start (bright jigs near pylons). Fishing Australia (4–11 Nov) repeats the same pier squid picture. Not confirmed catches at both named piers; information only, no score boost.",
-    source: "VFA – The Pelican's Pick", url: "https://vfa.vic.gov.au/recreational-fishing/the-pelicans-pick", reported: "2026-11-06", expires: "2026-11-15" },
+  { spots: ["lagoon-pier"], shoreConfirmed: true, level: "spot", species: "snapper", note: "Shore evidence: listed in Born2Fish's land-based section (18 Nov) – snapper being caught from Port Melbourne's Lagoon Pier after dark.",
+    source: "Born2Fish – weekly fishing report", url: "https://www.born2fish.com.au/fishing-reports-tips", reported: "2026-11-18", expires: "2026-11-27" },
+  { spots: ["st-leonards-pier"], shoreConfirmed: true, level: "spot", species: "calamari", note: "Shore evidence: Born2Fish's land-based section (18 Nov) says St Leonards Pier is producing squid, especially in southerly winds.",
+    source: "Born2Fish – weekly fishing report", url: "https://www.born2fish.com.au/fishing-reports-tips", reported: "2026-11-18", expires: "2026-11-27" },
+  { spots: ["st-leonards-pier"], shoreConfirmed: true, level: "spot", species: "king-george-whiting", note: "Shore evidence: Born2Fish's land-based section (18 Nov) says St Leonards Pier is producing whiting as well as squid, especially in southerly winds.",
+    source: "Born2Fish – weekly fishing report", url: "https://www.born2fish.com.au/fishing-reports-tips", reported: "2026-11-18", expires: "2026-11-27" },
+  { spots: ["warmies-wall"], shoreConfirmed: true, level: "spot", species: "snapper", note: "Shore evidence: Born2Fish's land-based section (18 Nov) reports pinkies (small snapper) around the power station at Williamstown/Newport – the Warmies outflow walls.",
+    source: "Born2Fish – weekly fishing report", url: "https://www.born2fish.com.au/fishing-reports-tips", reported: "2026-11-18", expires: "2026-11-27" },
+  { spots: ["st-kilda-pier"], shoreConfirmed: false, area: "St Kilda", level: "area", species: "calamari", note: "VFA (13 Nov) calls squid a popular catch from St Kilda pier on white glow jigs in low light. General description rather than a dated catch, so information only, no score boost.",
+    source: "VFA – The Pelican's Pick", url: "https://vfa.vic.gov.au/recreational-fishing/the-pelicans-pick", reported: "2026-11-13", expires: "2026-11-22" },
+  { spots: ["st-kilda-pier"], shoreConfirmed: false, area: "St Kilda", level: "area", species: "snapper", note: "VFA (13 Nov): St Kilda snapper taking soft plastics on light jig heads in the shallows. Shore or boat not stated, so information only, no score boost.",
+    source: "VFA – The Pelican's Pick", url: "https://vfa.vic.gov.au/recreational-fishing/the-pelicans-pick", reported: "2026-11-13", expires: "2026-11-22" },
+  { spots: ["san-remo-pier"], shoreConfirmed: false, area: "San Remo", level: "area", species: "calamari", note: "VFA (13 Nov): San Remo full of squid with many anglers bagging out; the jetty is suggested for a land-based go (3.5–4 jigs for the current). Catches not tied to the jetty itself, so information only, no score boost.",
+    source: "VFA – The Pelican's Pick", url: "https://vfa.vic.gov.au/recreational-fishing/the-pelicans-pick", reported: "2026-11-13", expires: "2026-11-22" },
 ];
 
 const TZ = "Australia/Melbourne";
