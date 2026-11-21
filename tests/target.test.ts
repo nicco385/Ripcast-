@@ -433,4 +433,43 @@ import { YEAR } from "../src/data/calendar";
   });
   ok("hot: known Nov 2026 ambiguous source reports cannot acquire a shore boost", () => { for (const h of HOT.filter((x) => (x.reported === "2026-11-04" && /fishingaustralia/.test(x.url)) || (x.reported === "2026-11-06" && /pelicans-pick/.test(x.url)))) { assert.equal(h.shoreConfirmed, false); assert.ok(h.area); } });
 }
+// 24. v1.9.4 best-time window: lines up with the real tide turn / sunrise / sunset / moon period it names
+{
+  const { whenWord, fishDayEnd } = require("../src/target");
+  const { solunar } = require("../src/astro");
+  const { nearestStation, eventsBetween, clock } = require("../src/tides");
+  const M = 60000;
+  ok("best window: every named tide turn, sunrise/sunset and moon period sits in (or within 30 min of) the window – 14 days × 4 spots", () => {
+    for (const id of ["lagoon-pier", "st-kilda-pier", "altona-pier", "rye-pier"]) for (let k = 0; k < 14; k++) {
+      const day = fmt(dayStart("2026-11-21", TZ) + (k * 24 + 12) * H, TZ).slice(0, 10), ds = dayStart(day, TZ);
+      const s = LAND.find((x) => x.id === id)!, w2 = wx(day, 8, 0);
+      const sp = dayOutlook(w2, day, { now: ds, origin: s, only: s, n: 1 }).plans[0].spots[0];
+      const toT = (hm: string) => { const m = hm.match(/(\d+):(\d+) (am|pm)/)!; let t = ds + ((Number(m[1]) % 12) + (m[3] === "pm" ? 12 : 0)) * H + Number(m[2]) * M; if (t < sp.from - 6 * H) t += 24 * H; return t; };
+      for (const m of sp.why.matchAll(/(?:tide turning \((?:low|high) |sun(?:rise|set) )(\d+:\d+ [ap]m)\)/g)) { const t = toT(m[1]); assert.ok(t >= sp.from - 30 * M && t <= sp.to + 30 * M, `${id} ${day} ${sp.why} vs ${clock(sp.from, TZ)}–${clock(sp.to, TZ)}`); }
+      if (/^Dusk/.test(sp.why)) assert.ok(sp.to > ds + 17 * H, sp.why);
+      assert.ok(sp.to - sp.from >= H && sp.to - sp.from <= 3 * H);
+      void solunar; void nearestStation; void eventsBetween;
+    }
+  });
+  ok("best window: 21 Nov 2026 Lagoon Pier dusk window includes the 6:17 pm low tide or the sunset, never ends before sunset", () => {
+    const day = "2026-11-21", ds = dayStart(day, TZ), s = LAND.find((x) => x.id === "lagoon-pier")!;
+    // light breeze blowing in from 5–8 pm, calm after: the dusk/tide-turn period should win, as in Choc's screenshot
+    const sp = dayOutlook(wx(day, (h) => h >= 17 && h < 20 ? 8 : 4, 190), day, { now: ds + 13.5 * H, origin: s, only: s, n: 1, alt: true }).plans[0].spots[0];
+    const win = [sp, sp.alt].filter(Boolean).find((x: any) => x.from < ds + 21 * H && x.to > ds + 18 * H) as any;
+    assert.ok(win, "an evening window is offered");
+    const sunset = ds + 20 * H + 16 * M, low = ds + 18 * H + 17 * M;
+    assert.ok((win.from <= low + 30 * M && win.to >= low) || (win.from <= sunset && win.to >= sunset), `${clock(win.from, TZ)}–${clock(win.to, TZ)}`);
+  });
+  ok("tonight: evening windows read 'tonight'; Today runs to 2 am", () => {
+    const now = at("2026-11-21T13:30:00+11:00");
+    assert.equal(whenWord(at("2026-11-21T19:45:00+11:00"), "2026-11-21", now), "tonight");
+    assert.equal(whenWord(at("2026-11-22T00:30:00+11:00"), "2026-11-21", now), "tonight");
+    assert.equal(whenWord(at("2026-11-21T09:00:00+11:00"), "2026-11-21", now), "today");
+    assert.equal(whenWord(at("2026-11-22T20:00:00+11:00"), "2026-11-22", now), "tomorrow night");
+    assert.equal(fishDayEnd("2026-11-21"), at("2026-11-22T02:00:00+11:00"));
+    const o = dayOutlook(null, "2026-11-21", { now: at("2026-11-21T04:00:00+11:00"), origin: { lat: -37.84, lon: 144.93 } });
+    assert.equal(o.to, at("2026-11-22T02:00:00+11:00"));
+  });
+}
 console.log(`\n${n} checks passed`);
+

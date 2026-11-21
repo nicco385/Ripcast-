@@ -4,7 +4,7 @@ import { type Place, moonInfo } from "./lib";
 import { solunar, moonDay, dayRating, dayStart, dayEnd, fmt, type Period, type TideEv } from "./astro";
 import { nearestStation, eventsBetween, clock } from "./tides";
 import { useWx } from "./targetviews";
-import { dayOutlook, spanTxt } from "./target";
+import { dayOutlook, spanTxt, whenWord } from "./target";
 import { spotAt, spotLabel } from "./where";
 
 const TZ = "Australia/Melbourne";
@@ -59,13 +59,14 @@ export function SolunarView({ place }: { place: Place }) {
   const key = keys[i];
   const d = useMemo(() => dayData(place, key), [place.lat, place.lon, key]);
   const { wx } = useWx();
-  const best = useMemo(() => { const o = dayOutlook(wx?.data ?? null, key, { origin: place, only: spotAt(place), n: 1 }); const pl = o.plans[0]; return pl ? { pl, s: pl.spots[0] } : null; }, [wx, key, place.lat, place.lon, now - (now % 600000)]);
+  const best = useMemo(() => { const o = dayOutlook(wx?.data ?? null, key, { origin: place, only: spotAt(place), n: 1, alt: true }); const pl = o.plans[0]; return pl ? { pl, s: pl.spots[0] } : null; }, [wx, key, place.lat, place.lon, now - (now % 600000)]);
   return <>
     <section className="card">
       <h2>🌙 Moon & feeding times</h2>
-      {best ? <div className="bestbox"><p className="small"><b>🎯 Best time to fish {i === 0 ? "today" : label(key, i).toLowerCase() === "tomorrow" ? "tomorrow" : `on ${label(key, i)}`}: {spanTxt(best.s.from, best.s.to)}</b> – {best.pl.profile.name.toLowerCase().replace("king george", "King George").replace("australian", "Australian")} at {spotLabel(best.s.spot.name)}</p>
+      {best ? <div className="bestbox"><p className="small"><b>🎯 Best time to fish {whenWord(best.s.from, key)}: {spanTxt(best.s.from, best.s.to)}</b> – {best.pl.profile.name.toLowerCase().replace("king george", "King George").replace("australian", "Australian")} at {spotLabel(best.s.spot.name)}</p>
         {best.s.why && <p className="small why-line">💡 {best.s.why}</p>}
-        <p className="muted small">This weighs tide, sunrise and sunset, wind and season – the same as Today and Where to fish. The moon periods below are only one part of it.</p></div>
+        {best.s.alt && <p className="small">Also good: <b>{spanTxt(best.s.alt.from, best.s.alt.to)}</b>{best.s.alt.why ? ` – ${best.s.alt.why.replace(/ · 🔥.*$/, "").replace(/ – .*$/, "").replace(/^(?!Dawn|Dusk)./, (c) => c.toLowerCase())}` : ""}</p>}
+        <p className="muted small">This weighs the tide turns, sunrise and sunset, the moon periods, wind and season – the same as Today and Where to fish. The times line up with the chart below; evening and night count as tonight (until 2 am).</p></div>
         : <p className="muted small">No good fishing time left {i === 0 ? "today" : "this day"}.</p>}
       <p className="muted small">For {place.name}. Melbourne time. Worked out on your phone from the moon's position.</p>
       <div className="chips" role="group" aria-label="Day">{keys.map((k, n) => <button key={k} className={i === n ? "on" : ""} onClick={() => setI(n)}>{label(k, n)}</button>)}</div>

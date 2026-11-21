@@ -8,7 +8,7 @@ import { REPORTS, NO_REPORTS, REPORT_CHECKED, GUIDES, CHANNEL_NOTES, PODCASTS } 
 import { APP_NAME, APP_VERSION } from "./config";
 import { type Place } from "./lib";
 import { LAND, ALL_LAND, km, inSeasonHere, short, fromTxt } from "./where";
-import { rateSpot, spanTxt, type SpotRating } from "./target";
+import { rateSpot, spanTxt, fishDayEnd, type SpotRating } from "./target";
 import { activeHot, shortDate, HOT_UPDATED } from "./data/hotThisWeek";
 import { useWx, VB } from "./targetviews";
 import { fmt, dayEnd } from "./astro";
@@ -29,7 +29,7 @@ export function Where({ place, onSpot, onMap }: { place: Place; onSpot: (id: str
   const gps = () => { setGpsMsg("Finding you…"); navigator.geolocation?.getCurrentPosition((p) => { setOrigin({ name: "My location", lat: p.coords.latitude, lon: p.coords.longitude }); setGpsMsg(""); }, () => setGpsMsg("Location blocked – using your chosen place instead."), { timeout: 15000, maximumAge: 300000 }); };
   const ranked = useMemo(() => {
     if (!wx && !failed) return [];
-    const now = Date.now(), day = fmt(now, TZ).slice(0, 10), to = mode === "now" ? now + 3600000 : dayEnd(day, TZ);
+    const now = Date.now(), day = fmt(now, TZ).slice(0, 10), to = mode === "now" ? now + 3600000 : Math.max(dayEnd(day, TZ), fishDayEnd(day));
     return LAND.filter((s) => area === "all" || s.info?.area === area).map((s) => ({ r: rateSpot(s, wx?.data[s.id], now, to), dist: km(origin, s) }))
       .filter((x): x is { r: SpotRating; dist: number } => !!x.r && (!maxKm || x.dist <= maxKm)).sort((a, b) => b.r.score - a.r.score || a.dist - b.dist);
   }, [wx, failed, mode, origin, maxKm, area]);
@@ -38,8 +38,8 @@ export function Where({ place, onSpot, onMap }: { place: Place; onSpot: (id: str
   return <>
     <section className="card">
       <h2>📍 Where to fish</h2>
-      <p className="muted small">The best land-based spots for {mode === "now" ? "right now" : "the rest of today"}, rated the same way as Today and Target a fish: wind, waves, rain, tide, time of day, moon and the fish in season at each spot.</p>
-      <div className="seg">{(["now", "today"] as const).map((k) => <button key={k} className={mode === k ? "on" : ""} onClick={() => setMode(k)}>{k === "now" ? "Right now" : "Rest of today"}</button>)}</div>
+      <p className="muted small">The best land-based spots for {mode === "now" ? "right now" : "the rest of today and tonight (until 2 am)"}, rated the same way as Today and Target a fish: wind, waves, rain, tide, time of day, moon and the fish in season at each spot.</p>
+      <div className="seg">{(["now", "today"] as const).map((k) => <button key={k} className={mode === k ? "on" : ""} onClick={() => setMode(k)}>{k === "now" ? "Right now" : "Rest of today & tonight"}</button>)}</div>
       <div className="chips" role="group" aria-label="Area">{(["all", ...Object.keys(AREAS)] as (Area | "all")[]).map((k) => <button key={k} className={area === k ? "on" : ""} onClick={() => setArea(k)}>{k === "all" ? "All areas" : AREAS[k].name}</button>)}</div>
       <div className="seg">{[0, 30, 60, 100].map((k) => <button key={k} className={maxKm === k ? "on" : ""} onClick={() => setMaxKm(k)}>{k ? `${k} km` : "Any"}</button>)}</div>
       <p className="muted small">Distance from: <b>{fromTxt(origin.name)}</b> · <button className="linkish" onClick={gps}>use my location</button> {gpsMsg}</p>

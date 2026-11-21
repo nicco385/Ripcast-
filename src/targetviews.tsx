@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { getSpotWeather, peekSpotWeather, km, fromTxt, spotAt, spotLabel, type LandSpot } from "./where";
 import { isOcc } from "./data/spots";
 import { AREAS } from "./data/spotinfo";
-import { PROFILES, planSpecies, dayOutlook, spotsFor, spanTxt, nearSpots, NEAR_KM, betterNearby, type Plan, type SpotPlan, type Verdict, type DayOutlook } from "./target";
+import { PROFILES, planSpecies, dayOutlook, whenWord, spotsFor, spanTxt, nearSpots, NEAR_KM, betterNearby, type Plan, type SpotPlan, type Verdict, type DayOutlook } from "./target";
 import { fmt } from "./astro";
 import { seasonVal } from "./where";
 import { SpThumb, load, save } from "./ui";
@@ -109,6 +109,8 @@ export function TargetView({ slug, place, rain24, onSpot, onSpecies }: { slug: s
   </>;
 }
 
+/** "tonight " when today's best window is in the evening or night (whenWord in target.ts). */
+const tonight = (t: number, day: string) => whenWord(t, day) === "tonight" ? "tonight " : "";
 const fishName = (n: string) => n.toLowerCase().replace("king george", "King George").replace("australian", "Australian").replace(/^./, (c) => c.toUpperCase());
 const reasons = (pl: Plan) => pl.spots[0].factors.filter((f) => f.pts > 0 && f.kind !== "season").sort((a, b) => b.pts - a.pts).slice(0, 2).map((f) => f.txt.replace(/^./, (c) => c.toLowerCase())).join(", ");
 
@@ -137,7 +139,7 @@ export function FishingToday({ place, rain24, onOpen, onPick }: { place: Place; 
     {out?.near.far && <div className="banner warn">No fishing spots in the app within {out.near.radiusKm} km of here. The nearest is {spotLabel(out.near.nearest.spot.name)}, {Math.round(out.near.nearest.km)} km away – these picks are the closest ones.</div>}
     {!out ? <><div className="skel line" /><div className="skel line short" /></> : <>
       <div className="verdict-big"><VB v={out.verdict} /></div>
-      {top && s ? <><p className="headline">Best bet: {fishName(top.profile.name)} at {spotLabel(s.spot.name)} · {Math.round(km(place, s.spot))} km, {spanTxt(s.from, s.to)}.</p>{s.why && <p className="small why-line">💡 Why then: {s.why}</p>}</> : <p>No good options left today – check tomorrow in the 7-day forecast.</p>}
+      {top && s ? <><p className="headline">Best bet: {fishName(top.profile.name)} at {spotLabel(s.spot.name)} · {Math.round(km(place, s.spot))} km, {tonight(s.from, out.day)}{spanTxt(s.from, s.to)}.</p>{s.why && <p className="small why-line">💡 Why then: {s.why}</p>}</> : <p>No good options left today – check tomorrow in the 7-day forecast.</p>}
       {rain}{noWind}
       {out.plans.slice(1).map((pl) => { const x = pl.spots[0];
         return <button key={pl.profile.slug} className="item tline" onClick={() => onPick(pl.profile.slug)}>
@@ -159,7 +161,7 @@ function SpotToday({ here, place, out, area, rain, noWind, foot, onPick }: { her
     {closed ? <div className="banner warn">⛔ This spot is closed: {here.info!.status!.note}</div> : !out ? <><div className="skel line" /><div className="skel line short" /></> : <>
       <div className="verdict-big"><VB v={top ? top.spots[0].verdict : "Poor"} /></div>
       {top && s ? <>
-        <p className="headline">{good ? "Best here" : "Best chance here"}: {fishName(top.profile.name)}{occ(top.profile.slug)}, {spanTxt(s.from, s.to)}.</p>{s.why && <p className="small why-line">💡 Why then: {s.why}</p>}
+        <p className="headline">{good ? "Best here" : "Best chance here"}: {fishName(top.profile.name)}{occ(top.profile.slug)}, {tonight(s.from, out.day)}{spanTxt(s.from, s.to)}.</p>{s.why && <p className="small why-line">💡 Why then: {s.why}</p>}
         {reasons(top) && <p className="small">Why: {reasons(top)}.</p>}
         <p className="small">🪝 {top.profile.tip}</p>
         {nightNote(s) && <p className="small">{nightNote(s)}</p>}

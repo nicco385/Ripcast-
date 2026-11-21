@@ -82,11 +82,13 @@ export const PROFILES: Profile[] = [
 export const profile = (slug: string) => PROFILES.find((p) => p.slug === slug);
 export const spotsFor = (slug: string) => LAND.filter((s) => s.species.includes(slug));
 
-export type Factor = { pts: number; txt: string; kind: "wind" | "wave" | "light" | "tide" | "moon" | "season" | "spot" | "rain"; short?: string };
+export type Factor = { pts: number; txt: string; kind: "wind" | "wave" | "light" | "tide" | "moon" | "season" | "spot" | "rain"; short?: string; /** the exact time of the event it refers to (tide turn, sunrise/sunset) */ at?: number };
 export type Wx = Record<string, Raw> | null;
 export type SpotPlan = {
   spot: LandSpot; score: number; verdict: Verdict; from: number; to: number; peak: number; factors: Factor[];
   avoid: boolean; dist: number | null; windTxt: string | null; tideTxt: string | null; why: string;
+  /** a second good window the same day, if there is one (only worked out when asked for) */
+  alt?: { from: number; to: number; score: number; why: string } | null;
 };
 export type Verdict = "Great" | "Good" | "Fair" | "Poor";
 export type Plan = { profile: Profile; verdict: Verdict; headline: string; spots: SpotPlan[]; notes: string[]; noWind: boolean; from: number; to: number };
@@ -134,11 +136,19 @@ function windFactor(p: Profile, s: LandSpot, w: number, dir: number, prevMaxOn: 
   return out;
 }
 
+const MIN = 60000;
+/** 1 inside [a, b], easing to 0 over `fade` either side. */
+const ramp = (t: number, a: number, b: number, fade: number) => t >= a && t <= b ? 1 : t < a ? Math.max(0, 1 - (a - t) / fade) : Math.max(0, 1 - (t - b) / fade);
+/** Light at an instant. Dawn bite: an hour before sunrise to 30 min after; dusk bite: 30 min before sunset to an hour after
+ *  (last light is after sunset). Both ease in and out over 30 min instead of switching on and off, so the best window
+ *  sits on the real sunrise/sunset rather than on an hour boundary. `w` = how much of the dawn/dusk bonus applies. */
 const lightOf = (t: number) => {
   const day = lf(t).slice(0, 10), { sr, ss } = sunFor(day);
-  if (Math.abs(t - sr) <= 75 * 60000) return { k: "dd" as const, txt: "Around sunrise" };
-  if (Math.abs(t - ss) <= 75 * 60000) return { k: "dd" as const, txt: "Around sunset" };
-  return t > sr && t < ss ? { k: "day" as const, txt: "Daylight" } : { k: "night" as const, txt: "After dark" };
+  const base = t > sr && t < ss ? { k: "day" as const, txt: "Daylight" } : { k: "night" as const, txt: "After dark" };
+  const wr = ramp(t, sr - 60 * MIN, sr + 30 * MIN, 30 * MIN), ws = ramp(t, ss - 30 * MIN, ss + 60 * MIN, 30 * MIN);
+  if (wr > 0 && wr >= ws) return { ...base, w: wr, dd: "Around sunrise", ev: sr };
+  if (ws > 0) return { ...base, w: ws, dd: "Around sunset", ev: ss };
+  return { ...base, w: 0, dd: "", ev: 0 };
 };
 
 const STN = new Map<string, Station | undefined>();
@@ -146,11 +156,14 @@ const stationFor = (s: LandSpot) => { if (!STN.has(s.id)) STN.set(s.id, nearestS
 const TEV = new Map<string, ReturnType<typeof eventsBetween>>();
 const tideEv = (st: Station, mid: number) => { const k = st.id + mid; let v = TEV.get(k); if (!v) { v = eventsBetween(st, mid - 8 * H, mid + 8 * H); if (TEV.size > 20000) TEV.clear(); TEV.set(k, v); } return [...v]; };
 
-/** Score one spot at one hour (t = start of the hour). */
-export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number, extra: { rain24?: number | null } = {}) {
-  const mid = t + H / 2, fs: Factor[] = []; let avoid = false, ceil = 100;
+/** Score one spot at one hour (t = start of the hour), judged at the middle of the hour. */
+export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number, extra: { rain24?: number | null } = {}) { return scoreAt(p, s, r, t + H / 2, extra, H / 2); }
+
+/** Score one spot at one instant (`mid`); `half` = half the length of the slot being rated (moon periods count if they overlap it). */
+export function scoreAt(p: Profile, s: LandSpot, r: Raw | undefined, mid: number, extra: { rain24?: number | null } = {}, half = H / 2) {
+  const fs: Factor[] = []; let avoid = false, ceil = 100;
   // season (month-level, VFA peak tables)
-  const g = GUIDES.find((x) => x.slug === p.slug)!, m = Number(lf(t).slice(5, 7)), sv = seasonVal(p.slug, m);
+  const g = GUIDES.find((x) => x.slug === p.slug)!, m = Number(lf(mid).slice(5, 7)), sv = seasonVal(p.slug, m);
   if (sv === 3) fs.push({ pts: 12, txt: "Main run season", kind: "season" });
   else if (sv === 2) fs.push({ pts: 8, txt: "In season (VFA)", kind: "season" });
   else if (sv === 0 && g.best.length) {
@@ -163,16 +176,18 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
   const lc = s.info?.local?.[p.slug];
   if (lc) fs.push({ pts: lc, txt: lc > 0 ? (s.info?.src === "choc" ? "Choc's spot – local knowledge" : "Local favourite (angler reports)") : "Quieter than its VFA listing suggests (angler reports)", kind: "spot" });
   // recent catch reports (data/hotThisWeek.ts, updated weekly by hand; expired entries are ignored by date). Safety caps below still apply.
-  const hot = hotFor(s.id, p.slug, t);
+  const hot = hotFor(s.id, p.slug, mid);
   if (hot) { const src = `${hot.source.replace(/^VFA – /, "")}, ${shortDate(hot.reported)}`; fs.push({ pts: hot.level === "spot" ? 6 : 3, txt: `🔥 Reported biting ${hot.level === "spot" ? "here" : "in this area"} this week – ${src}`, kind: "spot", short: `🔥 Reported biting this week – ${src}` }); }
   // only an occasional catch here (data/audit.ts): shown, but never a top pick
   if (isOcc(s, p.slug)) { fs.push({ pts: -12, txt: "Only an occasional catch at this spot", kind: "spot" }); ceil = 64; }
   // wind and waves
   let windTxt: string | null = null;
   if (r) {
-    const i = r.t.indexOf(keyOf(t));
+    const i = r.t.indexOf(keyOf(mid));
     if (i >= 0 && r.wind[i] != null) {
-      const w = r.wind[i], dir = r.dir[i], gust = r.gust[i] ?? 0;
+      // forecast values are for the top of each hour: blend towards the next hour so a 15-minute step doesn't jump at :00
+      const fr = (mid - Math.floor(mid / H) * H) / H, nx = (a: (number | null)[], v: number) => { const b = a[i + 1]; return b == null ? v : v + (b - v) * fr; };
+      const w = nx(r.wind, r.wind[i]), dir = fr > 0.5 && r.dir[i + 1] != null ? r.dir[i + 1] : r.dir[i], gust = nx(r.gust, r.gust[i] ?? 0);
       let prevMaxOn = 0;
       for (let k = Math.max(0, i - 18); k < i; k++) if (relWind(s, r.dir[k]) === "onshore") prevMaxOn = Math.max(prevMaxOn, r.wind[k]);
       fs.push(...windFactor(p, s, w, dir, prevMaxOn));
@@ -200,8 +215,10 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
     if (FACILITIES[s.id]?.lights.has === "yes") { lp = 8; ltxt = "After dark under the pier lights"; }
     else { lp = 6; ltxt = "After dark – fish any pier lights (we couldn't confirm lights here)"; }
   }
-  fs.push({ pts: lp, txt: ltxt, kind: "light" });
-  const hr = Number(lf(t).slice(11, 13));
+  // blend towards the dawn/dusk value; above half-way it reads as dawn/dusk
+  if (L.w > 0) { lp = Math.round(lp + (p.light.dd - lp) * L.w); if (L.w >= 0.5 && Math.abs(mid - L.ev) <= 60 * MIN) ltxt = `${L.dd} (${L.dd.endsWith("sunrise") ? "sunrise" : "sunset"} ${clock(L.ev, TZ)})`; }
+  fs.push({ pts: lp, txt: ltxt, kind: "light", at: ltxt.startsWith("Around") ? L.ev : undefined });
+  const hr = Number(lf(mid).slice(11, 13));
   // the middle of the night is rarely a sensible "best time" for a land-based angler: only true night feeders escape most of it
   if ((hr >= 23 || hr < 4) && L.k === "night") fs.push({ pts: p.light.night >= 12 ? -3 : -12, txt: "Middle of the night", kind: "light" });
   // tide (BOM, nearest station)
@@ -213,8 +230,8 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
     const hi = ev.filter((e) => e.type === "High").sort((a, b) => Math.abs(a.t - mid) - Math.abs(b.t - mid))[0];
     const near = ev.sort((a, b) => Math.abs(a.t - mid) - Math.abs(b.t - mid))[0];
     if (next) tideTxt = `${next.type === "High" ? "rising" : "falling"} – ${next.type.toLowerCase()} ${clock(next.t, TZ)}`;
-    let tp = 0, tt = "", ts = "";
-    const set = (pts: number, txt: string, short: string) => { if (pts > tp) { tp = pts; tt = txt; ts = short; } };
+    let tp = 0, tt = "", ts = "", tat: number | undefined;
+    const set = (pts: number, txt: string, short: string, at?: number) => { if (pts > tp) { tp = pts; tt = txt; ts = short; tat = at; } };
     const toNext = next ? next.t - mid : Infinity, sincePrev = prev ? mid - prev.t : Infinity;
     // run-in: the last 3 hours before high water are the best of the flood; earlier in the flood is still OK
     if (p.tide.includes("rising") && next?.type === "High") {
@@ -224,18 +241,21 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
     // top of the tide: 3 h before to 1 h after high is best; 1–2.5 h into the run-out still fishes
     if (p.tide.includes("high") && hi) {
       const dt = mid - hi.t;
-      if (dt >= -3 * H && dt <= 1 * H) set(8, dt < 0 ? `Run-in to high tide (${clock(hi.t, TZ)})` : `Top of the tide (high ${clock(hi.t, TZ)})`, dt < 0 ? `run-in to high (${clock(hi.t, TZ)})` : `top of the tide (high ${clock(hi.t, TZ)})`);
-      else if (dt > 1 * H && dt <= 2.5 * H) set(5, `Early run-out after high (${clock(hi.t, TZ)})`, `early run-out (high was ${clock(hi.t, TZ)})`);
+      const wh = ramp(dt, -2.5 * H, 0.5 * H, 30 * MIN);
+      if (wh >= 0.5) set(Math.round(8 * wh), dt < 0 ? `Run-in to high tide (${clock(hi.t, TZ)})` : `Top of the tide (high ${clock(hi.t, TZ)})`, dt < 0 ? `run-in to high (${clock(hi.t, TZ)})` : `top of the tide (high ${clock(hi.t, TZ)})`);
+      else if (dt > 0 && dt <= 2.5 * H) set(5, `Early run-out after high (${clock(hi.t, TZ)})`, `early run-out (high was ${clock(hi.t, TZ)})`);
     }
     // the turn itself (slack water and the first push either way)
-    if (p.tide.includes("change") && near && Math.abs(near.t - mid) <= 75 * 60000) set(p.tide[0] === "change" ? 9 : 9, `Tide turning (${near.type.toLowerCase()} ${clock(near.t, TZ)})`, `tide turning (${near.type.toLowerCase()} ${clock(near.t, TZ)})`);
+    // full credit within 45 min of the turn, easing to nothing 1 h 45 min away (so the window centres on the real turn time)
+    const wt = near ? ramp(mid, near.t - 45 * MIN, near.t + 45 * MIN, 60 * MIN) : 0;
+    if (p.tide.includes("change") && near && wt > 0) set(Math.round(9 * wt), `Tide turning (${near.type.toLowerCase()} ${clock(near.t, TZ)})`, `tide turning (${near.type.toLowerCase()} ${clock(near.t, TZ)})`, near.t);
     void sincePrev;
     if (!tp && p.tide.length && prev && next) { tp = -2; tt = p.tide.includes("rising") ? "Falling tide" : "Away from high tide"; }
-    if (tt) fs.push({ pts: tp, txt: tt, kind: "tide", short: ts || undefined });
+    if (tt) fs.push({ pts: tp, txt: tt, kind: "tide", short: ts || undefined, at: tat });
   }
   // moon
-  const day = lf(mid).slice(0, 10), per = periodsFor(day).find((q) => q.t0 < t + H && q.t1 > t);
-  if (per) fs.push({ pts: per.rating + 1, txt: `${per.kind === "major" ? "Major" : "Minor"} solunar feeding time (traditional theory)`, kind: "moon" });
+  const day = lf(mid).slice(0, 10), per = [...periodsFor(lf(mid - 12 * H).slice(0, 10)), ...periodsFor(day)].find((q) => q.t0 < mid + half && q.t1 > mid - half);
+  if (per) fs.push({ pts: per.rating + 1, txt: `${per.kind === "major" ? "Major" : "Minor"} solunar feeding time (traditional theory)`, kind: "moon", short: `${per.kind} moon time (${spanTxt(per.t0, per.t1, 0)})` });
   if (p.moonBig && nearNewFull(mid)) fs.push({ pts: 8, txt: "Near the new or full moon", kind: "moon" });
   if (p.afterRain && extra.rain24 != null && extra.rain24 >= 5) fs.push({ pts: 6, txt: `After rain (${Math.round(extra.rain24)} mm in the last day)`, kind: "rain" });
   if (p.clear && extra.rain24 != null && extra.rain24 >= 10 && (s.type === "estuary" || s.type === "river")) fs.push({ pts: -6, txt: "Heavy rain – river water likely dirty", kind: "rain" });
@@ -245,12 +265,82 @@ export function scoreHour(p: Profile, s: LandSpot, r: Raw | undefined, t: number
   return { score: Math.max(0, Math.min(100, Math.round(score))), factors: fs, avoid, windTxt, tideTxt };
 }
 
+const Q = 15 * MIN;
+/** The best time to fish one spot for one fish between `from` and `to`.
+ *  1) Rate every hour to find the best part of the day. 2) Re-rate that part in 15-minute steps (tide turn, sunrise/sunset and
+ *  moon periods are exact times, not hour blocks). 3) The window is the run of 15-minute steps around the peak that stay within
+ *  a few points of it – at least 1 hour, at most 3 – so it lines up with the tide turn / dawn / dusk shown on the chart. */
+export function bestWindow(p: Profile, s: LandSpot, r: Raw | undefined, from: number, to: number, extra: { rain24?: number | null } = {}) {
+  from = Math.floor(from / H) * H; if (to <= from) to = from + H;
+  let bh = from, bs = -1;
+  for (let t = from; t < to; t += H) { const sc = scoreHour(p, s, r, t, extra).score; if (sc > bs) { bs = sc; bh = t; } }
+  const a0 = Math.max(from, bh - 3 * H), b0 = Math.min(to, bh + 4 * H);
+  const sl: { t: number; v: ReturnType<typeof scoreAt> }[] = [];
+  for (let t = a0; t < b0; t += Q) sl.push({ t, v: scoreAt(p, s, r, t + Q / 2, extra, Q / 2) });
+  const top = Math.max(...sl.map((x) => x.v.score));
+  // the peak: middle of the longest run of top-scoring steps
+  let pi = 0, run = 0, bestRun = 0;
+  sl.forEach((x, i) => { run = x.v.score === top ? run + 1 : 0; if (run > bestRun) { bestRun = run; pi = i - Math.floor((run - 1) / 2); } });
+  let a = pi, b = pi; const maxN = (3 * H) / Q, minN = H / Q;
+  const ok = (i: number) => i >= 0 && i < sl.length && sl[i].v.score >= top - 5;
+  while (b - a + 1 < maxN && (ok(a - 1) || ok(b + 1))) {
+    const l = ok(a - 1) ? sl[a - 1].v.score : -1, rr = ok(b + 1) ? sl[b + 1].v.score : -1;
+    if (rr >= l) b++; else a--;
+  }
+  // if the window names a tide turn or sunrise/sunset that sits just outside it (up to 1 h), stretch it to take that time in
+  // (up to 3 h) – the window should contain the events the "why" line and the chart point to
+  const ats = new Set<number>(); for (let k = a; k <= b; k++) for (const f of sl[k].v.factors) if (f.at != null && f.pts > 0) ats.add(f.at);
+  for (const e of [...ats].sort((x, y) => Math.abs(x - sl[pi].t) - Math.abs(y - sl[pi].t))) {
+    const na = e < sl[a].t ? Math.max(0, Math.floor((e - a0) / Q)) : a, nb = e >= sl[b].t + Q ? Math.min(sl.length - 1, Math.floor((e - a0) / Q)) : b;
+    if (nb - na + 1 <= maxN && sl[na].t >= sl[a].t - H && sl[nb].t <= sl[b].t + H && sl[na].v.score >= top - 12 && sl[nb].v.score >= top - 12) { a = na; b = nb; }
+  }
+  while (b - a + 1 < minN && (a > 0 || b < sl.length - 1)) {
+    const l = a > 0 ? sl[a - 1].v.score : -1, rr = b < sl.length - 1 ? sl[b + 1].v.score : -1;
+    if (rr >= l) b++; else a--;
+  }
+  return { from: sl[a].t, to: sl[b].t + Q, peak: sl[pi].t, v: sl[pi].v, wf: windowFactors(sl.slice(a, b + 1).map((x) => x.v.factors), sl[pi].v.factors, sl[a].t, sl[b].t + Q) };
+}
+/** Factors that describe a whole window (for the "why" line): the best light, tide and moon reason anywhere inside it,
+ *  so the text names the tide turn / sunset / moon period that is actually in the window. Other factors come from the peak. */
+function windowFactors(all: Factor[][], peak: Factor[], from: number, to: number): Factor[] {
+  // only name a tide turn or sunrise/sunset that is inside the window (or within 30 min of its ends)
+  const inWin = (f: Factor) => f.at == null || (f.at >= from - 30 * MIN && f.at <= to + 30 * MIN);
+  const out = peak.filter((f) => f.kind !== "light" && f.kind !== "tide" && f.kind !== "moon");
+  const pref = (f: Factor) => /sunrise|sunset|turning|pier lights/i.test(f.txt) ? 1 : 0;
+  for (const k of ["light", "tide", "moon"] as const) {
+    let b: Factor | undefined;
+    // a moon period only counts if it covers at least 30 minutes of the window
+    const moonOk = (f: Factor) => k !== "moon" || all.filter((fs) => fs.some((x) => x.txt === f.txt && x.short === f.short)).length >= 2;
+    for (const fs of all) for (const f of fs) if (f.kind === k && f.txt !== "Middle of the night" && moonOk(f) && inWin(f) && (!b || f.pts > b.pts || (f.pts === b.pts && pref(f) > pref(b)))) b = f;
+    if (b) out.push(b);
+  }
+  return out;
+}
+/** A second, separate good window (at least 30 min clear of the best one and nearly as good), so the app can say "Also good: …". */
+export function altWindow(p: Profile, s: LandSpot, r: Raw | undefined, from: number, to: number, main: { from: number; to: number; v: { score: number } }, extra: { rain24?: number | null } = {}) {
+  const gaps: [number, number][] = [[from, main.from - 30 * MIN], [main.to + 30 * MIN, to]];
+  let best: ReturnType<typeof bestWindow> | null = null;
+  for (const [a, b] of gaps) { if (b - a < H) continue; const w = bestWindow(p, s, r, Math.ceil(a / H) * H, b, extra); if (w.to <= b + Q && (!best || w.v.score > best.v.score + 2)) best = w; } // nearly level: keep the earlier one (evening before after-midnight)
+  return best && best.v.score >= main.v.score - 6 && best.v.score >= 65 ? { from: best.from, to: best.to, score: best.v.score, why: reasonFor(p, best.wf) } : null;
+}
+/** The end of a "fishing day": 2 am the next morning, so Today / Rest of today include the evening and night session. */
+export const NIGHT_END_H = 26;
+export const fishDayEnd = (day: string) => dayStart(lf(dayStart(day, TZ) + 36 * H).slice(0, 10), TZ) + (NIGHT_END_H - 24) * H;
+/** "today", "tonight", "tomorrow", "tomorrow night", "on Sun" or "on Sun night" for a best-time window starting at `t`. */
+export function whenWord(t: number, day: string, now = Date.now()) {
+  const d = lf(t), h = Number(d.slice(11, 13)), night = h >= 17 || d.slice(0, 10) > day;
+  const today = lf(now).slice(0, 10), tom = lf(dayStart(today, TZ) + 36 * H).slice(0, 10);
+  const name = day === today ? (night ? "tonight" : "today") : day === tom ? (night ? "tomorrow night" : "tomorrow") : `on ${new Date(day + "T12:00:00Z").toLocaleDateString("en-AU", { weekday: "short", timeZone: "UTC" })}${night ? " night" : ""}`;
+  return name;
+}
+
 /** A short plain-English reason for a best time, e.g. "Dusk + tide turning (high 7:12 pm) – snapper feed on the tide change". */
 export function reasonFor(p: Profile, fs: Factor[]): string {
   const parts: string[] = [];
   const L = fs.find((f) => f.kind === "light" && f.pts > 0 && f.txt !== "Middle of the night");
   if (L) {
-    const w = /sunrise/i.test(L.txt) ? "Dawn" : /sunset/i.test(L.txt) ? "Dusk" : /pier lights/i.test(L.txt) ? "Pier lights after dark" : /after dark/i.test(L.txt) ? "After dark" : L.pts >= 6 ? "Daylight" : "";
+    const at = L.txt.match(/\((sun(?:rise|set) [^)]+)\)/)?.[1];
+    const w = /sunrise/i.test(L.txt) ? `Dawn${at ? ` (${at})` : ""}` : /sunset/i.test(L.txt) ? `Dusk${at ? ` (${at})` : ""}` : /pier lights/i.test(L.txt) ? "Pier lights after dark" : /after dark/i.test(L.txt) ? "After dark" : L.pts >= 6 ? "Daylight" : "";
     if (w) parts.push(w);
   }
   const T = fs.find((f) => f.kind === "tide" && f.pts > 0);
@@ -258,13 +348,14 @@ export function reasonFor(p: Profile, fs: Factor[]): string {
   const W = fs.find((f) => f.kind === "wind" && f.pts >= 10);
   if (W?.short) parts.unshift(cap(W.short));
   else if (W) parts.push(/blowing in|stirring/.test(W.txt) ? "breeze stirring the water" : /^Sheltered/.test(W.txt) ? "sheltered from the wind" : "light winds");
-  if (fs.some((f) => f.kind === "moon" && f.pts >= 3)) parts.push("solunar time");
+  const Mo = fs.find((f) => f.kind === "moon" && f.pts >= 2);
+  if (Mo) parts.push(Mo.short ?? "solunar time");
   const hotF = fs.find((f) => f.kind === "spot" && f.short?.startsWith("🔥"));
   if (!parts.length) return hotF?.short ?? "";
   const lightPts = L?.pts ?? 0, tidePts = T?.pts ?? 0;
   const snapNight = p.slug === "snapper" && L && /after dark/i.test(L.txt);
   const note = snapNight && !W?.short ? "snapper move into the shallows to feed under darkness (Choc's local knowledge)" : W?.short && p.slug === "snapper" ? "rough & uncomfortable but a prime snapper chance (Choc's local knowledge)" : (tidePts >= lightPts && T ? p.note?.tide : p.note?.light) ?? p.note?.light ?? p.note?.tide;
-  const head = parts.slice(0, 2).map((x, i) => i ? x[0].toLowerCase() + x.slice(1) : x).join(" + ");
+  const head = parts.slice(0, 3).map((x, i) => i ? x[0].toLowerCase() + x.slice(1) : x).join(" + ");
   return cap(head) + (note ? ` – ${note}` : "") + (hotF ? ` · ${hotF.short}` : "");
 }
 
@@ -280,7 +371,7 @@ export const spanTxt = (a: number, b: number, now = Date.now()) => {
 const joinAnd = (a: string[]) => a.length <= 1 ? a.join("") : `${a.slice(0, -1).join(", ")} and ${a[a.length - 1]}`;
 
 /** Rank spots for one species between `from` and `to` (default: the next 24 hours). */
-export function planSpecies(slug: string, wx: Wx, o: { now?: number; from?: number; to?: number; origin?: { lat: number; lon: number } | null; maxKm?: number; rain24?: number | null; within?: Set<string> } = {}): Plan | null {
+export function planSpecies(slug: string, wx: Wx, o: { now?: number; from?: number; to?: number; origin?: { lat: number; lon: number } | null; maxKm?: number; rain24?: number | null; within?: Set<string>; alt?: boolean } = {}): Plan | null {
   const p = profile(slug); if (!p) return null;
   const now = o.now ?? Date.now(), from = Math.floor((o.from ?? now) / H) * H, to = o.to ?? from + 24 * H;
   let spots = spotsFor(slug);
@@ -289,14 +380,8 @@ export function planSpecies(slug: string, wx: Wx, o: { now?: number; from?: numb
   const noWind = !wx || !spots.some((s) => wx[s.id]?.t.includes(keyOf(from)) || wx[s.id]?.t.includes(keyOf(to - H)));
   const plans: SpotPlan[] = spots.map((s) => {
     const r = wx?.[s.id];
-    const hrs: { t: number; v: ReturnType<typeof scoreHour> }[] = [];
-    for (let t = from; t < to; t += H) hrs.push({ t, v: scoreHour(p, s, r, t, { rain24: o.rain24 }) });
-    let bi = 0; hrs.forEach((h, i) => { if (h.v.score > hrs[bi].v.score) bi = i; });
-    const best = hrs[bi].v.score; let a = bi, b = bi;
-    while (a > 0 && b - a < 3 && hrs[a - 1].v.score >= best - 4) a--;
-    while (b < hrs.length - 1 && b - a < 3 && hrs[b + 1].v.score >= best - 4) b++;
-    const v = hrs[bi].v;
-    return { spot: s, score: best, verdict: verdictOf(best), from: hrs[a].t, to: hrs[b].t + H, peak: hrs[bi].t, factors: v.factors, avoid: v.avoid, dist: o.origin ? km(o.origin, s) : null, windTxt: v.windTxt, tideTxt: v.tideTxt, why: reasonFor(p, v.factors) };
+    const bw = bestWindow(p, s, r, from, to, { rain24: o.rain24 }), v = bw.v, best = v.score;
+    return { spot: s, score: best, verdict: verdictOf(best), from: bw.from, to: bw.to, peak: bw.peak, factors: v.factors, avoid: v.avoid, dist: o.origin ? km(o.origin, s) : null, windTxt: v.windTxt, tideTxt: v.tideTxt, why: reasonFor(p, bw.wf), alt: o.alt ? altWindow(p, s, r, from, to, bw, { rain24: o.rain24 }) : null };
   // Occasional-catch spots (data/audit.ts) always rank below regular spots, so they are never the top pick
   // while a regular spot exists – even on days when their wind shelter scores them higher.
   }).sort((x, y) => Number(isOcc(x.spot, p.slug)) - Number(isOcc(y.spot, p.slug)) || y.score - x.score || (x.dist ?? 0) - (y.dist ?? 0));
@@ -342,16 +427,10 @@ export function rateSpot(s: LandSpot, r: Raw | undefined, from: number, to: numb
   from = Math.floor(from / H) * H; if (to <= from) to = from + H;
   let best: SpotRating | null = null;
   for (const p of ps) {
-    const hrs: { t: number; v: ReturnType<typeof scoreHour> }[] = [];
-    for (let t = from; t < to; t += H) hrs.push({ t, v: scoreHour(p, s, r, t, o) });
-    let bi = 0; hrs.forEach((h, i) => { if (h.v.score > hrs[bi].v.score) bi = i; });
-    const sc = hrs[bi].v.score;
+    const bw = bestWindow(p, s, r, from, to, o), v = bw.v, sc = v.score;
     if (best && sc <= best.score) continue;
-    let a = bi, b = bi;
-    while (a > 0 && b - a < 3 && hrs[a - 1].v.score >= sc - 4) a--;
-    while (b < hrs.length - 1 && b - a < 3 && hrs[b + 1].v.score >= sc - 4) b++;
-    const v = hrs[bi].v, noWind = !r || !r.t.includes(keyOf(hrs[bi].t));
-    best = { spot: s, profile: p, score: sc, verdict: noWind && sc >= 65 ? "Fair" : verdictOf(sc), from: hrs[a].t, to: hrs[b].t + H, peak: hrs[bi].t, factors: v.factors, avoid: v.avoid, windTxt: v.windTxt, tideTxt: v.tideTxt, noWind, why: reasonFor(p, v.factors) };
+    const noWind = !r || !r.t.includes(keyOf(bw.peak));
+    best = { spot: s, profile: p, score: sc, verdict: noWind && sc >= 65 ? "Fair" : verdictOf(sc), from: bw.from, to: bw.to, peak: bw.peak, factors: v.factors, avoid: v.avoid, windTxt: v.windTxt, tideTxt: v.tideTxt, noWind, why: reasonFor(p, bw.wf) };
   }
   return best;
 }
@@ -382,13 +461,14 @@ export function nearInfo(origin: { lat: number; lon: number }, radiusKm = NEAR_K
 export function nearSpots(origin: { lat: number; lon: number }, radiusKm = NEAR_KM) { return nearInfo(origin, radiusKm).spots; }
 export type DayOutlook = { day: string; verdict: Verdict; showery: boolean; damp: boolean; score: number; plans: Plan[]; noWind: boolean; from: number; to: number; near: NearInfo };
 /** The day's rating = the best fish-and-spot combination near the place (same engine as Target a fish). */
-export function dayOutlook(wx: Wx, day: string, o: { now?: number; origin: { lat: number; lon: number }; rain24?: number | null; n?: number; only?: LandSpot }): DayOutlook {
+export function dayOutlook(wx: Wx, day: string, o: { now?: number; origin: { lat: number; lon: number }; rain24?: number | null; n?: number; only?: LandSpot; alt?: boolean }): DayOutlook {
   const now = o.now ?? Date.now(), ds = dayStart(day, TZ), de = dayEnd(day, TZ);
-  const from = Math.max(ds + 4 * H, Math.floor(now / H) * H), to = de;
+  // a fishing day runs from 4 am to 2 am the next morning, so the evening and night session belong to "today"
+  const from = Math.max(ds + 4 * H, Math.floor(now / H) * H), to = Math.max(de, fishDayEnd(day));
   // `only`: the place IS a known spot – rate just that spot (its own fish list), not the area
   const near = nearInfo(o.origin), within = new Set(o.only ? [o.only.id] : near.spots.map((s) => s.id));
   const plans = PROFILES.filter((p) => spotsFor(p.slug).some((s) => within.has(s.id)))
-    .map((p) => planSpecies(p.slug, wx, { now, from, to, within, rain24: o.rain24, origin: o.origin })).filter((x): x is Plan => !!x)
+    .map((p) => planSpecies(p.slug, wx, { now, from, to, within, rain24: o.rain24, origin: o.origin, alt: o.alt })).filter((x): x is Plan => !!x)
     .filter((pl) => !pl.notes.some((n) => n.includes("out of their main season")))
     .sort((a, b) => b.spots[0].score - a.spots[0].score);
   const top = plans[0];
