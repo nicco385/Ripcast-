@@ -269,11 +269,22 @@ const Q = 15 * MIN;
 /** The best time to fish one spot for one fish between `from` and `to`.
  *  1) Rate every hour to find the best part of the day. 2) Re-rate that part in 15-minute steps (tide turn, sunrise/sunset and
  *  moon periods are exact times, not hour blocks). 3) The window is the run of 15-minute steps around the peak that stay within
- *  a few points of it – at least 1 hour, at most 3 – so it lines up with the tide turn / dawn / dusk shown on the chart. */
-export function bestWindow(p: Profile, s: LandSpot, r: Raw | undefined, from: number, to: number, extra: { rain24?: number | null } = {}) {
+ *  a few points of it – at least 1 hour, at most 3 – so it lines up with the tide turn / dawn / dusk shown on the chart.
+ *  A later session (more than 2 hours on) must beat an earlier one by more than a typical shower penalty (SOONER_WITHIN),
+ *  so a slightly higher score late tonight or after midnight doesn't hide a good dawn a few hours away. Hours with under 45 minutes left are skipped when `now` is set. */
+const SOONER_WITHIN = 12;
+const LEFT_MIN = 45 * MIN;
+export function bestWindow(p: Profile, s: LandSpot, r: Raw | undefined, from: number, to: number, extra: { rain24?: number | null; now?: number } = {}) {
   from = Math.floor(from / H) * H; if (to <= from) to = from + H;
-  let bh = from, bs = -1;
-  for (let t = from; t < to; t += H) { const sc = scoreHour(p, s, r, t, extra).score; if (sc > bs) { bs = sc; bh = t; } }
+  const now = extra.now, stillOn = (t: number) => now == null || t + H > now + LEFT_MIN;
+  // rate every hour, skip a slot that is already nearly over, and only let a later session win if it is clearly better
+  let bh = from, bs = -1, any = false;
+  for (let t = from; t < to; t += H) {
+    if (!stillOn(t)) continue;
+    const sc = scoreHour(p, s, r, t, extra).score;
+    if (!any || (t - bh <= 2 * H ? sc > bs : sc > bs + SOONER_WITHIN)) { bs = sc; bh = t; any = true; }
+  }
+  if (!any) { bh = from; bs = -1; for (let t = from; t < to; t += H) { const sc = scoreHour(p, s, r, t, extra).score; if (sc > bs) { bs = sc; bh = t; } } }
   const a0 = Math.max(from, bh - 3 * H), b0 = Math.min(to, bh + 4 * H);
   const sl: { t: number; v: ReturnType<typeof scoreAt> }[] = [];
   for (let t = a0; t < b0; t += Q) sl.push({ t, v: scoreAt(p, s, r, t + Q / 2, extra, Q / 2) });
@@ -298,7 +309,13 @@ export function bestWindow(p: Profile, s: LandSpot, r: Raw | undefined, from: nu
     const l = a > 0 ? sl[a - 1].v.score : -1, rr = b < sl.length - 1 ? sl[b + 1].v.score : -1;
     if (rr >= l) b++; else a--;
   }
-  return { from: sl[a].t, to: sl[b].t + Q, peak: sl[pi].t, v: sl[pi].v, wf: windowFactors(sl.slice(a, b + 1).map((x) => x.v.factors), sl[pi].v.factors, sl[a].t, sl[b].t + Q) };
+  const winFrom = sl[a].t, winTo = sl[b].t + Q;
+  // if this window is already nearly over, look again at what's still ahead (dawn, later tonight)
+  if (now != null && winTo <= now + LEFT_MIN) {
+    const next = Math.ceil((now + LEFT_MIN) / H) * H;
+    if (next < to && next > from) return bestWindow(p, s, r, next, to, extra);
+  }
+  return { from: winFrom, to: winTo, peak: sl[pi].t, v: sl[pi].v, wf: windowFactors(sl.slice(a, b + 1).map((x) => x.v.factors), sl[pi].v.factors, winFrom, winTo) };
 }
 /** Factors that describe a whole window (for the "why" line): the best light, tide and moon reason anywhere inside it,
  *  so the text names the tide turn / sunset / moon period that is actually in the window. Other factors come from the peak. */
@@ -317,7 +334,7 @@ function windowFactors(all: Factor[][], peak: Factor[], from: number, to: number
   return out;
 }
 /** A second, separate good window (at least 30 min clear of the best one and nearly as good), so the app can say "Also good: …". */
-export function altWindow(p: Profile, s: LandSpot, r: Raw | undefined, from: number, to: number, main: { from: number; to: number; v: { score: number } }, extra: { rain24?: number | null } = {}) {
+export function altWindow(p: Profile, s: LandSpot, r: Raw | undefined, from: number, to: number, main: { from: number; to: number; v: { score: number } }, extra: { rain24?: number | null; now?: number } = {}) {
   const gaps: [number, number][] = [[from, main.from - 30 * MIN], [main.to + 30 * MIN, to]];
   let best: ReturnType<typeof bestWindow> | null = null;
   for (const [a, b] of gaps) { if (b - a < H) continue; const w = bestWindow(p, s, r, Math.ceil(a / H) * H, b, extra); if (w.to <= b + Q && (!best || w.v.score > best.v.score + 2)) best = w; } // nearly level: keep the earlier one (evening before after-midnight)
@@ -326,11 +343,12 @@ export function altWindow(p: Profile, s: LandSpot, r: Raw | undefined, from: num
 /** The end of a "fishing day": 2 am the next morning, so Today / Rest of today include the evening and night session. */
 export const NIGHT_END_H = 26;
 export const fishDayEnd = (day: string) => dayStart(lf(dayStart(day, TZ) + 36 * H).slice(0, 10), TZ) + (NIGHT_END_H - 24) * H;
-/** "today", "tonight", "tomorrow", "tomorrow night", "on Sun" or "on Sun night" for a best-time window starting at `t`. */
+/** "today", "tonight", "late tonight" (after midnight), "tomorrow", "tomorrow night", "on Sun" or "on Sun night" for a best-time window starting at `t`. */
 export function whenWord(t: number, day: string, now = Date.now()) {
-  const d = lf(t), h = Number(d.slice(11, 13)), night = h >= 17 || d.slice(0, 10) > day;
+  const d = lf(t), h = Number(d.slice(11, 13)), night = h >= 17 || d.slice(0, 10) > day, late = h < 4;
   const today = lf(now).slice(0, 10), tom = lf(dayStart(today, TZ) + 36 * H).slice(0, 10);
-  const name = day === today ? (night ? "tonight" : "today") : day === tom ? (night ? "tomorrow night" : "tomorrow") : `on ${new Date(day + "T12:00:00Z").toLocaleDateString("en-AU", { weekday: "short", timeZone: "UTC" })}${night ? " night" : ""}`;
+  const nightWord = late ? "late tonight" : "tonight";
+  const name = day === today ? (night ? nightWord : "today") : day === tom ? (night ? "tomorrow night" : "tomorrow") : `on ${new Date(day + "T12:00:00Z").toLocaleDateString("en-AU", { weekday: "short", timeZone: "UTC" })}${night ? " night" : ""}`;
   return name;
 }
 
@@ -361,7 +379,7 @@ export function reasonFor(p: Profile, fs: Factor[]): string {
 
 const periodWord = (t: number, now: number) => {
   const d = fmt(t, TZ), today = fmt(now, TZ).slice(0, 10), h = Number(d.slice(11, 13)), tom = d.slice(0, 10) > today;
-  if (h >= 20 || h < 4) return tom && h >= 4 ? "tomorrow night" : "tonight";
+  if (h >= 20 || h < 4) return tom && h >= 4 ? "tomorrow night" : h < 4 ? "late tonight" : "tonight";
   if (h < 11) return tom ? "tomorrow morning" : "this morning";
   if (h < 16) return tom ? "tomorrow afternoon" : "this afternoon";
   return tom ? "tomorrow evening" : "this evening";
@@ -380,8 +398,9 @@ export function planSpecies(slug: string, wx: Wx, o: { now?: number; from?: numb
   const noWind = !wx || !spots.some((s) => wx[s.id]?.t.includes(keyOf(from)) || wx[s.id]?.t.includes(keyOf(to - H)));
   const plans: SpotPlan[] = spots.map((s) => {
     const r = wx?.[s.id];
-    const bw = bestWindow(p, s, r, from, to, { rain24: o.rain24 }), v = bw.v, best = v.score;
-    return { spot: s, score: best, verdict: verdictOf(best), from: bw.from, to: bw.to, peak: bw.peak, factors: v.factors, avoid: v.avoid, dist: o.origin ? km(o.origin, s) : null, windTxt: v.windTxt, tideTxt: v.tideTxt, why: reasonFor(p, bw.wf), alt: o.alt ? altWindow(p, s, r, from, to, bw, { rain24: o.rain24 }) : null };
+    const extra = { rain24: o.rain24, now };
+    const bw = bestWindow(p, s, r, from, to, extra), v = bw.v, best = v.score;
+    return { spot: s, score: best, verdict: verdictOf(best), from: bw.from, to: bw.to, peak: bw.peak, factors: v.factors, avoid: v.avoid, dist: o.origin ? km(o.origin, s) : null, windTxt: v.windTxt, tideTxt: v.tideTxt, why: reasonFor(p, bw.wf), alt: o.alt ? altWindow(p, s, r, from, to, bw, extra) : null };
   // Occasional-catch spots (data/audit.ts) always rank below regular spots, so they are never the top pick
   // while a regular spot exists – even on days when their wind shelter scores them higher.
   }).sort((x, y) => Number(isOcc(x.spot, p.slug)) - Number(isOcc(y.spot, p.slug)) || y.score - x.score || (x.dist ?? 0) - (y.dist ?? 0));
@@ -422,7 +441,7 @@ export const speciesName = (slug: string) => SPECIES.find((s) => s.slug === slug
 // ---- one rating engine for the whole app: Today, Where, Target a fish and the 7-day forecast ----
 export type SpotRating = { spot: LandSpot; profile: Profile; score: number; verdict: Verdict; from: number; to: number; peak: number; factors: Factor[]; avoid: boolean; windTxt: string | null; tideTxt: string | null; noWind: boolean; why: string };
 /** Rate a spot for whichever of its fish suits the conditions best, between `from` and `to`. */
-export function rateSpot(s: LandSpot, r: Raw | undefined, from: number, to: number, o: { rain24?: number | null } = {}): SpotRating | null {
+export function rateSpot(s: LandSpot, r: Raw | undefined, from: number, to: number, o: { rain24?: number | null; now?: number } = {}): SpotRating | null {
   const ps = PROFILES.filter((p) => s.species.includes(p.slug)); if (!ps.length) return null;
   from = Math.floor(from / H) * H; if (to <= from) to = from + H;
   let best: SpotRating | null = null;

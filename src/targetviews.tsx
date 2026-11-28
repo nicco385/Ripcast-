@@ -109,8 +109,13 @@ export function TargetView({ slug, place, rain24, onSpot, onSpecies }: { slug: s
   </>;
 }
 
-/** "tonight " when today's best window is in the evening or night (whenWord in target.ts). */
-const tonight = (t: number, day: string) => whenWord(t, day) === "tonight" ? "tonight " : "";
+/** Time-of-day prefix for a best-window start: "tonight ", "late tonight " or "this morning ". */
+const tonight = (t: number, day: string) => {
+  const w = whenWord(t, day);
+  if (w === "tonight" || w === "late tonight") return w + " ";
+  if (w === "today" && Number(fmt(t, "Australia/Melbourne").slice(11, 13)) < 11) return "this morning ";
+  return "";
+};
 const fishName = (n: string) => n.toLowerCase().replace("king george", "King George").replace("australian", "Australian").replace(/^./, (c) => c.toUpperCase());
 const reasons = (pl: Plan) => pl.spots[0].factors.filter((f) => f.pts > 0 && f.kind !== "season").sort((a, b) => b.pts - a.pts).slice(0, 2).map((f) => f.txt.replace(/^./, (c) => c.toLowerCase())).join(", ");
 

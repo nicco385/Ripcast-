@@ -463,12 +463,75 @@ import { YEAR } from "../src/data/calendar";
   ok("tonight: evening windows read 'tonight'; Today runs to 2 am", () => {
     const now = at("2026-11-21T13:30:00+11:00");
     assert.equal(whenWord(at("2026-11-21T19:45:00+11:00"), "2026-11-21", now), "tonight");
-    assert.equal(whenWord(at("2026-11-22T00:30:00+11:00"), "2026-11-21", now), "tonight");
+    assert.equal(whenWord(at("2026-11-22T00:30:00+11:00"), "2026-11-21", now), "late tonight");
     assert.equal(whenWord(at("2026-11-21T09:00:00+11:00"), "2026-11-21", now), "today");
     assert.equal(whenWord(at("2026-11-22T20:00:00+11:00"), "2026-11-22", now), "tomorrow night");
     assert.equal(fishDayEnd("2026-11-21"), at("2026-11-22T02:00:00+11:00"));
     const o = dayOutlook(null, "2026-11-21", { now: at("2026-11-21T04:00:00+11:00"), origin: { lat: -37.84, lon: 144.93 } });
     assert.equal(o.to, at("2026-11-22T02:00:00+11:00"));
+  });
+}
+
+// 25. v1.9.6: at 1:35 am, prefer the coming dawn (tide + first light) over a slightly higher after-midnight window
+{
+  const { whenWord, spanTxt } = require("../src/target");
+  const lalor = { lat: -37.6667, lon: 145.0167 };
+  const now = at("2026-11-29T01:35:00+11:00"), day = "2026-11-29";
+  // morning showers (as on 29 Nov 2026), drier evening and a dry after-midnight tide change
+  const W = (() => {
+    const t0 = dayStart("2026-11-28", TZ), t: string[] = [], wind: number[] = [], gust: number[] = [], dir: number[] = [], rain: number[] = [], pop: number[] = [];
+    const row = (iso: string, w: number, d: number, r: number, p: number) => ({ iso, w, d, r, p });
+    const rows = [
+      row("2026-11-29T04:00", 9, 250, 1.0, 80), row("2026-11-29T05:00", 9, 250, 0.1, 84), row("2026-11-29T06:00", 9, 250, 0, 73),
+      row("2026-11-29T07:00", 9, 250, 0, 54), row("2026-11-29T08:00", 9, 250, 0, 43),
+      row("2026-11-29T17:00", 12, 220, 0, 40), row("2026-11-29T18:00", 10, 220, 0, 40), row("2026-11-29T19:00", 10, 220, 0.1, 60),
+      row("2026-11-29T20:00", 10, 220, 0.2, 70), row("2026-11-29T21:00", 10, 220, 0.1, 65),
+      row("2026-11-30T00:00", 9, 220, 0, 15), row("2026-11-30T01:00", 9, 220, 0, 15),
+    ];
+    const map = Object.fromEntries(rows.map((x) => [x.iso, x]));
+    for (let i = 0; i < 72; i++) {
+      const ti = t0 + i * H, iso = fmt(ti, TZ).slice(0, 16);
+      t.push(fmt(ti, TZ).slice(0, 13) + ":00");
+      const sp = map[iso] ?? { w: 9, d: 250, r: 0, p: 20 };
+      wind.push(sp.w); gust.push(sp.w * 1.4); dir.push(sp.d); rain.push(sp.r); pop.push(sp.p);
+    }
+    const out: Record<string, Raw> = {};
+    for (const s of LAND) out[s.id] = { t, wind, gust, dir, wave: [], rain, pop };
+    return out;
+  })();
+  ok("1:35 am 29 Nov 2026: after-midnight windows read 'late tonight', not plain 'tonight'", () => {
+    assert.equal(whenWord(at("2026-11-30T00:15:00+11:00"), day, now), "late tonight");
+    assert.equal(whenWord(at("2026-11-29T19:45:00+11:00"), day, now), "tonight");
+    assert.equal(whenWord(at("2026-11-29T05:30:00+11:00"), day, now), "today");
+  });
+  ok("1:35 am 29 Nov 2026: Today picks the coming dawn snapper window, not late tonight 12:15–2 am", () => {
+    const o = dayOutlook(W, day, { now, origin: lalor, n: 5 });
+    const pl = o.plans[0], s = pl.spots[0], ds = dayStart(day, TZ);
+    assert.equal(pl.profile.slug, "snapper");
+    assert.ok(s.from >= ds + 4 * H && s.to <= ds + 10 * H, `expected a dawn window, got ${spanTxt(s.from, s.to, now)} – ${s.why}`);
+    assert.match(s.why, /Dawn|sunrise|run-in/i);
+    assert.ok(s.to <= at("2026-11-29T10:00:00+11:00"));
+  });
+  ok("a clearly better dusk still beats a heavily rained-out dawn", () => {
+    const heavy = (() => {
+      const out: Record<string, Raw> = {};
+      for (const id of Object.keys(W)) {
+        const r = W[id], rain = r.rain!.slice(), pop = r.pop!.slice();
+        r.t.forEach((k, i) => { if (/T0[45]:00$/.test(k) || /T0[56]/.test(k) && k.includes("2026-11-29")) { rain[i] = 2; pop[i] = 90; } });
+        out[id] = { ...r, rain, pop };
+      }
+      return out;
+    })();
+    const o = dayOutlook(heavy, day, { now, origin: lalor, n: 1 });
+    const s = o.plans[0].spots[0], ds = dayStart(day, TZ);
+    assert.ok(s.from >= ds + 17 * H, `expected dusk or evening, got ${spanTxt(s.from, s.to, now)} – ${s.why}`);
+  });
+  ok("best window: a slot that is already nearly over is not the pick when dawn is next", () => {
+    const s = LAND.find((x) => x.id === "lagoon-pier")!;
+    const pl = planSpecies("snapper", W, { now, from: at("2026-11-29T01:00:00+11:00"), to: at("2026-11-30T02:00:00+11:00"), origin: s, within: new Set([s.id]) })!;
+    const w = pl.spots[0];
+    assert.ok(w.to > now + 45 * 60000, `window ends too soon: ${spanTxt(w.from, w.to, now)}`);
+    assert.ok(w.from >= at("2026-11-29T04:00:00+11:00") && w.to <= at("2026-11-29T10:00:00+11:00"), spanTxt(w.from, w.to, now));
   });
 }
 console.log(`\n${n} checks passed`);

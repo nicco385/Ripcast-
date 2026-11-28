@@ -30,7 +30,7 @@ export function Where({ place, onSpot, onMap }: { place: Place; onSpot: (id: str
   const ranked = useMemo(() => {
     if (!wx && !failed) return [];
     const now = Date.now(), day = fmt(now, TZ).slice(0, 10), to = mode === "now" ? now + 3600000 : Math.max(dayEnd(day, TZ), fishDayEnd(day));
-    return LAND.filter((s) => area === "all" || s.info?.area === area).map((s) => ({ r: rateSpot(s, wx?.data[s.id], now, to), dist: km(origin, s) }))
+    return LAND.filter((s) => area === "all" || s.info?.area === area).map((s) => ({ r: rateSpot(s, wx?.data[s.id], now, to, { now }), dist: km(origin, s) }))
       .filter((x): x is { r: SpotRating; dist: number } => !!x.r && (!maxKm || x.dist <= maxKm)).sort((a, b) => b.r.score - a.r.score || a.dist - b.dist);
   }, [wx, failed, mode, origin, maxKm, area]);
   const closed = ALL_LAND.filter((s) => s.info?.status?.closed);
